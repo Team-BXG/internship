@@ -100,6 +100,24 @@ class BeneficiaryCreate(BaseModel):
     details_json: Optional[str] = None
     status: Optional[str] = 'Pending Woreda'
 
+class DemandCreate(BaseModel):
+    full_name: str
+    national_id: Optional[str] = None
+    phone: Optional[str] = None
+    zone: str
+    woreda: str
+    kebele: str
+    village: Optional[str] = None
+    gender: str
+    has_disability: str
+    service_type: str
+    household_size: Optional[str] = None
+    elderly_count: Optional[str] = None
+    solar_panel_type: str
+    watt_level: str
+    details_json: Optional[str] = None
+    status: Optional[str] = 'Pending Woreda Review'
+
 class ProblemCreate(BaseModel):
     equipment: str
     title: str
@@ -118,6 +136,9 @@ class BeneficiaryStatusUpdate(BaseModel):
 
 class ProblemStatusUpdate(BaseModel):
     status: str
+
+class DemandAssignSupplier(BaseModel):
+    supplier_id: int
 
 
 class DashboardStatsResponse(BaseModel):

@@ -1,9 +1,10 @@
-import { CheckCircle, AlertOctagon, ChevronLeft, LogOut } from "lucide-react";
+import { CheckCircle, AlertOctagon, ChevronLeft, LogOut, Zap } from "lucide-react";
 import logo from '../../../assets/logo.png';
 
 export default function Sidebar({ activeMenu, setActiveMenu, selectedScope }) {
   const menuItems = [
     { name: "Approve Beneficiaries", icon: CheckCircle },
+    { name: "Review Demands", icon: Zap },
     { name: "Approve Problems", icon: AlertOctagon },
   ];
 

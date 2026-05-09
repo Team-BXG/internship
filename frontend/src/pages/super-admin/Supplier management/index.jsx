@@ -14,11 +14,17 @@ export default function SupplierManagement() {
     fetch('http://localhost:8000/api/suppliers')
       .then(res => res.json())
       .then(data => {
-        setSuppliers(data);
+        if (Array.isArray(data)) {
+          setSuppliers(data);
+        } else {
+          console.error("Error expected array but got:", data);
+          setSuppliers([]);
+        }
         setLoading(false);
       })
       .catch(err => {
         console.error("Error fetching suppliers:", err);
+        setSuppliers([]);
         setLoading(false);
       });
   };

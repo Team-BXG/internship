@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, FileText, LayoutDashboard, LogOut, ChevronLeft } from 'lucide-react';
+import { Users, FileText, LayoutDashboard, LogOut, ChevronLeft, Map } from 'lucide-react';
 import logo from '../../../assets/logo.png';
 
 const Sidebar = ({ activeMenu, setActiveMenu, selectedZone }) => {
@@ -38,6 +38,13 @@ const Sidebar = ({ activeMenu, setActiveMenu, selectedZone }) => {
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm text-left ${activeMenu === 'Agent Management' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 border border-transparent'}`}
           >
             <Users className="w-4 h-4" /> Agent Management
+          </button>
+          
+          <button 
+            onClick={() => setActiveMenu('Area Assignment')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm text-left ${activeMenu === 'Area Assignment' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 border border-transparent'}`}
+          >
+            <Map className="w-4 h-4" /> Area Assignment
           </button>
           
           <button 

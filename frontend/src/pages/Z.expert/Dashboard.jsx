@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import AgentRegistration from './AgentRegistration';
 import ScopeSelector from '../../components/ScopeSelector';
+import AreaAssignment from '../super-admin/Area assignment/AreaAssignment';
 
 const Dashboard = () => {
   const [activeMenu, setActiveMenu] = useState('Agent Management');
@@ -28,6 +29,8 @@ const Dashboard = () => {
         <main className="flex-1 p-8 overflow-y-auto w-full">
           {activeMenu === 'Agent Management' ? (
             <AgentRegistration selectedZone={selectedZone} />
+          ) : activeMenu === 'Area Assignment' ? (
+            <AreaAssignment selectedZone={selectedZone} />
           ) : (
             <div className="flex min-h-[50vh] items-center justify-center">
               <div className="text-xl font-bold text-slate-500 flex flex-col items-center">

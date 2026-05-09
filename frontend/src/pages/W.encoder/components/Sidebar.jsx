@@ -1,11 +1,13 @@
-import { ClipboardList, AlertTriangle, RefreshCw, Bell, ChevronLeft, LogOut } from "lucide-react";
+import { ClipboardList, AlertTriangle, RefreshCw, Bell, ChevronLeft, LogOut, Zap } from "lucide-react";
 import logo from '../../../assets/logo.png';
 
 export default function Sidebar({ activeMenu, setActiveMenu, selectedScope }) {
   const menuItems = [
     { name: "Notifications", icon: Bell },
     { name: "Beneficiary Registration", icon: ClipboardList },
+    { name: "Demand Registration", icon: Zap },
     { name: "Problem Register", icon: AlertTriangle },
+    { name: "Assigned Demands", icon: User },
     { name: "Change Status", icon: RefreshCw },
   ];
 

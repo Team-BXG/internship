@@ -8,6 +8,7 @@ import ActivityLog from './pages/super-admin/Dashboard/ActivityLog';
 import AreaAssignment from './pages/super-admin/Area assignment/AreaAssignment';
 import SupplierManagement from './pages/super-admin/Supplier management';
 import ContractorRegistration from './pages/super-admin/Contractor registration';
+import DemandStatistics from './pages/super-admin/DemandStatisticsSimple';
 import WoredaEncoderDashboard from './pages/W.encoder/Dashboard';
 import WoredaApproverDashboard from './pages/W.approver/Dashboard';
 import ZoneExpertDashboard from './pages/Z.expert/Dashboard';
@@ -38,7 +39,9 @@ function SuperAdminApp() {
         <Header />
 
         <main className="flex-1 p-8 overflow-y-auto">
-          {activeMenu === "Supplier Management" ? (
+          {activeMenu === "Demand Statistics" ? (
+            <DemandStatistics />
+          ) : activeMenu === "Supplier Management" ? (
             <SupplierManagement />
           ) : activeMenu === "Contractor Registration" ? (
             <ContractorRegistration />

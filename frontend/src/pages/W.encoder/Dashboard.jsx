@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import RegisterBeneficiary from './Register Beneficiary';
+import RegisterDemand from './Register Demand';
 import RegisterProblem from './Register Problem';
+import ChangeStatus from './ChangeStatus';
+import AssignedDemands from './AssignedDemands';
 import ScopeSelector from '../../components/ScopeSelector';
 
 const Dashboard = () => {
@@ -30,8 +33,10 @@ const Dashboard = () => {
         <main className="flex-1 p-8 overflow-y-auto">
           {activeMenu === 'Notifications' && <div className="text-slate-500">Notifications content goes here</div>}
           {activeMenu === 'Beneficiary Registration' && <RegisterBeneficiary selectedScope={selectedScope} />}
+          {activeMenu === 'Demand Registration' && <RegisterDemand selectedScope={selectedScope} />}
           {activeMenu === 'Problem Register' && <RegisterProblem selectedScope={selectedScope} />}
-          {activeMenu === 'Change Status' && <div className="text-slate-500">Change Status content goes here</div>}
+          {activeMenu === 'Assigned Demands' && <AssignedDemands selectedScope={selectedScope} />}
+          {activeMenu === 'Change Status' && <ChangeStatus selectedScope={selectedScope} />}
         </main>
       </div>
     </div>

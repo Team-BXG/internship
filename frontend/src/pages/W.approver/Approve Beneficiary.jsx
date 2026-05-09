@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Eye, Filter } from 'lucide-react';
+import { Search, Eye, Filter, Download } from 'lucide-react';
 import BeneficiaryDetailsModal from '../../components/BeneficiaryDetailsModal';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const ApproveBeneficiary = ({ selectedScope }) => {
   const [beneficiaries, setBeneficiaries] = useState([]);
@@ -38,6 +40,36 @@ const ApproveBeneficiary = ({ selectedScope }) => {
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const exportPDF = () => {
+    const doc = new jsPDF()
+    doc.text(`Beneficiaries Report - ${selectedScope.zone} / ${selectedScope.woreda}`, 14, 15)
+    
+    doc.setFontSize(10)
+    doc.text(`Total Records: ${filtered.length}`, 14, 25)
+    
+    const tableColumn = ["Beneficiary", "Location", "Equipment", "Status", "Date"]
+    const tableRows = []
+
+    filtered.forEach(b => {
+      const bData = [
+        `${b.full_name}\n${b.national_id || '-'}`,
+        `${b.kebele || b.woreda}\n${b.zone}`,
+        b.equipment_type || 'Unknown',
+        b.status,
+        new Date(b.created_at).toISOString().split('T')[0]
+      ]
+      tableRows.push(bData)
+    })
+
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 35,
+    })
+
+    doc.save(`beneficiaries_${selectedScope.woreda}_${new Date().toISOString().split('T')[0]}.pdf`)
   };
 
   const filtered = beneficiaries.filter(b => {
@@ -83,6 +115,12 @@ const ApproveBeneficiary = ({ selectedScope }) => {
              />
            </div>
            <div className="flex gap-3">
+             <button 
+               onClick={exportPDF}
+               className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition font-medium text-sm"
+             >
+               <Download className="w-4 h-4" /> Export
+             </button>
              <select 
                className="px-4 py-2.5 bg-white border border-slate-200 rounded-full text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20"
                value={statusFilter}

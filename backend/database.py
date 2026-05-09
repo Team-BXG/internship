@@ -48,6 +48,7 @@ def init_db():
     c.execute("DROP TABLE IF EXISTS agents;")
     c.execute("DROP TABLE IF EXISTS beneficiaries;")
     c.execute("DROP TABLE IF EXISTS problems;")
+    c.execute("DROP TABLE IF EXISTS demands;")
     c.execute("DROP TABLE IF EXISTS activity_logs;")
     c.execute("DROP TABLE IF EXISTS dashboard_stats;")
     c.execute("SET FOREIGN_KEY_CHECKS = 1;")
@@ -191,6 +192,31 @@ def init_db():
             status VARCHAR(50) DEFAULT 'Pending',
             urgency VARCHAR(50),
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+    ''')
+
+    c.execute('''
+        CREATE TABLE demands (
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            full_name VARCHAR(255) NOT NULL,
+            national_id VARCHAR(100),
+            phone VARCHAR(50),
+            zone VARCHAR(255),
+            woreda VARCHAR(255),
+            kebele VARCHAR(255),
+            village VARCHAR(255),
+            gender VARCHAR(20),
+            has_disability VARCHAR(10),
+            service_type VARCHAR(50),
+            household_size VARCHAR(50),
+            elderly_count VARCHAR(50),
+            solar_panel_type VARCHAR(100),
+            watt_level VARCHAR(50),
+            details_json TEXT,
+            status VARCHAR(50) DEFAULT 'Pending Woreda Review',
+            assigned_supplier_id INTEGER DEFAULT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (assigned_supplier_id) REFERENCES suppliers(id)
         );
     ''')
     conn.commit()

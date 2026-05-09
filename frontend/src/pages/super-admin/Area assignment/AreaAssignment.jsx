@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { MapPin } from 'lucide-react';
 import AmharaMap from './AmharaMap';
 
-export default function AreaAssignment() {
+export default function AreaAssignment({ selectedZone }) {
   const [options, setOptions] = useState({ suppliers: [], zones: [], woredas: [] });
   const [formData, setFormData] = useState({
     supplier_id: "",
@@ -24,9 +24,15 @@ export default function AreaAssignment() {
     try {
       const res = await fetch('http://localhost:8000/api/area-options');
       const data = await res.json();
-      setOptions(data);
+      if (res.ok && data.suppliers) {
+        setOptions(data);
+      } else {
+        console.error("Error formatting option data:", data);
+        setOptions({ suppliers: [], zones: [], woredas: [] });
+      }
     } catch (err) {
       console.error("Error fetching options:", err);
+      setOptions({ suppliers: [], zones: [], woredas: [] });
     }
   };
 
@@ -150,7 +156,9 @@ export default function AreaAssignment() {
                   className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none w-full"
                 >
                   <option value="">Select Zone</option>
-                  {options.zones.map(z => (
+                  {options.zones
+                    .filter(z => !selectedZone || z.name === selectedZone)
+                    .map(z => (
                     <option key={z.id} value={z.id}>{z.name}</option>
                   ))}
                 </select>

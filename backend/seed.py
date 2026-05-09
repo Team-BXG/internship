@@ -109,6 +109,23 @@ def seed_data():
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     ''', problems)
 
+    # --------------------------------
+    # Seed Demands
+    # --------------------------------
+    demands = [
+        ("Kebede Tadesse", "ET-DMD-001", "+251 911 345 678", "North Gondar", "Dabat", "05", "Warka", "Male", "No", "Home/Lantern", "3", "No", "Home Solar System", "50W", "{}", "Pending Woreda Review"),
+        ("Tigist Mengesha", "ET-DMD-002", "+251 912 345 678", "South Wollo", "Dessie Zuria", "03", "Kurkur", "Female", "Yes", "Home/Lantern", "2", "Yes", "Solar Lantern", "10W", "{}", "Assigned", 1),
+        ("Bale Robe Health Post", "ET-DMD-003", "+251 913 345 678", "Awi", "Dangila", "01", "Addis Alem", "Male", "No", "Institution", "N/A", "No", "Institutional Solar", "5000W", "{}", "Pending Woreda Review")
+    ]
+    c.executemany('''
+        INSERT INTO demands (full_name, national_id, phone, zone, woreda, kebele, village, gender, has_disability, service_type, household_size, elderly_count, solar_panel_type, watt_level, details_json, status, assigned_supplier_id)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    ''', [
+        ("Kebede Tadesse", "ET-DMD-001", "+251 911 345 678", "North Gondar", "Dabat", "05", "Warka", "Male", "no", "home_lantern", "3", "No", "Home Solar System", "50W", "{}", "Pending Woreda Review", None),
+        ("Tigist Mengesha", "ET-DMD-002", "+251 912 345 678", "South Wollo", "Dessie Zuria", "03", "Kurkur", "Female", "yes", "home_lantern", "2", "Yes", "Solar Lantern", "10W", "{}", "Pending Woreda Review", None),
+        ("Bale Robe Health Post", "ET-DMD-003", "+251 913 345 678", "Awi", "Dangila", "01", "Addis Alem", "Male", "no", "institution", "N/A", "No", "Institutional Solar", "5000W", "{}", "Assigned", 1)
+    ])
+
     conn.commit()
     conn.close()
     print("Database seeded successfully with initial dashboard data using MySQL.")

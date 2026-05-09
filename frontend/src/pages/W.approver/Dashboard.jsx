@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import ApproveBeneficiary from './Approve Beneficiary';
+import ReviewDemands from './Review Demands';
 import ApproveProblem from './Approve Problem';
 import ScopeSelector from '../../components/ScopeSelector';
 
@@ -29,6 +30,7 @@ const WoredaApproverDashboard = () => {
 
         <main className="flex-1 p-8 overflow-y-auto w-full">
           {activeMenu === 'Approve Beneficiaries' && <ApproveBeneficiary selectedScope={selectedScope} />}
+          {activeMenu === 'Review Demands' && <ReviewDemands selectedScope={selectedScope} />}
           {activeMenu === 'Approve Problems' && <ApproveProblem selectedScope={selectedScope} />}
         </main>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   CheckCircle2, ChevronLeft, ChevronRight, Send, 
   Sun, Building2, Zap, MapPin, User, Package, Settings, 
@@ -14,25 +14,42 @@ const STEPS = [
   { id: 5, label: 'Review', icon: CheckCircle2 }
 ];
 
-const RegisterBeneficiary = ({ selectedScope }) => {
+const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState({});
   const [isGroupRegistration, setIsGroupRegistration] = useState(false);
   const [groupSize, setGroupSize] = useState(1);
   const [savedForms, setSavedForms] = useState([]);
   const [currentFormIndex, setCurrentFormIndex] = useState(0);
+  const [suppliersList, setSuppliersList] = useState([]);
+  const [agentsList, setAgentsList] = useState([]);
+  
+  useEffect(() => {
+    fetch('http://localhost:8000/api/suppliers')
+      .then(res => res.json())
+      .then(data => setSuppliersList(Array.isArray(data) ? data : []))
+      .catch(console.error);
+      
+    fetch('http://localhost:8000/api/agents')
+      .then(res => res.json())
+      .then(data => setAgentsList(Array.isArray(data) ? data : []))
+      .catch(console.error);
+  }, []);
+  
   const [formData, setFormData] = useState({
-    surveyType: '',
-    zone: selectedScope.zone,
-    woreda: selectedScope.woreda,
-    kebele: '',
-    village: '',
+    surveyType: initialData?.survey_type || '',
+    zone: initialData?.zone || selectedScope.zone,
+    woreda: initialData?.woreda || selectedScope.woreda,
+    kebele: initialData?.kebele || '',
+    village: initialData?.village || '',
     latitude: '',
     longitude: '',
-    fullName: '',
-    nationalId: '',
-    phoneNumber: '',
+    fullName: initialData?.full_name || '',
+    nationalId: initialData?.national_id || '',
+    phoneNumber: initialData?.phone || '',
     gender: '',
+    disability: '',
+    elderlyCount: '',
     householdSize: '',
     monthlyIncome: '',
     institutionName: '',
@@ -45,9 +62,9 @@ const RegisterBeneficiary = ({ selectedScope }) => {
     energyNeeds: '',
     electricityAccess: 'Yes',
     devices: [],
-    equipmentType: 'Home Solar System',
+    equipmentType: initialData?.equipment_type || 'Home Solar System',
     serialNumber: '',
-    assignedSupplier: '',
+    assignedSupplier: initialData?.supplier || '',
     unitPrice: '',
     guarantee: '',
     guaranteePeriod: '',
@@ -60,6 +77,7 @@ const RegisterBeneficiary = ({ selectedScope }) => {
     proofPhoto: null,
     offGridType: '',
     projectCapacity: '',
+    projectCost: '',
     solarPanelType: '',
     noOfSolarPanel: '',
     solarPanelManufacture: '',
@@ -80,7 +98,10 @@ const RegisterBeneficiary = ({ selectedScope }) => {
     minimumFlow: '',
     hydroHead: '',
     estimatedPowerOutput: '',
-    projectCost: ''
+    windTurbineType: '',
+    rotorDiameter: '',
+    hubHeight: '',
+    ratedPower: ''
   });
 
     const nextStep = () => {
@@ -199,7 +220,8 @@ const RegisterBeneficiary = ({ selectedScope }) => {
           }
           
           alert(`Successfully registered ${groupSize} beneficiaries!`);
-          window.location.reload();
+          if (onCompleted) onCompleted();
+          else window.location.reload();
           return;
         }
       }
@@ -229,7 +251,20 @@ const RegisterBeneficiary = ({ selectedScope }) => {
       });
       if (res.ok) {
         alert("Beneficiary Successfully Registered!");
-        window.location.reload();
+        
+        // Use an additional endpoint to resolve the demand if this came from a demand
+        if (initialData && initialData.id) {
+          try {
+            await fetch(`http://localhost:8000/api/demands/${initialData.id}/status`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: 'Resolved to Beneficiary' })
+            });
+          } catch (err) { console.error(err); }
+        }
+
+        if (onCompleted) onCompleted();
+        else window.location.reload();
       }
     } catch (e) {
       console.error(e);
@@ -556,14 +591,13 @@ const RegisterBeneficiary = ({ selectedScope }) => {
               onChange={(e) => updateFormData('householdSize', e.target.value)}
             >
               <option value="">Select...</option>
-              <option value="1">1</option>
               <option value="2-4">2-4</option>
               <option value="5+">5+</option>
             </select>
           </div>
           <div className="space-y-2">
-            <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Monthly Income *</label>{errors.monthlyIncome && <span className="text-red-500 text-xs">Required</span>}</div>
-             <select 
+            <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Estimated Monthly Income *</label>{errors.monthlyIncome && <span className="text-red-500 text-xs">Required</span>}</div>
+            <select 
               className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               value={formData.monthlyIncome}
               onChange={(e) => updateFormData('monthlyIncome', e.target.value)}
@@ -682,6 +716,283 @@ const RegisterBeneficiary = ({ selectedScope }) => {
         </div>
         )}
 
+        {/* Additional Home/Lantern Equipment Details */}
+        {formData.surveyType === 'Home/Lantern' && (
+          <>
+            <div className="space-y-2">
+              <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Serial Number</label></div>
+              <input 
+                type="text" 
+                placeholder="Enter serial number"
+                className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={formData.serialNumber}
+                onChange={(e) => updateFormData('serialNumber', e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Assigned Supplier</label></div>
+              <select 
+                className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                value={formData.assignedSupplier}
+                onChange={(e) => updateFormData('assignedSupplier', e.target.value)}
+              >
+                <option value="">Select Supplier</option>
+                {suppliersList.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Unit Price (ETB)</label></div>
+              <input 
+                type="number" 
+                placeholder="Enter unit price"
+                className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={formData.unitPrice}
+                onChange={(e) => updateFormData('unitPrice', e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-slate-700">Guarantee</label>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => updateFormData('guarantee', 'Guarantee')}
+                  className={`flex-1 py-3 font-semibold rounded-xl border ${formData.guarantee === 'Guarantee' ? 'border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}
+                >Guarantee</button>
+                <button 
+                  onClick={() => updateFormData('guarantee', 'No Guarantee')}
+                  className={`flex-1 py-3 font-semibold rounded-xl border ${formData.guarantee === 'No Guarantee' ? 'border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}
+                >No Guarantee</button>
+              </div>
+            </div>
+
+            {formData.guarantee === 'Guarantee' && (
+              <div className="space-y-2">
+                <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Guarantee Period (Years)</label></div>
+                <select 
+                  className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  value={formData.guaranteePeriod}
+                  onChange={(e) => updateFormData('guaranteePeriod', e.target.value)}
+                >
+                  <option value="">Select...</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="5">5</option>
+                </select>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Installation Date</label></div>
+              <input 
+                type="date"
+                className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-600"
+                value={formData.installationDate}
+                onChange={(e) => updateFormData('installationDate', e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Installer / Agent Name</label></div>
+              <select 
+                className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                value={formData.installerName}
+                onChange={(e) => updateFormData('installerName', e.target.value)}
+              >
+                <option value="">Select Agent</option>
+                {agentsList.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Sale Price (ETB)</label></div>
+              <input 
+                type="number"
+                className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={formData.salePrice}
+                onChange={(e) => updateFormData('salePrice', e.target.value)}
+              />
+            </div>
+          </>
+        )}
+
+        {/* Off-Grid Project Details */}
+        {formData.surveyType === 'Off-Grid' && (
+          <div className="col-span-2 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center gap-2 text-emerald-500 font-bold mb-6 border-b pb-4">
+             <Zap className="w-6 h-6" />
+             <h4 className="text-xl text-slate-800">Project Technical Details</h4>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Project Capacity (KW)</label></div>
+                <input type="number" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.projectCapacity} onChange={(e) => updateFormData('projectCapacity', e.target.value)} />
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Project Cost</label></div>
+                <input type="number" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.projectCost} onChange={(e) => updateFormData('projectCost', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Date of Installation / Construction Year</label></div>
+                <input type="text" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.installationDate} onChange={(e) => updateFormData('installationDate', e.target.value)} />
+              </div>
+
+              {formData.offGridType === 'Hydro Power' && (
+                <>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Hydro Power Type</label></div>
+                    <select className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.hydroPowerType} onChange={(e) => updateFormData('hydroPowerType', e.target.value)}>
+                      <option value="">Select...</option>
+                      <option value="Run-of-River">Run-of-River</option>
+                      <option value="Storage">Storage</option>
+                      <option value="Pumped Storage">Pumped Storage</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Minimum Flow (m³/s)</label></div>
+                    <input type="number" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.minimumFlow} onChange={(e) => updateFormData('minimumFlow', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Hydro Head (m)</label></div>
+                    <input type="number" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.hydroHead} onChange={(e) => updateFormData('hydroHead', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Estimated Power Output (KW)</label></div>
+                    <input type="number" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.estimatedPowerOutput} onChange={(e) => updateFormData('estimatedPowerOutput', e.target.value)} />
+                  </div>
+                </>
+              )}
+
+              {formData.offGridType === 'Solar Grid' && (
+                <>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Solar Panel Type</label></div>
+                    <select className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.solarPanelType} onChange={(e) => updateFormData('solarPanelType', e.target.value)}>
+                      <option value="">Select...</option>
+                      <option value="Monocrystalline">Monocrystalline</option>
+                      <option value="Polycrystalline">Polycrystalline</option>
+                      <option value="Thin-Film">Thin-Film</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Number of Solar Panels</label></div>
+                    <input type="number" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.noOfSolarPanel} onChange={(e) => updateFormData('noOfSolarPanel', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Solar Panel Manufacturer</label></div>
+                    <input type="text" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.solarPanelManufacture} onChange={(e) => updateFormData('solarPanelManufacture', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Solar Panel Model</label></div>
+                    <input type="text" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.solarPanelModel} onChange={(e) => updateFormData('solarPanelModel', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Battery Type</label></div>
+                    <select className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.batteryType} onChange={(e) => updateFormData('batteryType', e.target.value)}>
+                      <option value="">Select...</option>
+                      <option value="Lithium-ion">Lithium-ion</option>
+                      <option value="Lead-Acid">Lead-Acid</option>
+                      <option value="Nickel-Cadmium">Nickel-Cadmium</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Number of Batteries</label></div>
+                    <input type="number" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.noOfBattery} onChange={(e) => updateFormData('noOfBattery', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Battery Manufacturer</label></div>
+                    <input type="text" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.batteryManufacture} onChange={(e) => updateFormData('batteryManufacture', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Battery Model</label></div>
+                    <input type="text" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.batteryModel} onChange={(e) => updateFormData('batteryModel', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">System Voltage</label></div>
+                    <select className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.systemVoltage} onChange={(e) => updateFormData('systemVoltage', e.target.value)}>
+                      <option value="">Select...</option>
+                      <option value="12V">12V</option>
+                      <option value="24V">24V</option>
+                      <option value="48V">48V</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Total Energy of Battery (kWh)</label></div>
+                    <input type="number" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.totalEnergyOfBattery} onChange={(e) => updateFormData('totalEnergyOfBattery', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Inverter Type</label></div>
+                    <select className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.inverterType} onChange={(e) => updateFormData('inverterType', e.target.value)}>
+                      <option value="">Select...</option>
+                      <option value="String Inverter">String Inverter</option>
+                      <option value="Micro Inverter">Micro Inverter</option>
+                      <option value="Power Optimizer">Power Optimizer</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Inverter Manufacturer</label></div>
+                    <input type="text" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.inverterManufacture} onChange={(e) => updateFormData('inverterManufacture', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Inverter Mode</label></div>
+                    <select className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.inverterMode} onChange={(e) => updateFormData('inverterMode', e.target.value)}>
+                      <option value="">Select...</option>
+                      <option value="On-Grid">On-Grid</option>
+                      <option value="Off-Grid">Off-Grid</option>
+                      <option value="Hybrid">Hybrid</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Number of Inverters</label></div>
+                    <input type="number" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.noOfInverter} onChange={(e) => updateFormData('noOfInverter', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Inverter Capacity (kW)</label></div>
+                    <input type="number" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.inverterCapacity} onChange={(e) => updateFormData('inverterCapacity', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Breaker Board</label></div>
+                    <select className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.breakerBoard} onChange={(e) => updateFormData('breakerBoard', e.target.value)}>
+                      <option value="">Select...</option>
+                      <option value="Single Phase">Single Phase</option>
+                      <option value="Three Phase">Three Phase</option>
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {formData.offGridType === 'Wind' && (
+                <>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Wind Turbine Type</label></div>
+                    <select className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.windTurbineType} onChange={(e) => updateFormData('windTurbineType', e.target.value)}>
+                      <option value="">Select...</option>
+                      <option value="Horizontal Axis">Horizontal Axis</option>
+                      <option value="Vertical Axis">Vertical Axis</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Rotor Diameter (m)</label></div>
+                    <input type="number" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.rotorDiameter} onChange={(e) => updateFormData('rotorDiameter', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Hub Height (m)</label></div>
+                    <input type="number" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.hubHeight} onChange={(e) => updateFormData('hubHeight', e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between"><label className="text-sm font-semibold text-slate-700">Rated Power (kW)</label></div>
+                    <input type="number" className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500" value={formData.ratedPower} onChange={(e) => updateFormData('ratedPower', e.target.value)} />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
        <div className="col-span-2 space-y-2 mt-4">
            <label className="text-sm font-semibold text-slate-700">Upload Documents</label>
           <div className="grid grid-cols-2 gap-4">
@@ -733,6 +1044,22 @@ const RegisterBeneficiary = ({ selectedScope }) => {
            <div>
             <span className="text-xs text-blue-500 block mb-1">Equipment Type</span>
             <span className="font-bold text-blue-900">{formData.surveyType === 'Off-Grid' ? formData.offGridType : formData.surveyType === 'Home/Lantern' ? formData.equipmentType : '-'}</span>
+          </div>
+           <div>
+            <span className="text-xs text-blue-500 block mb-1">Serial Number</span>
+            <span className="font-bold text-blue-900">{formData.serialNumber || '-'}</span>
+          </div>
+           <div>
+            <span className="text-xs text-blue-500 block mb-1">Supplier</span>
+            <span className="font-bold text-blue-900">{formData.assignedSupplier || '-'}</span>
+          </div>
+           <div>
+            <span className="text-xs text-blue-500 block mb-1">Guarantee</span>
+            <span className="font-bold text-blue-900">{formData.guarantee || '-'}</span>
+          </div>
+           <div>
+            <span className="text-xs text-blue-500 block mb-1">Unit Price</span>
+            <span className="font-bold text-blue-900">{formData.unitPrice ? `ETB ${formData.unitPrice}` : '-'}</span>
           </div>
         </div>
       </div>

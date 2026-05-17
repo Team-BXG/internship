@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { 
   Zap, MapPin, Users, TrendingUp, PieChart, 
   Filter, Search, ChevronDown, Download, Eye, Globe,
@@ -65,12 +66,12 @@ const DemandStatistics = () => {
         body: JSON.stringify({ supplier_id: parseInt(selectedSupplierId) })
       });
       if (res.ok) {
-        alert("Supplier assigned successfully!");
+        toast.success("Supplier assigned successfully!");
         setAssignModalData(null);
         setSelectedSupplierId('');
         fetchData(); // Refresh list
       } else {
-        alert("Failed to assign supplier.");
+        toast.error("Failed to assign supplier.");
       }
     } catch (e) {
       console.error("Assign error", e);

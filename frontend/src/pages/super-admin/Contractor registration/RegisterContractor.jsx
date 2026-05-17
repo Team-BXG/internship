@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { useState } from 'react';
 import { X } from 'lucide-react';
 
@@ -28,12 +29,12 @@ export default function RegisterContractor({ onCancel, onSuccess }) {
       if (res.ok) {
         onSuccess();
       } else {
-        alert("Failed to save contractor");
+        toast.error("Failed to save contractor");
       }
     })
     .catch(err => {
       console.error(err);
-      alert("Error saving contractor");
+      toast.error("Error saving contractor");
     })
     .finally(() => {
       setSaving(false);

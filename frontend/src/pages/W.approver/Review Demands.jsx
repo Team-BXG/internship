@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { 
   CheckCircle2, XCircle, AlertTriangle, Clock, User, MapPin, Zap, 
   MessageSquare, Send, Search, Filter, ChevronDown, Eye
@@ -42,18 +43,18 @@ const ReviewDemands = ({ selectedScope }) => {
       });
       
       if (res.ok) {
-        alert("Demand approved and sent to Zone Approver");
+        toast.error("Demand approved and sent to Zone Approver");
         fetchDemands();
       }
     } catch (error) {
       console.error('Error approving demand:', error);
-      alert("Error approving demand");
+      toast.error("Error approving demand");
     }
   };
 
   const handleRequestAdjustment = async () => {
     if (!adjustmentComment.trim()) {
-      alert("Please provide adjustment comments");
+      toast.error("Please provide adjustment comments");
       return;
     }
 
@@ -68,7 +69,7 @@ const ReviewDemands = ({ selectedScope }) => {
       });
       
       if (res.ok) {
-        alert("Adjustment request sent to encoder");
+        toast.error("Adjustment request sent to encoder");
         setShowAdjustModal(false);
         setAdjustmentComment('');
         setSelectedDemand(null);
@@ -76,7 +77,7 @@ const ReviewDemands = ({ selectedScope }) => {
       }
     } catch (error) {
       console.error('Error requesting adjustment:', error);
-      alert("Error requesting adjustment");
+      toast.error("Error requesting adjustment");
     }
   };
 

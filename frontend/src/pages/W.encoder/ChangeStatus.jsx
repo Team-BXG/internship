@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { 
   ArrowLeft, ArrowRight, CheckCircle2, AlertTriangle, 
   RefreshCw, Eye, MessageSquare, Clock, User
@@ -65,16 +66,16 @@ const ChangeStatus = ({ selectedScope }) => {
       });
 
       if (response.ok) {
-        alert('Submission updated successfully!');
+        toast.success('Submission updated successfully!');
         setShowDetailsModal(false);
         setEditMode(false);
         fetchSubmissions();
       } else {
-        alert('Failed to update submission');
+        toast.error('Failed to update submission');
       }
     } catch (error) {
       console.error('Error updating submission:', error);
-      alert('Error updating submission');
+      toast.error('Error updating submission');
     }
   };
 
@@ -93,15 +94,15 @@ const ChangeStatus = ({ selectedScope }) => {
       });
 
       if (response.ok) {
-        alert('Resubmitted successfully!');
+        toast.success('Resubmitted successfully!');
         setShowDetailsModal(false);
         fetchSubmissions();
       } else {
-        alert('Failed to resubmit');
+        toast.error('Failed to resubmit');
       }
     } catch (error) {
       console.error('Error resubmitting:', error);
-      alert('Error resubmitting');
+      toast.error('Error resubmitting');
     }
   };
 

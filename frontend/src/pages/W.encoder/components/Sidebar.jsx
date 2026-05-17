@@ -1,4 +1,4 @@
-import { ClipboardList, AlertTriangle, RefreshCw, Bell, ChevronLeft, LogOut, Zap } from "lucide-react";
+import { ClipboardList, AlertTriangle, RefreshCw, Bell, ChevronLeft, LogOut, Zap, User } from "lucide-react";
 import logo from '../../../assets/logo.png';
 
 export default function Sidebar({ activeMenu, setActiveMenu, selectedScope }) {

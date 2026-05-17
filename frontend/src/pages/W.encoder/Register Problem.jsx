@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import { 
   AlertTriangle, UploadCloud, Search, Plus, X, 
   Eye, CheckCircle2, Wrench, AlertOctagon, ArrowLeft
@@ -168,12 +169,12 @@ const RegisterProblem = ({ selectedScope }) => {
         body: JSON.stringify(payload)
       });
       if (res.ok) {
-        alert("Problem successfully registered!");
+        toast.success("Problem successfully registered!");
         window.location.reload();
       }
     } catch (e) {
       console.error(e);
-      alert("Error submitting problem");
+      toast.error("Error submitting problem");
     }
   };
 

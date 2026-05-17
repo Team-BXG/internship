@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { 
   CheckCircle2, ChevronLeft, ChevronRight, Send, 
   Zap, MapPin, User, Phone, IdCard, AlertTriangle,
@@ -89,12 +90,12 @@ const RegisterDemand = ({ selectedScope }) => {
       });
       
       if (res.ok) {
-        alert("Demand Registration Submitted Successfully!");
+        toast.success("Demand Registration Submitted Successfully!");
         window.location.reload();
       }
     } catch (e) {
       console.error(e);
-      alert("Error submitting demand registration");
+      toast.error("Error submitting demand registration");
     }
   };
 

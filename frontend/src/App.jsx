@@ -8,7 +8,7 @@ import ActivityLog from './pages/super-admin/Dashboard/ActivityLog';
 import AreaAssignment from './pages/super-admin/Area assignment/AreaAssignment';
 import SupplierManagement from './pages/super-admin/Supplier management';
 import ContractorRegistration from './pages/super-admin/Contractor registration';
-import DemandStatistics from './pages/super-admin/DemandStatisticsSimple';
+import DemandStatistics from './pages/super-admin/DemandStatistics';
 import WoredaEncoderDashboard from './pages/W.encoder/Dashboard';
 import WoredaApproverDashboard from './pages/W.approver/Dashboard';
 import ZoneExpertDashboard from './pages/Z.expert/Dashboard';
@@ -86,9 +86,12 @@ function SuperAdminApp() {
   );
 }
 
+import { Toaster } from 'react-hot-toast';
+
 function App() {
   return (
     <Router>
+      <Toaster position="top-right" />
       <Routes>
         <Route path="/wencoder/*" element={<WoredaEncoderDashboard />} />
         <Route path="/wapprover/*" element={<WoredaApproverDashboard />} />

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { Zap, Globe, MapPin, TrendingUp, RefreshCw } from 'lucide-react';
 
 const DemandStatistics = () => {
@@ -77,7 +78,7 @@ const DemandStatistics = () => {
 
   const assignSupplier = async () => {
     if (!selectedDemand || !selectedSupplier) {
-      alert('Please select a demand and supplier');
+      toast.error('Please select a demand and supplier');
       return;
     }
 
@@ -92,17 +93,17 @@ const DemandStatistics = () => {
       });
 
       if (response.ok) {
-        alert('Supplier assigned successfully!');
+        toast.success('Supplier assigned successfully!');
         setShowAssignModal(false);
         setSelectedDemand(null);
         setSelectedSupplier('');
         fetchStatistics(); // Refresh data
       } else {
-        alert('Failed to assign supplier');
+        toast.error('Failed to assign supplier');
       }
     } catch (error) {
       console.error('Error assigning supplier:', error);
-      alert('Error assigning supplier');
+      toast.error('Error assigning supplier');
     }
   };
 

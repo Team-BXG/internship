@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { Search, UserPlus, Info, Check, X, Shield, Plus } from 'lucide-react';
 
 const AgentRegistration = ({ selectedZone }) => {
@@ -47,16 +48,16 @@ const AgentRegistration = ({ selectedZone }) => {
         body: JSON.stringify(formData)
       });
       if (res.ok) {
-        alert('Agent Registered Successfully!');
+        toast.success('Agent Registered Successfully!');
         setShowForm(false);
         setFormData({ name: '', email: '', phone: '', zone_id: '', national_id: '' });
         fetchAgents();
       } else {
-        alert('Failed to register agent.');
+        toast.error('Failed to register agent.');
       }
     } catch (e) {
       console.error(e);
-      alert('Error registering agent.');
+      toast.error('Error registering agent.');
     }
   };
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { 
   CheckCircle2, ChevronLeft, ChevronRight, Send, 
   Sun, Building2, Zap, MapPin, User, Package, Settings, 
@@ -184,7 +185,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
           setFormData(resetData);
           // Go back to step 1
           setCurrentStep(1);
-          alert(`Form ${currentFormIndex + 1} saved! Now filling form ${currentFormIndex + 2} of ${groupSize}.`);
+          toast.error(`Form ${currentFormIndex + 1} saved! Now filling form ${currentFormIndex + 2} of ${groupSize}.`);
           return;
         } else {
           // All forms are completed, submit all saved forms
@@ -219,7 +220,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
             }
           }
           
-          alert(`Successfully registered ${groupSize} beneficiaries!`);
+          toast.error(`Successfully registered ${groupSize} beneficiaries!`);
           if (onCompleted) onCompleted();
           else window.location.reload();
           return;
@@ -250,7 +251,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
         body: JSON.stringify(payload)
       });
       if (res.ok) {
-        alert("Beneficiary Successfully Registered!");
+        toast.success("Beneficiary Successfully Registered!");
         
         // Use an additional endpoint to resolve the demand if this came from a demand
         if (initialData && initialData.id) {
@@ -268,7 +269,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
       }
     } catch (e) {
       console.error(e);
-      alert("Error submitting form");
+      toast.error("Error submitting form");
     }
   };
 

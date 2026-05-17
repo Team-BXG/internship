@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import { useState } from 'react';
 import { X, Check } from 'lucide-react';
 
@@ -57,7 +58,7 @@ export default function RegisterSupplier({ onCancel, onSuccess }) {
     })
     .catch(err => {
       console.error(err);
-      alert(err.message || "Error saving supplier");
+      toast.error(err.message || "Error saving supplier");
     })
     .finally(() => {
       setSaving(false);

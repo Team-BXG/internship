@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import Sidebar from './pages/super-admin/Dashboard/components/Sidebar';
 import Header from './pages/super-admin/Dashboard/components/Header';
 import DashboardCards from './pages/super-admin/Dashboard/DashboardCards';
@@ -18,6 +19,7 @@ function SuperAdminApp() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeMenu, setActiveMenu] = useState("Dashboard");
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     fetch('http://localhost:8000/api/dashboard')
@@ -34,8 +36,8 @@ function SuperAdminApp() {
 
   return (
     <div className="flex bg-slate-100 min-h-screen">
-      <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-      <div className="flex-1 ml-64 flex flex-col min-h-screen">
+      <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
         <Header />
 
         <main className="flex-1 p-8 overflow-y-auto">
@@ -85,8 +87,6 @@ function SuperAdminApp() {
     </div>
   );
 }
-
-import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (

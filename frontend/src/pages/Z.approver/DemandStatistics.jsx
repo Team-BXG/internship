@@ -3,7 +3,7 @@ import {
   Zap, MapPin, Users, TrendingUp, BarChart3, PieChart, 
   Filter, Search, ChevronDown, Download, Eye
 } from 'lucide-react';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
 const DemandStatistics = ({ selectedZone }) => {

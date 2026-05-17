@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { 
   AlertTriangle, UploadCloud, Search, Plus, X, 
@@ -12,59 +12,7 @@ const MAIN_CAUSES = {
   'Hydro Power': ['Intake/Weier', 'Canal', 'Forbay', 'Penstock', 'Turbine', 'Generator', 'Dirving System', 'Control Board', 'Distribution System']
 };
 
-const INITIAL_MOCK_PROBLEMS = [
-  {
-    id: 'PRB-001',
-    beneficiary: 'Dereje Hailu',
-    serialNo: 'SHS-NG-007',
-    equipmentType: 'Home/Lantern',
-    equipmentTypeLabel: 'Home Solar System',
-    problemLevel: 'Not functional',
-    mainCause: 'Battery failure - deep discharge',
-    location: 'Chilga, North Gondar',
-    zone: 'North Gondar',
-    woreda: 'Chilga',
-    reported: '2024-05-22',
-    installationDate: '2023-06-15',
-    nonFunctionalDate: '2024-05-20',
-    status: 'Open',
-    reporter: 'Biruk Hailu'
-  },
-  {
-    id: 'PRB-002',
-    beneficiary: 'Tadesse Mengistu',
-    serialNo: 'SHS-AW-003',
-    equipmentType: 'Home/Lantern',
-    equipmentTypeLabel: 'Home Solar System',
-    problemLevel: 'Partially functional but in need of repair',
-    mainCause: 'Solar Panels',
-    location: 'Banja, Awi',
-    zone: 'Awi',
-    woreda: 'Banja',
-    reported: '2024-04-02',
-    installationDate: '2022-11-10',
-    nonFunctionalDate: '2024-03-25',
-    status: 'Under Repair',
-    reporter: 'Biruk Hailu'
-  },
-  {
-    id: 'PRB-003',
-    beneficiary: 'Mulugeta Assefa',
-    serialNo: 'OFF-EG-005',
-    equipmentType: 'Solar Grid',
-    equipmentTypeLabel: 'Off-grid Solar Grid',
-    problemLevel: 'Abandoned or no longer exists',
-    mainCause: 'Invertor',
-    location: 'Debre Elias, East Gojjam',
-    zone: 'East Gojjam',
-    woreda: 'Debre Elias',
-    reported: '2024-01-16',
-    installationDate: '2021-08-05',
-    nonFunctionalDate: '2023-12-10',
-    status: 'Open',
-    reporter: 'Biruk Hailu'
-  }
-];
+const INITIAL_MOCK_PROBLEMS = [];
 
 const RegisterProblem = ({ selectedScope }) => {
   const [problems, setProblems] = useState(INITIAL_MOCK_PROBLEMS);
@@ -73,7 +21,7 @@ const RegisterProblem = ({ selectedScope }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
-  const [formData, setFormData] = useState({
+  const INITIAL_FORM_STATE = {
     beneficiaryName: '',
     serialNumber: '',
     equipmentType: '',
@@ -87,7 +35,71 @@ const RegisterProblem = ({ selectedScope }) => {
     functionalAgainDate: '',
     problemDescription: '',
     photo: null
-  });
+  };
+
+  const [formData, setFormData] = useState(INITIAL_FORM_STATE);
+  const [draftExists, setDraftExists] = useState(false);
+
+  const fetchProblems = useCallback(async () => {
+    try {
+      const res = await fetch('http://localhost:8000/api/problems');
+      if (res.ok) {
+        const data = await res.json();
+        const mapped = data.map(p => {
+          const details = p.details_json ? JSON.parse(p.details_json) : {};
+          return {
+            id: `PRB-${p.id}`,
+            beneficiary: p.beneficiary_name || 'Unknown',
+            serialNo: p.serial_number || details.serialNumber || 'Unknown',
+            equipmentType: p.equipment,
+            equipmentTypeLabel: p.equipment,
+            problemLevel: p.title || 'Unknown Level',
+            mainCause: p.category || details.mainCause || '-',
+            location: `${p.woreda}, ${p.zone}`,
+            zone: p.zone,
+            woreda: p.woreda,
+            reported: new Date(p.created_at || Date.now()).toISOString().split('T')[0],
+            installationDate: details.installationDate || '-',
+            nonFunctionalDate: details.nonFunctionalDate || '-',
+            status: p.status,
+            reporter: p.submitted_by
+          };
+        });
+        setProblems(mapped);
+      }
+    } catch (err) {
+      console.error('Failed to fetch problems', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProblems();
+    
+    const draft = localStorage.getItem('draft_problem');
+    if (draft) {
+      setDraftExists(true);
+    }
+  }, [fetchProblems]);
+
+  const saveDraft = () => {
+    localStorage.setItem('draft_problem', JSON.stringify(formData));
+    setDraftExists(true);
+    toast.success("Draft saved successfully!");
+  };
+
+  const restoreDraft = () => {
+    const draft = localStorage.getItem('draft_problem');
+    if (draft) {
+      setFormData(JSON.parse(draft));
+      toast.success("Draft restored!");
+    }
+  };
+
+  const clearDraft = () => {
+    localStorage.removeItem('draft_problem');
+    setDraftExists(false);
+    toast.success("Draft cleared!");
+  };
 
   const updateFormData = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -149,6 +161,7 @@ const RegisterProblem = ({ selectedScope }) => {
 
   const submitProblem = async () => {
     try {
+      const { photo, ...dataToSave } = formData;
       const payload = {
         equipment: formData.equipmentType || 'Unknown',
         title: formData.problemLevel || 'Reported Issue',
@@ -160,7 +173,7 @@ const RegisterProblem = ({ selectedScope }) => {
         beneficiary_name: formData.beneficiaryName || 'Unknown',
         submitted_by: 'Woreda Encoder',
         status: 'Open',
-        details_json: JSON.stringify(formData)
+        details_json: JSON.stringify(dataToSave)
       };
 
       const res = await fetch('http://localhost:8000/api/problems', {
@@ -170,7 +183,14 @@ const RegisterProblem = ({ selectedScope }) => {
       });
       if (res.ok) {
         toast.success("Problem successfully registered!");
-        window.location.reload();
+        setFormData(INITIAL_FORM_STATE);
+        setShowForm(false);
+        clearDraft();
+        fetchProblems();
+      } else {
+        const errData = await res.json();
+        console.error("Backend error:", errData);
+        toast.error("Failed to submit. " + (errData.detail || ""));
       }
     } catch (e) {
       console.error(e);
@@ -356,9 +376,18 @@ const RegisterProblem = ({ selectedScope }) => {
               <AlertTriangle className="w-5 h-5 text-blue-600" />
               Register Equipment Problem
             </h4>
-            <button onClick={() => setShowForm(false)} className="p-1 hover:bg-slate-200 rounded-lg text-slate-400">
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-4">
+              {draftExists && (
+                <div className="flex items-center gap-2">
+                  <span className="text-yellow-600 text-sm font-bold">Draft saved.</span>
+                  <button onClick={restoreDraft} className="px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-bold hover:bg-yellow-200 transition-colors">Restore</button>
+                  <button onClick={clearDraft} className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors">Clear</button>
+                </div>
+              )}
+              <button onClick={() => setShowForm(false)} className="p-1 hover:bg-slate-200 rounded-lg text-slate-400">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
           
           <div className="p-6">
@@ -588,9 +617,15 @@ const RegisterProblem = ({ selectedScope }) => {
             <div className="mt-8 flex gap-4">
               <button 
                 onClick={submitProblem}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-colors"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold transition-colors shadow-lg shadow-emerald-500/20"
                >
                 Submit Problem Report
+              </button>
+              <button 
+                onClick={saveDraft}
+                className="text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 px-6 py-3 rounded-xl font-bold transition-colors"
+               >
+                Save for Later
               </button>
               <button 
                 onClick={() => setShowForm(false)}

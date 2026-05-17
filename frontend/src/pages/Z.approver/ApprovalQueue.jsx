@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Eye, Filter } from 'lucide-react';
 import BeneficiaryDetailsModal from '../../components/BeneficiaryDetailsModal';
 
-const ApprovalQueue = ({ selectedZone }) => {
+const BeneficiaryView = ({ selectedZone }) => {
   const [beneficiaries, setBeneficiaries] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Status');
@@ -14,7 +14,8 @@ const ApprovalQueue = ({ selectedZone }) => {
 
   const fetchBeneficiaries = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/beneficiaries?status=Pending Zone`);
+      // Fetch all beneficiaries for the zone
+      const res = await fetch(`http://localhost:8000/api/beneficiaries`);
       if (res.ok) {
         const data = await res.json();
         setBeneficiaries(data);
@@ -57,16 +58,12 @@ const ApprovalQueue = ({ selectedZone }) => {
     return 'text-slate-600 bg-slate-50 border-slate-200';
   };
 
-  const actionConfig = [
-    { label: 'Final Approve', className: 'bg-emerald-500 hover:bg-emerald-600 text-white', onClick: (b) => handleStatusUpdate(b, 'Approved') },
-    { label: 'Return to Woreda', className: 'bg-amber-500 hover:bg-amber-600 text-white', onClick: (b) => handleStatusUpdate(b, 'Adjustment Needed') },
-    { label: 'Reject Submission', className: 'bg-red-500 hover:bg-red-600 text-white', onClick: (b) => handleStatusUpdate(b, 'Rejected') }
-  ];
+  const actionConfig = []; // Read-only view
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto">
       <div className="mb-8">
-        <h3 className="text-2xl font-bold text-slate-800">Zone Approval Queue</h3>
+        <h3 className="text-2xl font-bold text-slate-800">Beneficiary View</h3>
         <p className="text-slate-500 mt-1">{filtered.length} records • Final verification for {selectedZone}</p>
       </div>
 
@@ -164,4 +161,4 @@ const ApprovalQueue = ({ selectedZone }) => {
   );
 };
 
-export default ApprovalQueue;
+export default BeneficiaryView;

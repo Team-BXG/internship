@@ -191,6 +191,7 @@ def init_db():
             submitted_by VARCHAR(255),
             status VARCHAR(50) DEFAULT 'Pending',
             urgency VARCHAR(50),
+            details_json TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
     ''')

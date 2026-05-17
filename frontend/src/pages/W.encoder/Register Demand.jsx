@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { 
   CheckCircle2, ChevronLeft, ChevronRight, Send, 
@@ -16,7 +16,7 @@ const STEPS = [
 const RegisterDemand = ({ selectedScope }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState({});
-  const [formData, setFormData] = useState({
+  const INITIAL_FORM_STATE = {
     fullName: '',
     nationalId: '',
     phoneNumber: '',
@@ -32,7 +32,37 @@ const RegisterDemand = ({ selectedScope }) => {
     solarPanelType: '',
     wattLevel: '',
     idPhoto: null
-  });
+  };
+
+  const [formData, setFormData] = useState(INITIAL_FORM_STATE);
+  const [draftExists, setDraftExists] = useState(false);
+
+  useEffect(() => {
+    const draft = localStorage.getItem('draft_demand');
+    if (draft) {
+      setDraftExists(true);
+    }
+  }, []);
+
+  const saveDraft = () => {
+    localStorage.setItem('draft_demand', JSON.stringify(formData));
+    setDraftExists(true);
+    toast.success("Draft saved successfully!");
+  };
+
+  const restoreDraft = () => {
+    const draft = localStorage.getItem('draft_demand');
+    if (draft) {
+      setFormData(JSON.parse(draft));
+      toast.success("Draft restored!");
+    }
+  };
+
+  const clearDraft = () => {
+    localStorage.removeItem('draft_demand');
+    setDraftExists(false);
+    toast.success("Draft cleared!");
+  };
 
   const nextStep = () => {
     const newErrors = {};
@@ -91,7 +121,9 @@ const RegisterDemand = ({ selectedScope }) => {
       
       if (res.ok) {
         toast.success("Demand Registration Submitted Successfully!");
-        window.location.reload();
+        setFormData(INITIAL_FORM_STATE);
+        setCurrentStep(1);
+        clearDraft();
       }
     } catch (e) {
       console.error(e);
@@ -507,6 +539,19 @@ const RegisterDemand = ({ selectedScope }) => {
         <p className="text-slate-500">Register solar equipment demand for review and approval</p>
       </div>
 
+      {draftExists && (
+        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-yellow-600" />
+            <p className="text-yellow-800 text-sm font-medium">You have a saved draft from a previous session.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={restoreDraft} className="px-4 py-2 bg-yellow-600 text-white rounded-lg text-sm font-bold hover:bg-yellow-700 transition-colors">Restore Draft</button>
+            <button onClick={clearDraft} className="px-4 py-2 bg-white text-yellow-700 border border-yellow-300 rounded-lg text-sm font-bold hover:bg-yellow-100 transition-colors">Clear Draft</button>
+          </div>
+        </div>
+      )}
+
       {renderStepIndicator()}
 
       <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 mb-6">
@@ -543,19 +588,35 @@ const RegisterDemand = ({ selectedScope }) => {
           </div>
 
           {currentStep < 4 ? (
-            <button 
-              onClick={nextStep}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all"
-            >
-              Next Step <ChevronRight className="w-4 h-4" />
-            </button>
+            <div className="flex gap-3">
+              <button 
+                onClick={saveDraft}
+                className="px-6 py-3 text-blue-600 bg-blue-50 border border-blue-200 rounded-xl font-bold hover:bg-blue-100 transition-all"
+              >
+                Save for Later
+              </button>
+              <button 
+                onClick={nextStep}
+                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all"
+              >
+                Next Step <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           ) : (
-            <button 
-              onClick={submitForm}
-              className="flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all"
-            >
-              <Send className="w-4 h-4" /> Submit Demand
-            </button>
+            <div className="flex gap-3">
+              <button 
+                onClick={saveDraft}
+                className="px-6 py-3 text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl font-bold hover:bg-emerald-100 transition-all"
+              >
+                Save for Later
+              </button>
+              <button 
+                onClick={submitForm}
+                className="flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all"
+              >
+                <Send className="w-4 h-4" /> Submit Demand
+              </button>
+            </div>
           )}
         </div>
       </div>

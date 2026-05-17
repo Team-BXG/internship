@@ -37,7 +37,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
       .catch(console.error);
   }, []);
   
-  const [formData, setFormData] = useState({
+  const INITIAL_FORM_STATE = {
     surveyType: initialData?.survey_type || '',
     zone: initialData?.zone || selectedScope.zone,
     woreda: initialData?.woreda || selectedScope.woreda,
@@ -103,7 +103,37 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
     rotorDiameter: '',
     hubHeight: '',
     ratedPower: ''
-  });
+  };
+
+  const [formData, setFormData] = useState(INITIAL_FORM_STATE);
+  const [draftExists, setDraftExists] = useState(false);
+
+  useEffect(() => {
+    const draft = localStorage.getItem('draft_beneficiary');
+    if (draft) {
+      setDraftExists(true);
+    }
+  }, []);
+
+  const saveDraft = () => {
+    localStorage.setItem('draft_beneficiary', JSON.stringify(formData));
+    setDraftExists(true);
+    toast.success("Draft saved successfully!");
+  };
+
+  const restoreDraft = () => {
+    const draft = localStorage.getItem('draft_beneficiary');
+    if (draft) {
+      setFormData(JSON.parse(draft));
+      toast.success("Draft restored!");
+    }
+  };
+
+  const clearDraft = () => {
+    localStorage.removeItem('draft_beneficiary');
+    setDraftExists(false);
+    toast.success("Draft cleared!");
+  };
 
     const nextStep = () => {
     const newErrors = {};
@@ -151,6 +181,16 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
     setCurrentStep(prev => Math.min(prev + 1, 5));
   };
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+
+  const resetAfterSubmit = () => {
+    setFormData(INITIAL_FORM_STATE);
+    setCurrentStep(1);
+    setIsGroupRegistration(false);
+    setGroupSize(1);
+    setSavedForms([]);
+    setCurrentFormIndex(0);
+    clearDraft();
+  };
 
   const submitForm = async () => {
     try {
@@ -220,9 +260,9 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
             }
           }
           
-          toast.error(`Successfully registered ${groupSize} beneficiaries!`);
+          toast.success(`Successfully registered ${groupSize} beneficiaries!`);
           if (onCompleted) onCompleted();
-          else window.location.reload();
+          else resetAfterSubmit();
           return;
         }
       }
@@ -265,7 +305,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
         }
 
         if (onCompleted) onCompleted();
-        else window.location.reload();
+        else resetAfterSubmit();
       }
     } catch (e) {
       console.error(e);
@@ -1128,6 +1168,19 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
         <p className="text-slate-500">Multi-step smart survey with conditional logic</p>
       </div>
 
+      {draftExists && (
+        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-yellow-600" />
+            <p className="text-yellow-800 text-sm font-medium">You have a saved draft from a previous session.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={restoreDraft} className="px-4 py-2 bg-yellow-600 text-white rounded-lg text-sm font-bold hover:bg-yellow-700 transition-colors">Restore Draft</button>
+            <button onClick={clearDraft} className="px-4 py-2 bg-white text-yellow-700 border border-yellow-300 rounded-lg text-sm font-bold hover:bg-yellow-100 transition-colors">Clear Draft</button>
+          </div>
+        </div>
+      )}
+
       {renderStepIndicator()}
 
       <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 mb-6">
@@ -1177,19 +1230,35 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
           {(currentStep > 1 && !['Home/Lantern', 'Institution', 'Off-Grid'].includes(formData.surveyType)) ? (
             <div className="px-6 py-3 opacity-0 pointer-events-none">Placeholder</div>
           ) : currentStep < 5 ? (
-            <button 
-              onClick={nextStep}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all"
-            >
-              Next Step <ChevronRight className="w-4 h-4" />
-            </button>
+            <div className="flex gap-3">
+              <button 
+                onClick={saveDraft}
+                className="px-6 py-3 text-blue-600 bg-blue-50 border border-blue-200 rounded-xl font-bold hover:bg-blue-100 transition-all"
+              >
+                Save for Later
+              </button>
+              <button 
+                onClick={nextStep}
+                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all"
+              >
+                Next Step <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           ) : (
-            <button 
-              onClick={submitForm}
-              className="flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all"
-            >
-              <Send className="w-4 h-4" /> Submit Survey
-            </button>
+            <div className="flex gap-3">
+              <button 
+                onClick={saveDraft}
+                className="px-6 py-3 text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl font-bold hover:bg-emerald-100 transition-all"
+              >
+                Save for Later
+              </button>
+              <button 
+                onClick={submitForm}
+                className="flex items-center gap-2 px-6 py-3 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all"
+              >
+                <Send className="w-4 h-4" /> Submit Survey
+              </button>
+            </div>
           )}
         </div>
       </div>

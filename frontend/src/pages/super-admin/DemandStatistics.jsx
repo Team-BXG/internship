@@ -5,7 +5,7 @@ import {
   Filter, Search, ChevronDown, Download, Eye, Globe,
   Activity, Target, Award, UserCheck
 } from 'lucide-react';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
 const DemandStatistics = () => {

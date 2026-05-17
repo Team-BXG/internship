@@ -35,13 +35,13 @@ const Sidebar = ({ selectedZone }) => {
         </nav>
 
         <div className="mt-8 px-4">
-          <h2 className="text-[10px] font-bold text-slate-400 pl-4 uppercase tracking-wider mb-2">Approval Tasks</h2>
+          <h2 className="text-[10px] font-bold text-slate-400 pl-4 uppercase tracking-wider mb-2">Zone Views</h2>
           <nav className="space-y-1">
             <NavLink to="/zoneA/demands" className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm text-left ${isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 border border-transparent'}`}>
               <Zap className="w-4 h-4" /> Demand Statistics
             </NavLink>
             <NavLink to="/zoneA/queue" className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm text-left ${isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 border border-transparent'}`}>
-              <CheckSquare className="w-4 h-4" /> Approval Queue
+              <CheckSquare className="w-4 h-4" /> Beneficiary View
             </NavLink>
             <NavLink to="/zoneA/problems" className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm text-left ${isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 border border-transparent'}`}>
               <AlertTriangle className="w-4 h-4" /> Problem Approval

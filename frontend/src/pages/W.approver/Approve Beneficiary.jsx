@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Eye, Filter, Download } from 'lucide-react';
 import BeneficiaryDetailsModal from '../../components/BeneficiaryDetailsModal';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
 const ApproveBeneficiary = ({ selectedScope }) => {
@@ -91,8 +91,7 @@ const ApproveBeneficiary = ({ selectedScope }) => {
 
   const actionConfig = [
     { label: 'Approve Submission', className: 'bg-emerald-500 hover:bg-emerald-600 text-white', onClick: (b) => handleStatusUpdate(b, 'Pending Zone') },
-    { label: 'Return for Correction', className: 'bg-amber-500 hover:bg-amber-600 text-white', onClick: (b) => handleStatusUpdate(b, 'Adjustment Needed') },
-    { label: 'Reject Submission', className: 'bg-red-500 hover:bg-red-600 text-white', onClick: (b) => handleStatusUpdate(b, 'Rejected') }
+    { label: 'Return for Correction', className: 'bg-amber-500 hover:bg-amber-600 text-white', onClick: (b) => handleStatusUpdate(b, 'Adjustment Needed') }
   ];
 
   return (

@@ -53,9 +53,25 @@ const ChangeStatus = ({ selectedScope }) => {
     setEditMode(true);
   };
 
+  const allSubmissions = [
+    ...submissions.map(s => ({ ...s, submissionType: 'demand' })),
+    ...beneficiaries.map(b => ({ ...b, submissionType: 'beneficiary' }))
+  ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  const approvedStatuses = ['Approved for Zone Review', 'Pending Zone', 'Zone Approved', 'Approved', 'Assigned to Supplier'];
+  const correctionStatuses = ['Needs Adjustment', 'Adjustment Needed', 'Rejected'];
+
+  const getFilteredSubmissions = () => {
+    if (activeTab === 'approved') return allSubmissions.filter(s => approvedStatuses.includes(s.status));
+    if (activeTab === 'corrections') return allSubmissions.filter(s => correctionStatuses.includes(s.status));
+    return allSubmissions.filter(s => !approvedStatuses.includes(s.status) && !correctionStatuses.includes(s.status)); // Pending
+  };
+
+  const filteredSubmissions = getFilteredSubmissions();
+
   const handleSaveEdit = async () => {
     try {
-      const endpoint = activeTab === 'demands' 
+      const endpoint = selectedSubmission.submissionType === 'demand'
         ? `http://localhost:8000/api/demands/${selectedSubmission.id}`
         : `http://localhost:8000/api/beneficiaries/${selectedSubmission.id}`;
         
@@ -81,7 +97,7 @@ const ChangeStatus = ({ selectedScope }) => {
 
   const handleResubmit = async () => {
     try {
-      const endpoint = activeTab === 'demands'
+      const endpoint = selectedSubmission.submissionType === 'demand'
         ? `http://localhost:8000/api/demands/${selectedSubmission.id}/status`
         : `http://localhost:8000/api/beneficiaries/${selectedSubmission.id}/status`;
         
@@ -174,29 +190,35 @@ const ChangeStatus = ({ selectedScope }) => {
               className={`font-semibold pb-2 border-b-2 transition-colors ${activeTab === 'demands' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500'}`}
               onClick={() => setActiveTab('demands')}
             >
-              Demands ({submissions.length})
+              In Progress ({allSubmissions.filter(s => !approvedStatuses.includes(s.status) && !correctionStatuses.includes(s.status)).length})
             </button>
             <button 
-              className={`font-semibold pb-2 border-b-2 transition-colors ${activeTab === 'beneficiaries' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500'}`}
-              onClick={() => setActiveTab('beneficiaries')}
+              className={`font-semibold pb-2 border-b-2 transition-colors ${activeTab === 'approved' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500'}`}
+              onClick={() => setActiveTab('approved')}
             >
-              Beneficiaries ({beneficiaries.length})
+              Approved ({allSubmissions.filter(s => approvedStatuses.includes(s.status)).length})
+            </button>
+            <button 
+              className={`font-semibold pb-2 border-b-2 transition-colors ${activeTab === 'corrections' ? 'border-red-600 text-red-600' : 'border-transparent text-slate-500'}`}
+              onClick={() => setActiveTab('corrections')}
+            >
+              Corrections Needed ({allSubmissions.filter(s => correctionStatuses.includes(s.status)).length})
             </button>
           </div>
         </div>
         
         <div className="divide-y divide-slate-100">
-          {(activeTab === 'demands' ? submissions : beneficiaries).length === 0 ? (
+          {filteredSubmissions.length === 0 ? (
             <div className="p-8 text-center">
               <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <MessageSquare className="w-8 h-8 text-slate-400" />
               </div>
               <h3 className="text-lg font-semibold text-slate-800 mb-2">No Submissions Found</h3>
-              <p className="text-slate-500">You haven't submitted any demands yet.</p>
+              <p className="text-slate-500">There are no items matching this status.</p>
             </div>
           ) : (
-            (activeTab === 'demands' ? submissions : beneficiaries).map((submission, index) => (
-              <div key={submission.id} className="p-4 hover:bg-slate-50 transition-colors">
+            filteredSubmissions.map((submission, index) => (
+              <div key={`${submission.submissionType}-${submission.id}`} className="p-4 hover:bg-slate-50 transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
@@ -204,27 +226,32 @@ const ChangeStatus = ({ selectedScope }) => {
                         {getStatusIcon(submission.status)}
                       </div>
                       <div>
-                        <h4 className="font-semibold text-slate-800">{submission.full_name}</h4>
+                        <h4 className="font-semibold text-slate-800">
+                          {submission.full_name} 
+                          <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 uppercase tracking-wider">
+                            {submission.submissionType}
+                          </span>
+                        </h4>
                         <p className="text-sm text-slate-600">{submission.zone} - {submission.woreda}</p>
                       </div>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-4 text-sm text-slate-600">
                       <div>
-                        <span className="font-medium">Equipment:</span> {submission.solar_panel_type}
+                        <span className="font-medium">Equipment:</span> {submission.solar_panel_type || submission.equipment_type || '-'}
                       </div>
                       <div>
-                        <span className="font-medium">Watt Level:</span> {submission.watt_level}
+                        <span className="font-medium">Watt Level:</span> {submission.watt_level || '-'}
                       </div>
                       <div>
                         <span className="font-medium">Submitted:</span> {new Date(submission.created_at).toLocaleDateString()}
                       </div>
                       <div>
-                        <span className="font-medium">Phone:</span> {submission.phone}
+                        <span className="font-medium">Phone:</span> {submission.phone || '-'}
                       </div>
                     </div>
 
-                    {['Needs Adjustment', 'Adjustment Needed', 'Rejected'].includes(submission.status) && (
+                    {correctionStatuses.includes(submission.status) && (
                       <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                         <p className="text-sm font-medium text-amber-800 mb-1">Feedback/Adjustment Required:</p>
                         <p className="text-sm text-slate-700">

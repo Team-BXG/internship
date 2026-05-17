@@ -1,4 +1,4 @@
-from database import init_db, get_db_connection
+from app.database import init_db, get_db_connection
 import datetime
 
 def seed_data():

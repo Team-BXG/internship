@@ -1,5 +1,9 @@
 from app.database import init_db, get_db_connection
 import datetime
+import hashlib
+
+def hash_pw(pw: str) -> str:
+    return hashlib.sha256(pw.encode()).hexdigest()
 
 def seed_data():
     init_db()
@@ -7,7 +11,7 @@ def seed_data():
     c = conn.cursor()
     
     c.execute('''
-        INSERT INTO dashboard_stats (
+        INSERT IGNORE INTO dashboard_stats (
             id, total_suppliers, suppliers_trend, total_beneficiaries, beneficiaries_trend,
             units_distributed, units_trend, active_zones, pending_approvals, pending_trend,
             equipment_issues, issues_trend
@@ -22,7 +26,7 @@ def seed_data():
         ("BrightFuture Energy Solutions", "LIC-2024-005", "Home Solar System", "Samuel Getachew", "+251 915 005 005", "info@brightfuture.et", "Bahir Dar, Amhara", "Private Limited", 95, "Active")
     ]
     c.executemany("""
-        INSERT INTO suppliers (name, license_number, service_type, contact_person, contact_phone, email, address, company_type, score, status) 
+        INSERT IGNORE INTO suppliers (name, license_number, service_type, contact_person, contact_phone, email, address, company_type, score, status) 
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """, suppliers)
 
@@ -33,12 +37,12 @@ def seed_data():
         ("Solar Install Amhara", "Institution", "Tigist Worku", "+251 914 400 500", "Dessie, Amhara Region", "Inactive")
     ]
     c.executemany("""
-        INSERT INTO contractors (name, service_type, contact_person, contact_phone, address, status)
+        INSERT IGNORE INTO contractors (name, service_type, contact_person, contact_phone, address, status)
         VALUES (%s, %s, %s, %s, %s, %s)
     """, contractors)
 
     zones = [("North Gondar",), ("East Gojam",), ("South Wollo",), ("Awi",), ("Wag Hemra",), ("West Gojam",)]
-    c.executemany("INSERT INTO zones (name) VALUES (%s)", zones)
+    c.executemany("INSERT IGNORE INTO zones (name) VALUES (%s)", zones)
 
     woredas = [
         (1, "Debark"), (1, "Dabat"), 
@@ -48,7 +52,7 @@ def seed_data():
         (5, "Sekota"),
         (6, "Finote Selam"), (6, "Bure")
     ]
-    c.executemany("INSERT INTO woredas (zone_id, name) VALUES (%s, %s)", woredas)
+    c.executemany("INSERT IGNORE INTO woredas (zone_id, name) VALUES (%s, %s)", woredas)
 
     now = datetime.datetime.utcnow()
     activities = [
@@ -60,7 +64,7 @@ def seed_data():
     ]
     
     c.executemany('''
-        INSERT INTO activity_logs (user, action, details, status, timestamp)
+        INSERT IGNORE INTO activity_logs (user, action, details, status, timestamp)
         VALUES (%s, %s, %s, %s, %s)
     ''', activities)
     
@@ -75,7 +79,7 @@ def seed_data():
         ("Solomon Bekele", "solomon@sedms.et", "+251 925 005 005", "AG-005", 3, "Active", 85, 108)
     ]
     c.executemany('''
-        INSERT INTO agents (name, email, phone, national_id, zone_id, status, performance, served)
+        INSERT IGNORE INTO agents (name, email, phone, national_id, zone_id, status, performance, served)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     ''', agents)
 
@@ -125,6 +129,24 @@ def seed_data():
         ("Tigist Mengesha", "ET-DMD-002", "+251 912 345 678", "South Wollo", "Dessie Zuria", "03", "Kurkur", "Female", "yes", "home_lantern", "2", "Yes", "Solar Lantern", "10W", "{}", "Pending Woreda Review", None),
         ("Bale Robe Health Post", "ET-DMD-003", "+251 913 345 678", "Awi", "Dangila", "01", "Addis Alem", "Male", "no", "institution", "N/A", "No", "Institutional Solar", "5000W", "{}", "Assigned", 1)
     ])
+
+    # --------------------------------
+    # Seed Employees
+    # --------------------------------
+    default_pw = hash_pw("emp123")
+    employees = [
+        ("wencoder", default_pw, "Woreda Encoder", "wencoder@sedms.et", "1990-01-01", None, None, now),
+        ("wapprover", default_pw, "Woreda Approver", "wapprover@sedms.et", "1988-02-02", None, None, now),
+        ("zapprover", default_pw, "Zone Approver", "zapprover@sedms.et", "1985-03-03", None, None, now),
+        ("zexpert", default_pw, "Zone Expert", "zexpert@sedms.et", "1980-04-04", None, None, now),
+        ("headexpert", default_pw, "Head Expert", "headexpert@sedms.et", "1975-05-05", None, None, now),
+        ("superadmin", default_pw, "Super Admin", "superadmin@sedms.et", "1970-06-06", None, None, now),
+    ]
+    c.executemany('''
+        INSERT IGNORE INTO employees (username, hashed_password, role, email, birth_date, national_id_path, profile_photo_path, created_at)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    ''', employees)
+
 
     conn.commit()
     conn.close()

@@ -1,21 +1,21 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import Sidebar from './pages/super-admin/Dashboard/components/Sidebar';
-import Header from './pages/super-admin/Dashboard/components/Header';
-import DashboardCards from './pages/super-admin/Dashboard/DashboardCards';
-import { DistributionTrendChart, EquipmentTypeChart, BeneficiariesBarChart, SupplierPerformanceChart, FunctionalStatusChart } from './pages/super-admin/Dashboard/Charts';
-import ActivityLog from './pages/super-admin/Dashboard/ActivityLog';
-import AreaAssignment from './pages/super-admin/Area assignment/AreaAssignment';
-import SupplierManagement from './pages/super-admin/Supplier management';
-import ContractorRegistration from './pages/super-admin/Contractor registration';
-import DemandStatistics from './pages/super-admin/DemandStatistics';
+import Sidebar from './pages/head-expert/Dashboard/components/Sidebar';
+import Header from './pages/head-expert/Dashboard/components/Header';
+import DashboardCards from './pages/head-expert/Dashboard/DashboardCards';
+import { DistributionTrendChart, EquipmentTypeChart, BeneficiariesBarChart, SupplierPerformanceChart, FunctionalStatusChart } from './pages/head-expert/Dashboard/Charts';
+import ActivityLog from './pages/head-expert/Dashboard/ActivityLog';
+import AreaAssignment from './pages/head-expert/Area assignment/AreaAssignment';
+import SupplierManagement from './pages/head-expert/Supplier management';
+import ContractorRegistration from './pages/head-expert/Contractor registration';
+import DemandStatistics from './pages/head-expert/DemandStatistics';
 import WoredaEncoderDashboard from './pages/W.encoder/Dashboard';
 import WoredaApproverDashboard from './pages/W.approver/Dashboard';
 import ZoneExpertDashboard from './pages/Z.expert/Dashboard';
 import ZoneApproverDashboard from './pages/Z.approver/Dashboard';
 
-function SuperAdminApp() {
+function HeadExpertApp() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeMenu, setActiveMenu] = useState("Dashboard");
@@ -88,17 +88,22 @@ function SuperAdminApp() {
   );
 }
 
+import SuperAdminDashboard from './pages/SuperAdmin/Dashboard';
+import Login from './pages/Auth/Login';
+
 function App() {
   return (
     <Router>
       <Toaster position="top-right" />
       <Routes>
+        <Route path="/login" element={<Login />} />
         <Route path="/wencoder/*" element={<WoredaEncoderDashboard />} />
         <Route path="/wapprover/*" element={<WoredaApproverDashboard />} />
         <Route path="/zoneE/*" element={<ZoneExpertDashboard />} />
         <Route path="/zoneA/*" element={<ZoneApproverDashboard />} />
-        {/* Default route for now maps to Super Admin Dashboard until authentication is ready */}
-        <Route path="/*" element={<SuperAdminApp />} />
+        <Route path="/superadmin/*" element={<SuperAdminDashboard />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/headexpert/*" element={<HeadExpertApp />} />
       </Routes>
     </Router>
   );

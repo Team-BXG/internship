@@ -11,7 +11,9 @@ from app.routes import (
     agents,
     beneficiaries,
     demands,
-    problems
+    problems,
+    auth,
+    employees
 )
 
 app = FastAPI(title="SEDMS Dashboard API")
@@ -46,6 +48,8 @@ app.include_router(agents.router)
 app.include_router(beneficiaries.router)
 app.include_router(demands.router)
 app.include_router(problems.router)
+app.include_router(auth.router)
+app.include_router(employees.router)
 
 # 4️⃣ Test route to confirm backend is running
 @app.get("/api/test")

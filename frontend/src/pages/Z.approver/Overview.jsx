@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Truck, Wrench, Users, Zap, MapPin, Clock, CheckCircle, AlertCircle } from "lucide-react";
-import { DistributionTrendChart, EquipmentTypeChart, BeneficiariesBarChart, SupplierPerformanceChart, FunctionalStatusChart } from '../super-admin/Dashboard/Charts';
+import { DistributionTrendChart, EquipmentTypeChart, BeneficiariesBarChart, SupplierPerformanceChart, FunctionalStatusChart } from '../head-expert/Dashboard/Charts';
 
 export default function Overview({ selectedZone }) {
   const [data, setData] = useState(null);

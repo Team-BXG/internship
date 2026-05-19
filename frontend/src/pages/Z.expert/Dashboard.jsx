@@ -3,7 +3,7 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import AgentRegistration from './AgentRegistration';
 import ScopeSelector from '../../components/ScopeSelector';
-import AreaAssignment from '../super-admin/Area assignment/AreaAssignment';
+import AreaAssignment from '../head-expert/Area assignment/AreaAssignment';
 
 const Dashboard = () => {
   const [activeMenu, setActiveMenu] = useState('Agent Management');

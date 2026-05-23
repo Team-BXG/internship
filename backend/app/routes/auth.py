@@ -31,7 +31,16 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
+    if getattr(user, 'status', 'Active') == "Disabled":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is disabled",
+        )
         
+    import datetime
+    user.last_activity = datetime.datetime.utcnow()
+    db.commit()
+
     return {
         "id": user.id,
         "username": user.username,

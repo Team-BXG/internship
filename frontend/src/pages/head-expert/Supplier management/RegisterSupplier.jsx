@@ -30,7 +30,11 @@ export default function RegisterSupplier({ onCancel, onSuccess }) {
     setSaving(true);
     fetch('http://localhost:8000/api/suppliers', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-User-Name': JSON.parse(localStorage.getItem('user'))?.username || 'Unknown',
+        'X-User-Role': JSON.parse(localStorage.getItem('user'))?.role || 'Unknown'
+      },
       body: JSON.stringify(formData)
     })
     .then(res => {

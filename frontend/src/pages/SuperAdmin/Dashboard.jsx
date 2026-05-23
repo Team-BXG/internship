@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Plus, Activity, ExternalLink, ShieldAlert, X, KeyRound, MapPin, Edit2 } from 'lucide-react';
+import { Users, Search, Plus, Activity, ExternalLink, ShieldAlert, X, KeyRound, MapPin, Edit2, LayoutDashboard, LogOut, CheckCircle2, AlertCircle } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import AuditLogs from './AuditLogs';
 
 export default function SuperAdminDashboard() {
   const [employees, setEmployees] = useState([]);
-  const [activityLogs, setActivityLogs] = useState([]);
   const [zones, setZones] = useState([]);
   const [woredas, setWoredas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('employees');
+  const [activeMenu, setActiveMenu] = useState('overview');
+
+  // Stats for charts
+  const [stats, setStats] = useState({ total: 0, active: 0, disabled: 0 });
 
   // Modals state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -16,19 +20,35 @@ export default function SuperAdminDashboard() {
   const [showAddZoneModal, setShowAddZoneModal] = useState(false);
   const [showAddWoredaModal, setShowAddWoredaModal] = useState(false);
   const [selectedEmp, setSelectedEmp] = useState(null);
+  const [showForcedPasswordModal, setShowForcedPasswordModal] = useState(false);
   
   // Forms state
   const [newEmployee, setNewEmployee] = useState({ username: '', email: '', role: 'Admin', password: '' });
-  const [editEmployee, setEditEmployee] = useState({ id: null, username: '', email: '', role: '' });
+  const [editEmployee, setEditEmployee] = useState({ id: null, username: '', email: '', role: '', status: '' });
   const [newPassword, setNewPassword] = useState('');
+  const [forcedPasswordData, setForcedPasswordData] = useState({ current: '', new: '', confirm: '' });
   const [newZone, setNewZone] = useState({ name: '' });
   const [newWoreda, setNewWoreda] = useState({ name: '', zone_id: '' });
   
   const fetchData = () => {
+    // Note: backend was updated to return { items: [], total: X }
     fetch('http://localhost:8000/api/employees')
       .then(res => res.json())
-      .then(data => setEmployees(data))
-      .catch(err => console.error("Error fetching employees:", err));
+      .then(data => {
+        const emps = data.items || [];
+        setEmployees(emps);
+        const active = emps.filter(e => e.status !== 'Disabled').length;
+        setStats({
+          total: data.total || emps.length,
+          active: active,
+          disabled: emps.length - active
+        });
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Error fetching employees:", err);
+        setLoading(false);
+      });
 
     fetch('http://localhost:8000/api/locations/zones')
       .then(res => res.json())
@@ -43,24 +63,23 @@ export default function SuperAdminDashboard() {
 
   useEffect(() => {
     fetchData();
-      
-    fetch('http://localhost:8000/api/activity_logs')
-      .then(res => res.json())
-      .then(data => {
-        setActivityLogs(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Error fetching logs:", err);
-        setLoading(false);
-      });
+    // Simulate login check for forced password change requirement
+    const userRequiresPasswordChange = localStorage.getItem('requires_password_change') === 'true';
+    if (userRequiresPasswordChange) {
+      setShowForcedPasswordModal(true);
+    }
   }, []);
 
   const handleAddEmployee = (e) => {
     e.preventDefault();
+    const user = JSON.parse(localStorage.getItem('user'));
     fetch('http://localhost:8000/api/employees/', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-User-Name': user?.username || 'Unknown',
+        'X-User-Role': user?.role || 'Unknown'
+      },
       body: JSON.stringify(newEmployee)
     })
     .then(res => {
@@ -77,9 +96,14 @@ export default function SuperAdminDashboard() {
 
   const handleEditEmployee = (e) => {
     e.preventDefault();
+    const user = JSON.parse(localStorage.getItem('user'));
     fetch(`http://localhost:8000/api/employees/${editEmployee.id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-User-Name': user?.username || 'Unknown',
+        'X-User-Role': user?.role || 'Unknown'
+      },
       body: JSON.stringify({
         username: editEmployee.username,
         email: editEmployee.email,
@@ -88,20 +112,40 @@ export default function SuperAdminDashboard() {
     })
     .then(res => {
       if(res.ok) {
-        setShowEditEmpModal(false);
-        fetchData();
-        alert("Employee updated successfully!");
+        // Now update status if needed
+        if (editEmployee.status) {
+          return fetch(`http://localhost:8000/api/employees/${editEmployee.id}/status`, {
+            method: 'PATCH',
+            headers: { 
+              'Content-Type': 'application/json',
+              'X-User-Name': user?.username || 'Unknown',
+              'X-User-Role': user?.role || 'Unknown'
+            },
+            body: JSON.stringify({ status: editEmployee.status })
+          });
+        }
       } else {
-        alert("Error updating employee");
+        throw new Error("Error updating employee details");
       }
-    });
+    })
+    .then(() => {
+      setShowEditEmpModal(false);
+      fetchData();
+      alert("Employee updated successfully!");
+    })
+    .catch(err => alert(err.message));
   };
 
   const handleResetPassword = (e) => {
     e.preventDefault();
+    const user = JSON.parse(localStorage.getItem('user'));
     fetch(`http://localhost:8000/api/employees/${selectedEmp.id}/reset-password`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-User-Name': user?.username || 'Unknown',
+        'X-User-Role': user?.role || 'Unknown'
+      },
       body: JSON.stringify({ new_password: newPassword })
     })
     .then(res => {
@@ -116,11 +160,44 @@ export default function SuperAdminDashboard() {
     });
   };
 
+  const handleForcedPasswordChange = (e) => {
+    e.preventDefault();
+    if (forcedPasswordData.new !== forcedPasswordData.confirm) {
+      alert("Passwords do not match");
+      return;
+    }
+    const empId = localStorage.getItem('emp_id') || 1; // Fallback for dev
+    const user = JSON.parse(localStorage.getItem('user'));
+    fetch(`http://localhost:8000/api/employees/${empId}/change-initial-password`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-User-Name': user?.username || 'Unknown',
+        'X-User-Role': user?.role || 'Unknown'
+      },
+      body: JSON.stringify({ new_password: forcedPasswordData.new })
+    })
+    .then(res => {
+      if(res.ok) {
+        setShowForcedPasswordModal(false);
+        localStorage.setItem('requires_password_change', 'false');
+        alert("Password updated successfully!");
+      } else {
+        alert("Error changing password");
+      }
+    });
+  };
+
   const handleAddZone = (e) => {
     e.preventDefault();
+    const user = JSON.parse(localStorage.getItem('user'));
     fetch('http://localhost:8000/api/locations/zones', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-User-Name': user?.username || 'Unknown',
+        'X-User-Role': user?.role || 'Unknown'
+      },
       body: JSON.stringify(newZone)
     })
     .then(res => {
@@ -128,16 +205,20 @@ export default function SuperAdminDashboard() {
         setShowAddZoneModal(false);
         setNewZone({ name: '' });
         fetchData();
-        alert("Zone added successfully!");
       }
     });
   };
 
   const handleAddWoreda = (e) => {
     e.preventDefault();
+    const user = JSON.parse(localStorage.getItem('user'));
     fetch('http://localhost:8000/api/locations/woredas', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-User-Name': user?.username || 'Unknown',
+        'X-User-Role': user?.role || 'Unknown'
+      },
       body: JSON.stringify({ name: newWoreda.name, zone_id: parseInt(newWoreda.zone_id) })
     })
     .then(res => {
@@ -145,101 +226,186 @@ export default function SuperAdminDashboard() {
         setShowAddWoredaModal(false);
         setNewWoreda({ name: '', zone_id: '' });
         fetchData();
-        alert("Woreda added successfully!");
       }
     });
   };
 
+  const pieData = [
+    { name: 'Active', value: stats.active, color: '#10B981' },
+    { name: 'Disabled', value: stats.disabled, color: '#EF4444' },
+  ];
+
+  const barData = [
+    { name: 'Super Admin', count: employees.filter(e => e.role === 'Super Admin').length },
+    { name: 'Head Expert', count: employees.filter(e => e.role === 'Head Expert').length },
+    { name: 'Zone', count: employees.filter(e => e.role.includes('Zone')).length },
+    { name: 'Woreda', count: employees.filter(e => e.role.includes('Woreda')).length },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col p-8 md:pl-8 relative">
-      <header className="flex justify-between items-center mb-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">Super Admin Console</h1>
-          <p className="text-sm text-slate-500">System Management & Security Logs</p>
+    <div className="min-h-screen bg-slate-50 flex">
+      {/* Sidebar Navigation */}
+      <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col fixed inset-y-0 z-10 shadow-xl">
+        <div className="p-6 border-b border-slate-800">
+          <h1 className="text-2xl font-black text-white flex items-center gap-2">
+            <ShieldAlert className="w-6 h-6 text-blue-500" /> Enterprise
+          </h1>
+          <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-bold">Super Admin Panel</p>
         </div>
-        <div className="flex gap-4">
-          <button 
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-colors shadow-lg shadow-blue-500/20 font-medium text-sm">
-            <Plus className="w-5 h-5" /> Add Employee
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          {[
+            { id: 'overview', icon: LayoutDashboard, label: 'Overview Dashboard' },
+            { id: 'employees', icon: Users, label: 'Employee Directory' },
+            { id: 'locations', icon: MapPin, label: 'Location Management' },
+            { id: 'logs', icon: Activity, label: 'Audit Logs' },
+          ].map(item => (
+            <button
+              key={item.id}
+              onClick={() => setActiveMenu(item.id)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${activeMenu === item.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'hover:bg-slate-800 hover:text-white'}`}
+            >
+              <item.icon className="w-5 h-5" /> {item.label}
+            </button>
+          ))}
+        </nav>
+        <div className="p-4 border-t border-slate-800">
+          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-500 transition-all">
+            <LogOut className="w-5 h-5" /> Sign Out
           </button>
         </div>
-      </header>
-      
-      {/* Tabs */}
-      <div className="flex gap-4 mb-6 overflow-x-auto pb-2">
-        <button 
-          onClick={() => setActiveTab('employees')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${activeTab === 'employees' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-        >
-          <Users className="w-4 h-4" /> Employee Directory
-        </button>
-        <button 
-          onClick={() => setActiveTab('locations')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${activeTab === 'locations' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-        >
-          <MapPin className="w-4 h-4" /> Locations (Zones/Woredas)
-        </button>
-        <button 
-          onClick={() => setActiveTab('logs')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${activeTab === 'logs' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-        >
-          <Activity className="w-4 h-4" /> Local Audit Logs
-        </button>
-      </div>
-      
-      <main className="flex-1">
-        {activeTab === 'employees' && (
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="flex-1 ml-64 p-8 overflow-y-auto relative z-0">
+        <header className="flex justify-between items-center mb-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800 capitalize">{activeMenu.replace('-', ' ')}</h2>
+            <p className="text-sm text-slate-500">Manage your enterprise system configurations.</p>
+          </div>
+          {activeMenu === 'employees' && (
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl transition-colors shadow-lg shadow-blue-500/30 font-semibold text-sm">
+              <Plus className="w-5 h-5" /> Add Employee
+            </button>
+          )}
+        </header>
+
+        {activeMenu === 'overview' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                <div className="bg-blue-100 p-4 rounded-xl text-blue-600"><Users className="w-8 h-8" /></div>
+                <div>
+                  <p className="text-sm text-slate-500 font-semibold">Total Employees</p>
+                  <p className="text-3xl font-black text-slate-800">{stats.total}</p>
+                </div>
+              </div>
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                <div className="bg-green-100 p-4 rounded-xl text-green-600"><CheckCircle2 className="w-8 h-8" /></div>
+                <div>
+                  <p className="text-sm text-slate-500 font-semibold">Active Accounts</p>
+                  <p className="text-3xl font-black text-slate-800">{stats.active}</p>
+                </div>
+              </div>
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                <div className="bg-red-100 p-4 rounded-xl text-red-600"><AlertCircle className="w-8 h-8" /></div>
+                <div>
+                  <p className="text-sm text-slate-500 font-semibold">Disabled Accounts</p>
+                  <p className="text-3xl font-black text-slate-800">{stats.disabled}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6">Employee Roles Distribution</h3>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={barData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748B'}} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748B'}} />
+                      <RechartsTooltip cursor={{fill: '#F8FAFC'}} contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
+                      <Bar dataKey="count" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <h3 className="text-lg font-bold text-slate-800 mb-6">Account Status</h3>
+                <div className="h-64 flex justify-center items-center">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute text-center">
+                    <p className="text-3xl font-black text-slate-800">{stats.total}</p>
+                    <p className="text-xs font-semibold text-slate-500">Total</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeMenu === 'employees' && (
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                 <Users className="w-5 h-5 text-blue-500" /> Employee Directory
               </h2>
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search employees..."
-                  className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
-                />
-              </div>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto relative">
               <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider">
+                <thead className="sticky top-0 bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider z-10 shadow-sm">
+                  <tr>
                     <th className="px-6 py-4 font-bold border-b border-slate-100">Username</th>
                     <th className="px-6 py-4 font-bold border-b border-slate-100">Role</th>
-                    <th className="px-6 py-4 font-bold border-b border-slate-100">Email</th>
+                    <th className="px-6 py-4 font-bold border-b border-slate-100">Status</th>
                     <th className="px-6 py-4 font-bold border-b border-slate-100">Joined</th>
-                    <th className="px-6 py-4 font-bold border-b border-slate-100">Actions</th>
+                    <th className="px-6 py-4 font-bold border-b border-slate-100 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-50">
                   {loading ? (
                     <tr><td colSpan="5" className="text-center py-8 text-slate-400 font-medium">Loading records...</td></tr>
                   ) : employees.map((emp) => (
-                    <tr key={emp.id} className="hover:bg-slate-50/50 transition-colors border-b border-slate-50 last:border-0 group">
-                      <td className="px-6 py-4 font-medium text-slate-800">{emp.username}</td>
+                    <tr key={emp.id} className="hover:bg-slate-50/80 transition-colors group">
                       <td className="px-6 py-4">
-                        <span className="bg-blue-50 text-blue-600 text-xs font-bold px-2.5 py-1 rounded-full whitespace-nowrap">
+                        <div className="font-semibold text-slate-800">{emp.username}</div>
+                        <div className="text-xs text-slate-500">{emp.email || 'No email provided'}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
                           {emp.role}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-slate-500 text-sm">{emp.email || 'N/A'}</td>
-                      <td className="px-6 py-4 text-slate-500 text-sm">
+                      <td className="px-6 py-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold border ${emp.status === 'Disabled' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-green-50 text-green-600 border-green-200'}`}>
+                          {emp.status || 'Active'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-slate-500 text-sm font-medium">
                         {emp.created_at ? new Date(emp.created_at).toLocaleDateString() : 'N/A'}
                       </td>
-                      <td className="px-6 py-4 flex gap-2">
+                      <td className="px-6 py-4 text-right space-x-2">
                         <button 
-                          onClick={() => { setEditEmployee({id: emp.id, username: emp.username, email: emp.email, role: emp.role}); setShowEditEmpModal(true); }}
-                          className="flex items-center gap-1 text-slate-500 hover:text-blue-600 font-medium text-sm transition-colors bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm"
+                          onClick={() => { setEditEmployee({id: emp.id, username: emp.username, email: emp.email, role: emp.role, status: emp.status || 'Active'}); setShowEditEmpModal(true); }}
+                          className="inline-flex items-center gap-1 text-slate-600 hover:text-blue-600 font-semibold text-xs transition-colors bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm hover:shadow"
                         >
                           <Edit2 className="w-3.5 h-3.5" /> Edit
                         </button>
                         <button 
                           onClick={() => { setSelectedEmp(emp); setShowResetModal(true); }}
-                          className="flex items-center gap-1 text-slate-500 hover:text-indigo-600 font-medium text-sm transition-colors bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm"
+                          className="inline-flex items-center gap-1 text-slate-600 hover:text-indigo-600 font-semibold text-xs transition-colors bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm hover:shadow"
                         >
                           <KeyRound className="w-3.5 h-3.5" /> Reset
                         </button>
@@ -252,9 +418,9 @@ export default function SuperAdminDashboard() {
           </div>
         )}
 
-        {activeTab === 'locations' && (
+        {activeMenu === 'locations' && (
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[600px]">
               <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-green-500" /> Zones
@@ -265,17 +431,17 @@ export default function SuperAdminDashboard() {
                   <Plus className="w-3.5 h-3.5" /> Add Zone
                 </button>
               </div>
-              <ul className="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
+              <ul className="divide-y divide-slate-100 flex-1 overflow-y-auto">
                 {zones.map(z => (
                   <li key={z.id} className="p-4 hover:bg-slate-50 flex justify-between items-center">
-                    <span className="font-medium text-slate-700">{z.name}</span>
-                    <span className="text-xs text-slate-400">ID: {z.id}</span>
+                    <span className="font-semibold text-slate-700">{z.name}</span>
+                    <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-1 rounded-md">ID: {z.id}</span>
                   </li>
                 ))}
               </ul>
             </div>
             
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[600px]">
               <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-teal-500" /> Woredas
@@ -286,16 +452,16 @@ export default function SuperAdminDashboard() {
                   <Plus className="w-3.5 h-3.5" /> Add Woreda
                 </button>
               </div>
-              <ul className="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
+              <ul className="divide-y divide-slate-100 flex-1 overflow-y-auto">
                 {woredas.map(w => {
                   const zone = zones.find(z => z.id === w.zone_id);
                   return (
                     <li key={w.id} className="p-4 hover:bg-slate-50 flex justify-between items-center">
                       <div>
-                        <div className="font-medium text-slate-700">{w.name}</div>
-                        <div className="text-xs text-slate-500">Zone: {zone?.name || w.zone_id}</div>
+                        <div className="font-semibold text-slate-700">{w.name}</div>
+                        <div className="text-xs text-slate-500 font-medium mt-0.5">Zone: {zone?.name || w.zone_id}</div>
                       </div>
-                      <span className="text-xs text-slate-400">ID: {w.id}</span>
+                      <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-1 rounded-md">ID: {w.id}</span>
                     </li>
                   );
                 })}
@@ -304,124 +470,57 @@ export default function SuperAdminDashboard() {
           </div>
         )}
 
-        {activeTab === 'logs' && (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <Activity className="w-5 h-5 text-indigo-500" /> Recent System Activity
-              </h2>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider">
-                    <th className="px-6 py-4 font-bold border-b border-slate-100">Timestamp</th>
-                    <th className="px-6 py-4 font-bold border-b border-slate-100">User</th>
-                    <th className="px-6 py-4 font-bold border-b border-slate-100">Action</th>
-                    <th className="px-6 py-4 font-bold border-b border-slate-100">Details</th>
-                    <th className="px-6 py-4 font-bold border-b border-slate-100">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr><td colSpan="5" className="text-center py-8 text-slate-400 font-medium">Loading logs...</td></tr>
-                  ) : activityLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50/50 transition-colors border-b border-slate-50 last:border-0">
-                      <td className="px-6 py-4 text-slate-500 text-sm whitespace-nowrap">
-                        {new Date(log.timestamp).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 font-medium text-slate-800">{log.user}</td>
-                      <td className="px-6 py-4 font-semibold text-slate-700">{log.action}</td>
-                      <td className="px-6 py-4 text-slate-500 text-sm">{log.details}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                          log.status === 'SUCCESS' ? 'bg-green-50 text-green-600' : 
-                          log.status === 'ERROR' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
-                        }`}>
-                          {log.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+        {activeMenu === 'logs' && <AuditLogs />}
       </main>
 
-      {/* Add Employee Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-6 border-b border-slate-100">
-              <h3 className="text-lg font-bold text-slate-800">Add New Employee</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                <X className="w-5 h-5" />
-              </button>
+      {/* Forced Password Change Modal */}
+      {showForcedPasswordModal && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-200">
+            <div className="p-8 pb-6 bg-indigo-600 text-center">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
+                <ShieldAlert className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-black text-white mb-2">Security Required</h3>
+              <p className="text-indigo-100 text-sm font-medium">Please update your temporary password to secure your account.</p>
             </div>
-            <form onSubmit={handleAddEmployee} className="p-6 space-y-4">
+            <form onSubmit={handleForcedPasswordChange} className="p-8 space-y-5">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
+                <label className="block text-sm font-bold text-slate-700 mb-1.5">Current Password</label>
                 <input 
-                  type="text" 
-                  required
-                  value={newEmployee.username}
-                  onChange={e => setNewEmployee({...newEmployee, username: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                  placeholder="e.g. john_doe"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                <input 
-                  type="email" 
-                  required
-                  value={newEmployee.email}
-                  onChange={e => setNewEmployee({...newEmployee, email: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                  placeholder="john@example.com"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
-                <select 
-                  value={newEmployee.role}
-                  onChange={e => setNewEmployee({...newEmployee, role: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white"
-                >
-                  <option value="Super Admin">Super Admin</option>
-                  <option value="Head Expert">Head Expert</option>
-                  <option value="Zone Expert">Zone Expert</option>
-                  <option value="Zone Approver">Zone Approver</option>
-                  <option value="Woreda Approver">Woreda Approver</option>
-                  <option value="Woreda Encoder">Woreda Encoder</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Temporary Password</label>
-                <input 
-                  type="password" 
-                  required
-                  value={newEmployee.password}
-                  onChange={e => setNewEmployee({...newEmployee, password: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  type="password" required
+                  value={forcedPasswordData.current}
+                  onChange={e => setForcedPasswordData({...forcedPasswordData, current: e.target.value})}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                   placeholder="••••••••"
                 />
               </div>
-              <div className="pt-4 flex gap-3">
-                <button 
-                  type="button" 
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors"
-                >
-                  Cancel
-                </button>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1.5">New Password</label>
+                <input 
+                  type="password" required
+                  value={forcedPasswordData.new}
+                  onChange={e => setForcedPasswordData({...forcedPasswordData, new: e.target.value})}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                  placeholder="••••••••"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1.5">Confirm New Password</label>
+                <input 
+                  type="password" required
+                  value={forcedPasswordData.confirm}
+                  onChange={e => setForcedPasswordData({...forcedPasswordData, confirm: e.target.value})}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                  placeholder="••••••••"
+                />
+              </div>
+              <div className="pt-2">
                 <button 
                   type="submit" 
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all"
+                  className="w-full py-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-xl shadow-indigo-500/30 transition-all flex items-center justify-center gap-2"
                 >
-                  Create Employee
+                  <CheckCircle2 className="w-5 h-5" /> Secure My Account
                 </button>
               </div>
             </form>
@@ -434,7 +533,7 @@ export default function SuperAdminDashboard() {
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center p-6 border-b border-slate-100">
-              <h3 className="text-lg font-bold text-slate-800">Edit Employee</h3>
+              <h3 className="text-lg font-bold text-slate-800">Edit Employee Details</h3>
               <button onClick={() => setShowEditEmpModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
                 <X className="w-5 h-5" />
               </button>
@@ -443,21 +542,19 @@ export default function SuperAdminDashboard() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
                 <input 
-                  type="text" 
-                  required
+                  type="text" required
                   value={editEmployee.username}
                   onChange={e => setEditEmployee({...editEmployee, username: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
                 <input 
-                  type="email" 
-                  required
-                  value={editEmployee.email}
+                  type="email" required
+                  value={editEmployee.email || ''}
                   onChange={e => setEditEmployee({...editEmployee, email: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                 />
               </div>
               <div>
@@ -465,7 +562,7 @@ export default function SuperAdminDashboard() {
                 <select 
                   value={editEmployee.role}
                   onChange={e => setEditEmployee({...editEmployee, role: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white"
+                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white"
                 >
                   <option value="Super Admin">Super Admin</option>
                   <option value="Head Expert">Head Expert</option>
@@ -473,6 +570,17 @@ export default function SuperAdminDashboard() {
                   <option value="Zone Approver">Zone Approver</option>
                   <option value="Woreda Approver">Woreda Approver</option>
                   <option value="Woreda Encoder">Woreda Encoder</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+                <select 
+                  value={editEmployee.status}
+                  onChange={e => setEditEmployee({...editEmployee, status: e.target.value})}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white font-semibold"
+                >
+                  <option value="Active" className="text-green-600">Active</option>
+                  <option value="Disabled" className="text-red-600">Disabled</option>
                 </select>
               </div>
               <div className="pt-4 flex gap-3">
@@ -495,32 +603,103 @@ export default function SuperAdminDashboard() {
         </div>
       )}
 
+      {/* Add Employee Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100">
+              <h3 className="text-lg font-bold text-slate-800">Add New Employee</h3>
+              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleAddEmployee} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
+                <input 
+                  type="text" required
+                  value={newEmployee.username}
+                  onChange={e => setNewEmployee({...newEmployee, username: e.target.value})}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                <input 
+                  type="email" required
+                  value={newEmployee.email}
+                  onChange={e => setNewEmployee({...newEmployee, email: e.target.value})}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
+                <select 
+                  value={newEmployee.role}
+                  onChange={e => setNewEmployee({...newEmployee, role: e.target.value})}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white"
+                >
+                  <option value="Super Admin">Super Admin</option>
+                  <option value="Head Expert">Head Expert</option>
+                  <option value="Zone Expert">Zone Expert</option>
+                  <option value="Zone Approver">Zone Approver</option>
+                  <option value="Woreda Approver">Woreda Approver</option>
+                  <option value="Woreda Encoder">Woreda Encoder</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Temporary Password</label>
+                <input 
+                  type="password" required
+                  value={newEmployee.password}
+                  onChange={e => setNewEmployee({...newEmployee, password: e.target.value})}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                />
+              </div>
+              <div className="pt-4 flex gap-3">
+                <button 
+                  type="button" 
+                  onClick={() => setShowAddModal(false)}
+                  className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all"
+                >
+                  Create Employee
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Reset Password Modal */}
       {showResetModal && selectedEmp && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center p-6 border-b border-slate-100">
-              <h3 className="text-lg font-bold text-slate-800">Reset Password</h3>
+              <h3 className="text-lg font-bold text-slate-800">Force Password Reset</h3>
               <button onClick={() => setShowResetModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleResetPassword} className="p-6 space-y-4">
-              <p className="text-sm text-slate-500">
-                You are setting a new password for <strong className="text-slate-800">{selectedEmp.username}</strong>.
+              <p className="text-sm text-slate-500 font-medium">
+                Set a new temporary password for <strong className="text-slate-800">{selectedEmp.username}</strong>. They will be forced to change it on next login.
               </p>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">New Password</label>
                 <input 
-                  type="password" 
-                  required
+                  type="password" required
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-center tracking-widest font-mono text-lg"
                   placeholder="••••••••"
                 />
               </div>
-              <div className="pt-4 flex gap-3">
+              <div className="pt-2 flex gap-3">
                 <button 
                   type="button" 
                   onClick={() => setShowResetModal(false)}
@@ -530,9 +709,9 @@ export default function SuperAdminDashboard() {
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2"
                 >
-                  <KeyRound className="w-4 h-4" /> Save
+                  <KeyRound className="w-4 h-4" /> Reset
                 </button>
               </div>
             </form>
@@ -554,28 +733,16 @@ export default function SuperAdminDashboard() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Zone Name</label>
                 <input 
-                  type="text" 
-                  required
+                  type="text" required
                   value={newZone.name}
                   onChange={e => setNewZone({name: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all"
                   placeholder="e.g. North Gondar"
                 />
               </div>
               <div className="pt-4 flex gap-3">
-                <button 
-                  type="button" 
-                  onClick={() => setShowAddZoneModal(false)}
-                  className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  className="flex-1 px-4 py-2 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 shadow-lg shadow-green-500/20 transition-all"
-                >
-                  Save Zone
-                </button>
+                <button type="button" onClick={() => setShowAddZoneModal(false)} className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 shadow-lg shadow-green-500/20 transition-all">Save Zone</button>
               </div>
             </form>
           </div>
@@ -596,11 +763,10 @@ export default function SuperAdminDashboard() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Woreda Name</label>
                 <input 
-                  type="text" 
-                  required
+                  type="text" required
                   value={newWoreda.name}
                   onChange={e => setNewWoreda({...newWoreda, name: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all"
+                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none transition-all"
                   placeholder="e.g. Debark"
                 />
               </div>
@@ -610,28 +776,15 @@ export default function SuperAdminDashboard() {
                   required
                   value={newWoreda.zone_id}
                   onChange={e => setNewWoreda({...newWoreda, zone_id: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all bg-white"
+                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none transition-all bg-white"
                 >
                   <option value="" disabled>Select a Zone</option>
-                  {zones.map(z => (
-                    <option key={z.id} value={z.id}>{z.name}</option>
-                  ))}
+                  {zones.map(z => <option key={z.id} value={z.id}>{z.name}</option>)}
                 </select>
               </div>
               <div className="pt-4 flex gap-3">
-                <button 
-                  type="button" 
-                  onClick={() => setShowAddWoredaModal(false)}
-                  className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  className="flex-1 px-4 py-2 bg-teal-600 text-white font-medium rounded-xl hover:bg-teal-700 shadow-lg shadow-teal-500/20 transition-all"
-                >
-                  Save Woreda
-                </button>
+                <button type="button" onClick={() => setShowAddWoredaModal(false)} className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors">Cancel</button>
+                <button type="submit" className="flex-1 px-4 py-2 bg-teal-600 text-white font-medium rounded-xl hover:bg-teal-700 shadow-lg shadow-teal-500/20 transition-all">Save Woreda</button>
               </div>
             </form>
           </div>

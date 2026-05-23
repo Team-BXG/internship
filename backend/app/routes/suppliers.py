@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
 from app import schemas, models
+from app.services.audit_logger import AuditLogger
 
 router = APIRouter(prefix="/api/suppliers", tags=["suppliers"])
 
@@ -36,7 +37,12 @@ def get_supplier_details(supplier_id: int, db: Session = Depends(get_db)):
     return sup_dict
 
 @router.post("")
-def create_supplier(supplier: schemas.SupplierCreate, db: Session = Depends(get_db)):
+def create_supplier(
+    supplier: schemas.SupplierCreate, 
+    db: Session = Depends(get_db),
+    x_user_name: str = Header("Unknown User"),
+    x_user_role: str = Header("Unknown Role")
+):
     db_supplier = models.Supplier(
         name=supplier.name,
         contact_person=supplier.contact_person,
@@ -52,4 +58,13 @@ def create_supplier(supplier: schemas.SupplierCreate, db: Session = Depends(get_
     db.add(db_supplier)
     db.commit()
     db.refresh(db_supplier)
+    
+    AuditLogger.log_operational_event(
+        db=db,
+        action="Supplier Created",
+        user_name=x_user_name,
+        role=x_user_role,
+        details=f"Created supplier {supplier.name} with license {supplier.license_number}"
+    )
+    
     return {"message": "Supplier registered successfully", "id": db_supplier.id}

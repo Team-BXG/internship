@@ -20,3 +20,47 @@
 2026-05-22 08:56:59,429 - sedms_app - INFO - Method: GET Path: /api/activity_logs/ Status: 200 Time: 37.11ms
 2026-05-23 07:24:13,318 - sedms_app - INFO - Logtail Better Stack Integration Activated!
 2026-05-23 07:24:17,403 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-23 07:30:22,595 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-23 07:32:50,414 - sedms_app - INFO - Method: POST Path: /api/auth/login Status: 200 Time: 36.06ms
+2026-05-23 07:32:50,500 - sedms_app - INFO - Method: GET Path: /api/activity_logs Status: 307 Time: 0.00ms
+2026-05-23 07:32:50,510 - sedms_app - INFO - Method: GET Path: /api/employees Status: 307 Time: 1.51ms
+2026-05-23 07:32:50,517 - sedms_app - INFO - Method: GET Path: /api/activity_logs Status: 307 Time: 1.00ms
+2026-05-23 07:32:50,584 - sedms_app - INFO - Method: GET Path: /api/activity_logs/ Status: 200 Time: 57.19ms
+2026-05-23 07:32:50,596 - sedms_app - INFO - Method: GET Path: /api/employees Status: 307 Time: 1.74ms
+2026-05-23 07:32:50,608 - sedms_app - INFO - Method: GET Path: /api/employees/ Status: 200 Time: 7.93ms
+2026-05-23 07:32:50,624 - sedms_app - INFO - Method: GET Path: /api/employees/ Status: 200 Time: 7.00ms
+2026-05-23 07:32:50,659 - sedms_app - INFO - Method: GET Path: /api/activity_logs/ Status: 200 Time: 42.51ms
+2026-05-23 07:33:15,914 - sedms_app - INFO - Method: POST Path: /api/auth/login Status: 200 Time: 4.52ms
+2026-05-23 07:33:16,033 - sedms_app - INFO - Method: GET Path: /api/dashboard Status: 200 Time: 36.92ms
+2026-05-23 07:33:16,041 - sedms_app - INFO - Method: GET Path: /api/dashboard Status: 200 Time: 0.00ms
+2026-05-23 07:33:18,719 - sedms_app - INFO - Method: GET Path: /api/contractors Status: 200 Time: 13.52ms
+2026-05-23 07:33:18,747 - sedms_app - INFO - Method: GET Path: /api/contractors Status: 200 Time: 13.59ms
+2026-05-23 07:33:19,736 - sedms_app - INFO - Method: GET Path: /api/area-assignments Status: 200 Time: 11.51ms
+2026-05-23 07:33:19,762 - sedms_app - INFO - Method: GET Path: /api/area-assignments Status: 200 Time: 8.99ms
+2026-05-23 07:33:20,865 - sedms_app - INFO - Method: GET Path: /api/suppliers Status: 200 Time: 127.17ms
+2026-05-23 07:33:20,989 - sedms_app - INFO - Method: GET Path: /api/suppliers Status: 200 Time: 113.68ms
+2026-05-23 07:37:03,862 - sedms_app - INFO - Method: POST Path: /api/auth/login Status: 200 Time: 0.00ms
+2026-05-23 07:39:23,253 - sedms_app - INFO - Method: POST Path: /api/auth/login Status: 200 Time: 0.00ms
+2026-05-23 07:39:23,329 - sedms_app - INFO - Method: GET Path: /api/employees Status: 307 Time: 1.00ms
+2026-05-23 07:39:23,351 - sedms_app - INFO - Method: GET Path: /api/locations/zones Status: 200 Time: 12.57ms
+2026-05-23 07:39:23,369 - sedms_app - INFO - Method: GET Path: /api/locations/woredas Status: 200 Time: 16.09ms
+2026-05-23 07:39:23,388 - sedms_app - INFO - Method: GET Path: /api/activity_logs Status: 307 Time: 1.68ms
+2026-05-23 07:39:23,390 - sedms_app - INFO - Method: GET Path: /api/employees Status: 307 Time: 0.00ms
+2026-05-23 07:39:23,404 - sedms_app - INFO - Method: GET Path: /api/employees/ Status: 200 Time: 2.60ms
+2026-05-23 07:39:23,425 - sedms_app - INFO - Method: GET Path: /api/locations/zones Status: 200 Time: 21.33ms
+2026-05-23 07:39:23,449 - sedms_app - INFO - Method: GET Path: /api/locations/woredas Status: 200 Time: 18.57ms
+2026-05-23 07:39:23,453 - sedms_app - INFO - Method: GET Path: /api/activity_logs Status: 307 Time: 0.00ms
+2026-05-23 07:39:23,481 - sedms_app - INFO - Method: GET Path: /api/activity_logs/ Status: 200 Time: 28.36ms
+2026-05-23 07:39:23,488 - sedms_app - INFO - Method: GET Path: /api/employees/ Status: 200 Time: 0.00ms
+2026-05-23 07:39:23,506 - sedms_app - INFO - Method: GET Path: /api/activity_logs/ Status: 200 Time: 11.73ms
+2026-05-23 07:49:23,186 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-23 07:50:12,741 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-23 07:51:07,584 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-23 07:52:25,701 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-23 12:25:51,158 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-23 12:25:54,156 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-23 12:33:03,197 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-23 12:33:28,210 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-23 12:33:47,758 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-23 12:35:38,666 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-23 12:42:14,909 - sedms_app - INFO - {"action": "Supplier Created", "user": "superadmin", "role": "Super Admin", "woreda": "N/A", "zone": "N/A", "details": "Created supplier Bahir Dar Institute of Technology with license khh", "status": "SUCCESS", "timestamp": "2026-05-23T11:42:14.909279"}

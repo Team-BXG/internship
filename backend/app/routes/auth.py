@@ -37,5 +37,6 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
         "username": user.username,
         "role": user.role,
         "email": user.email,
+        "requires_password_change": user.requires_password_change,
         "message": "Login successful"
     }

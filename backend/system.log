@@ -1,0 +1,22 @@
+2026-05-22 08:48:55,821 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-22 08:49:46,062 - sedms_app - INFO - Method: POST Path: /api/auth/login Status: 200 Time: 521.72ms
+2026-05-22 08:49:47,016 - sedms_app - INFO - Method: GET Path: /api/dashboard Status: 200 Time: 582.25ms
+2026-05-22 08:49:47,181 - sedms_app - INFO - Method: GET Path: /api/dashboard Status: 200 Time: 96.41ms
+2026-05-22 08:50:04,230 - sedms_app - INFO - Method: GET Path: /api/employees Status: 307 Time: 2.06ms
+2026-05-22 08:50:04,283 - sedms_app - INFO - Method: GET Path: /api/activity_logs Status: 307 Time: 2.55ms
+2026-05-22 08:50:04,311 - sedms_app - INFO - Method: GET Path: /api/employees Status: 307 Time: 4.71ms
+2026-05-22 08:50:04,346 - sedms_app - INFO - Method: GET Path: /api/activity_logs Status: 307 Time: 2.05ms
+2026-05-22 08:50:04,466 - sedms_app - INFO - Method: GET Path: /api/employees/ Status: 200 Time: 30.05ms
+2026-05-22 08:50:04,549 - sedms_app - INFO - Method: GET Path: /api/activity_logs/ Status: 200 Time: 40.89ms
+2026-05-22 08:50:04,596 - sedms_app - INFO - Method: GET Path: /api/employees/ Status: 200 Time: 61.78ms
+2026-05-22 08:50:04,648 - sedms_app - INFO - Method: GET Path: /api/activity_logs/ Status: 200 Time: 70.03ms
+2026-05-22 08:56:59,099 - sedms_app - INFO - Method: GET Path: /api/employees Status: 307 Time: 3.95ms
+2026-05-22 08:56:59,136 - sedms_app - INFO - Method: GET Path: /api/activity_logs Status: 307 Time: 37.40ms
+2026-05-22 08:56:59,171 - sedms_app - INFO - Method: GET Path: /api/employees Status: 307 Time: 4.88ms
+2026-05-22 08:56:59,209 - sedms_app - INFO - Method: GET Path: /api/activity_logs Status: 307 Time: 3.62ms
+2026-05-22 08:56:59,262 - sedms_app - INFO - Method: GET Path: /api/employees/ Status: 200 Time: 64.11ms
+2026-05-22 08:56:59,332 - sedms_app - INFO - Method: GET Path: /api/activity_logs/ Status: 200 Time: 95.72ms
+2026-05-22 08:56:59,408 - sedms_app - INFO - Method: GET Path: /api/employees/ Status: 200 Time: 32.30ms
+2026-05-22 08:56:59,429 - sedms_app - INFO - Method: GET Path: /api/activity_logs/ Status: 200 Time: 37.11ms
+2026-05-23 07:24:13,318 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-23 07:24:17,403 - sedms_app - INFO - Logtail Better Stack Integration Activated!

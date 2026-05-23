@@ -32,7 +32,7 @@ export default function Login() {
           case 'Zone Approver': navigate('/zoneA'); break;
           case 'Zone Expert': navigate('/zoneE'); break;
           case 'Super Admin': navigate('/superadmin'); break;
-          case 'Head Expert': 
+          case 'Head Expert': navigate('/headexpert'); break;
           default: navigate('/'); break;
         }
       } else {

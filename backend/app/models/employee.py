@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Date
+from sqlalchemy import Column, Integer, String, DateTime, Date, Boolean
 import datetime
 from app.database import Base
 
@@ -13,4 +13,5 @@ class Employee(Base):
     birth_date = Column(Date, nullable=True)
     national_id_path = Column(String(255), nullable=True)
     profile_photo_path = Column(String(255), nullable=True)
+    requires_password_change = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)

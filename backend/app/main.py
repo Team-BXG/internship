@@ -13,10 +13,54 @@ from app.routes import (
     demands,
     problems,
     auth,
-    employees
+    employees,
+    activity_logs,
+    zones_woredas
 )
 
+import time
+from fastapi import FastAPI, Request
+from app.logger import get_logger
+from app.database import SessionLocal
+from app.models.activity_log import ActivityLog
+
+logger = get_logger()
+
 app = FastAPI(title="SEDMS Dashboard API")
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    
+    # Process the request
+    response = await call_next(request)
+    
+    process_time = (time.time() - start_time) * 1000
+    formatted_process_time = '{0:.2f}'.format(process_time)
+    
+    logger.info(
+        f"Method: {request.method} Path: {request.url.path} "
+        f"Status: {response.status_code} "
+        f"Time: {formatted_process_time}ms"
+    )
+    
+    # Save to ActivityLog table for real data in dashboard
+    try:
+        db = SessionLocal()
+        new_log = ActivityLog(
+            user="System", 
+            action="API Request", 
+            details=f"{request.method} {request.url.path} - {formatted_process_time}ms",
+            status="SUCCESS" if response.status_code < 400 else "ERROR"
+        )
+        db.add(new_log)
+        db.commit()
+    except Exception as e:
+        logger.error(f"Failed to log activity: {e}")
+    finally:
+        db.close()
+    
+    return response
 
 # 1️⃣ CORS setup so React frontend can fetch data
 origins = [
@@ -50,6 +94,8 @@ app.include_router(demands.router)
 app.include_router(problems.router)
 app.include_router(auth.router)
 app.include_router(employees.router)
+app.include_router(activity_logs.router)
+app.include_router(zones_woredas.router)
 
 # 4️⃣ Test route to confirm backend is running
 @app.get("/api/test")

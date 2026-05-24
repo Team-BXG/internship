@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Sidebar from './components/Sidebar';
@@ -6,16 +6,57 @@ import Header from './components/Header';
 import Dashboard from './pages/Dashboard';
 import Beneficiaries from './pages/Beneficiaries';
 import Problems from './pages/Problems';
-
-// Mock login state for demonstration
-// In a real app, this would come from an auth context
-const MOCK_SUPPLIER = {
-  id: 1,
-  name: 'SolarTech Solutions Ltd'
-};
+import Login from './pages/Login';
+import ChangePassword from './pages/ChangePassword';
+import Profile from './pages/Profile';
 
 function App() {
-  const [supplier] = useState(MOCK_SUPPLIER);
+  const [supplier, setSupplier] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('supplier_user');
+    if (saved) {
+      setSupplier(JSON.parse(saved));
+    }
+    setLoading(false);
+  }, []);
+
+  const handleLogin = (data) => {
+    setSupplier(data);
+  };
+
+  const handlePasswordChanged = () => {
+    const updated = { ...supplier, requires_password_change: false };
+    setSupplier(updated);
+    localStorage.setItem('supplier_user', JSON.stringify(updated));
+  };
+
+  if (loading) return null;
+
+  if (!supplier) {
+    return (
+      <Router>
+        <Toaster position="top-right" />
+        <Routes>
+          <Route path="/login" element={<Login onLogin={handleLogin} />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Router>
+    );
+  }
+
+  if (supplier.requires_password_change) {
+    return (
+      <Router>
+        <Toaster position="top-right" />
+        <Routes>
+          <Route path="/change-password" element={<ChangePassword user={supplier} onComplete={handlePasswordChanged} />} />
+          <Route path="*" element={<Navigate to="/change-password" replace />} />
+        </Routes>
+      </Router>
+    );
+  }
 
   return (
     <Router>
@@ -29,7 +70,8 @@ function App() {
               <Route path="/dashboard" element={<Dashboard supplier={supplier} />} />
               <Route path="/beneficiaries" element={<Beneficiaries supplier={supplier} />} />
               <Route path="/problems" element={<Problems supplier={supplier} />} />
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/profile" element={<Profile supplier={supplier} />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
         </div>

@@ -73,3 +73,27 @@
 2026-05-24 10:13:58,480 - sedms_app - INFO - Logtail Better Stack Integration Activated!
 2026-05-24 10:25:37,840 - sedms_app - INFO - Logtail Better Stack Integration Activated!
 2026-05-24 11:10:45,542 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 12:08:04,113 - sedms_app - INFO - {"action": "Supplier Created", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "Created supplier Solar equip with license 009048", "status": "SUCCESS", "timestamp": "2026-05-24T09:08:04.113742"}
+2026-05-24 12:30:49,263 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 12:31:24,285 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 12:31:28,888 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 12:31:50,593 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 12:32:19,202 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 12:33:00,952 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 12:33:05,866 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 12:33:18,256 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 12:33:35,733 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 12:42:35,543 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 13:03:10,914 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 13:16:47,605 - sedms_app - INFO - {"action": "Supplier Created", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "Created supplier Ethio solar with license 98097", "status": "SUCCESS", "timestamp": "2026-05-24T10:16:47.605787"}
+2026-05-24 13:28:47,354 - sedms_app - INFO - {"action": "Password Reset", "user": "superadmin", "role": "Super Admin", "woreda": "N/A", "zone": "N/A", "details": "Reset password for employee headexpert", "status": "SUCCESS", "timestamp": "2026-05-24T10:28:47.354670"}
+2026-05-24 13:29:26,932 - sedms_app - INFO - {"action": "Password Changed", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "headexpert changed their initial password", "status": "SUCCESS", "timestamp": "2026-05-24T10:29:26.932140"}
+2026-05-24 13:58:50,499 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 13:59:33,528 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 13:59:53,440 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 14:00:23,637 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 14:00:55,610 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 14:30:22,096 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 14:30:24,160 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-24 14:50:09,347 - sedms_app - INFO - {"action": "Supplier Created", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "Created supplier Ethio sele with license 0998", "status": "SUCCESS", "timestamp": "2026-05-24T11:50:09.347135"}
+2026-05-24 14:59:02,821 - sedms_app - INFO - Logtail Better Stack Integration Activated!

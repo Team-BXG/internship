@@ -7,6 +7,7 @@ import RegisterProblem from './Register Problem';
 import ChangeStatus from './ChangeStatus';
 import AssignedDemands from './AssignedDemands';
 import WoredaDashboard from './WoredaDashboard';
+import ProblemHandlings from './ProblemHandlings';
 
 const Dashboard = () => {
   const [activeMenu, setActiveMenu] = useState('Notifications');
@@ -28,6 +29,7 @@ const Dashboard = () => {
           {activeMenu === 'Problem Register' && <RegisterProblem selectedScope={selectedScope} />}
           {activeMenu === 'Assigned Demands' && <AssignedDemands selectedScope={selectedScope} />}
           {activeMenu === 'Change Status' && <ChangeStatus selectedScope={selectedScope} />}
+          {activeMenu === 'Problem Handlings' && <ProblemHandlings selectedScope={selectedScope} />}
         </main>
       </div>
     </div>

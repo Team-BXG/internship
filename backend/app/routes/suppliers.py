@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Header
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
@@ -68,3 +69,16 @@ def create_supplier(
     )
     
     return {"message": "Supplier registered successfully", "id": db_supplier.id}
+
+class PasswordChangeRequest(BaseModel):
+    new_password: str
+
+@router.post("/{supplier_id}/change-initial-password")
+def change_initial_password(supplier_id: int, req: PasswordChangeRequest, db: Session = Depends(get_db)):
+    supplier = db.query(models.Supplier).filter(models.Supplier.id == supplier_id).first()
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+        
+    supplier.password = req.new_password
+    db.commit()
+    return {"message": "Password updated successfully"}

@@ -19,3 +19,7 @@ class Problem(Base):
     urgency = Column(String(50))
     details_json = Column(Text)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    occurred_date = Column(DateTime, nullable=True)
+    fixed_date = Column(DateTime, nullable=True)
+    days_unfunctional = Column(Integer, nullable=True)
+    supplier = Column(String(255), nullable=True)

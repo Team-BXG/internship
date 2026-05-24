@@ -67,8 +67,7 @@ const ApproveProblem = ({ selectedScope }) => {
   };
 
   const actionConfig = [
-    { label: 'Acknowledge Issue', className: 'bg-blue-500 hover:bg-blue-600 text-white', onClick: (p) => handleStatusUpdate(p, 'Acknowledged') },
-    { label: 'Mark Resolved', className: 'bg-emerald-500 hover:bg-emerald-600 text-white', onClick: (p) => handleStatusUpdate(p, 'Resolved') }
+    { label: 'Approve Problem', className: 'bg-blue-500 hover:bg-blue-600 text-white', onClick: (p) => handleStatusUpdate(p, 'Approved') }
   ];
 
   return (

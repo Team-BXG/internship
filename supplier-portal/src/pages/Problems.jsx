@@ -49,27 +49,32 @@ const Problems = ({ supplier }) => {
     }
   };
 
-  const updateProblemStatus = async (id, newStatus) => {
-    // Optimistic UI update
-    setProblems(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
-    if (selectedProblem && selectedProblem.id === id) {
-      setSelectedProblem({ ...selectedProblem, status: newStatus });
-    }
-    toast.success(`Marked as ${newStatus}`);
-    
-    // In a real app, send a PUT/PATCH to backend to update the status.
-    /*
+  const handleStatusChange = async (status) => {
     try {
-      await fetch(`http://localhost:8000/api/problems/${id}`, { method: 'PATCH', body: JSON.stringify({status: newStatus}) })
-    } catch (e) {}
-    */
+      const res = await fetch(`http://localhost:8000/api/problems/${selectedProblem.id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, submitted_by: supplier?.name })
+      });
+      if (res.ok) {
+        toast.success(`Problem marked as ${status}`);
+        fetchProblems();
+        if (status === 'Seen') {
+          setSelectedProblem(null);
+        } else {
+          setSelectedProblem(prev => ({...prev, status}));
+        }
+      }
+    } catch (e) {
+      toast.error("Failed to update status");
+    }
   };
 
   const getStatusStyle = (status) => {
     switch (status) {
       case 'Open': return 'text-red-600 bg-red-50 border-red-200';
       case 'Under Repair': return 'text-orange-600 bg-orange-50 border-orange-200';
-      case 'Resolved': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
+      case 'Seen': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
       default: return 'text-slate-600 bg-slate-50 border-slate-200';
     }
   };
@@ -92,7 +97,7 @@ const Problems = ({ supplier }) => {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
           <div className="border-b border-slate-100 px-6 py-4 flex items-center justify-between bg-slate-50">
             <h4 className="font-bold text-slate-800">Issue Details: {selectedProblem.displayId}</h4>
-            <button onClick={() => setSelectedProblem(null)} className="p-1 hover:bg-slate-200 rounded-lg text-slate-400">
+            <button onClick={() => { setSelectedProblem(null); }} className="p-1 hover:bg-slate-200 rounded-lg text-slate-400">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -117,16 +122,16 @@ const Problems = ({ supplier }) => {
 
             <div>
                <h5 className="font-semibold text-slate-800 mb-4">Update Action Status</h5>
-               <div className="flex gap-4">
-                 <button onClick={() => updateProblemStatus(selectedProblem.id, 'Open')} className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm transition-all border ${selectedProblem.status === 'Open' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
-                   <AlertTriangle className="w-4 h-4" /> Open
-                 </button>
-                 <button onClick={() => updateProblemStatus(selectedProblem.id, 'Under Repair')} className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm transition-all border ${selectedProblem.status === 'Under Repair' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
+               <div className="flex gap-4 items-end flex-wrap">
+                 <button onClick={() => handleStatusChange('Under Repair')} className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm transition-all border ${selectedProblem.status === 'Under Repair' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
                    <Wrench className="w-4 h-4" /> Under Repair
                  </button>
-                 <button onClick={() => updateProblemStatus(selectedProblem.id, 'Resolved')} className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm transition-all border ${selectedProblem.status === 'Resolved' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
-                   <CheckCircle2 className="w-4 h-4" /> Resolved
-                 </button>
+                 
+                 <div className="flex items-center gap-3 ml-auto">
+                   <button onClick={() => handleStatusChange('Seen')} className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm transition-all border self-end ${selectedProblem.status === 'Seen' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
+                     <CheckCircle2 className="w-4 h-4" /> Seen
+                   </button>
+                 </div>
                </div>
             </div>
           </div>
@@ -153,7 +158,7 @@ const Problems = ({ supplier }) => {
             <option value="">All Statuses</option>
             <option value="Open">Open</option>
             <option value="Under Repair">Under Repair</option>
-            <option value="Resolved">Resolved</option>
+            <option value="Seen">Seen</option>
           </select>
         </div>
 

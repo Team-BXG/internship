@@ -66,11 +66,7 @@ const ProblemApproval = ({ selectedZone }) => {
     return 'text-slate-600 bg-slate-50 border-slate-200';
   };
 
-  const actionConfig = [
-    { label: 'Assign Repair', className: 'bg-amber-500 hover:bg-amber-600 text-white', onClick: (p) => handleStatusUpdate(p, 'Under Repair') },
-    { label: 'Mark Resolved', className: 'bg-emerald-500 hover:bg-emerald-600 text-white', onClick: (p) => handleStatusUpdate(p, 'Resolved') },
-    { label: 'Close Issue', className: 'bg-slate-500 hover:bg-slate-600 text-white', onClick: (p) => handleStatusUpdate(p, 'Closed') }
-  ];
+  const actionConfig = [];
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto">

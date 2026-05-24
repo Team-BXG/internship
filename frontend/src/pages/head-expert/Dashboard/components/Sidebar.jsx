@@ -11,8 +11,7 @@ export default function Sidebar({ activeMenu, setActiveMenu, isCollapsed, setIsC
     { name: "Area Assignment", icon: Map },
     { name: "Contractor Registration", icon: Wrench },
     { name: "Reports", icon: FileText },
-    { name: "User Management", icon: UserCog },
-    { name: "Audit Logs", icon: History },
+    { name: "Problem Statistics", icon: History },
     { name: "Settings", icon: Settings },
   ];
 

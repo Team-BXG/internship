@@ -99,6 +99,7 @@ class BeneficiaryCreate(BaseModel):
     supplier: Optional[str] = None
     details_json: Optional[str] = None
     status: Optional[str] = 'Pending Woreda'
+    submitted_by: Optional[str] = 'System'
 
 class DemandCreate(BaseModel):
     full_name: str
@@ -117,6 +118,7 @@ class DemandCreate(BaseModel):
     watt_level: str
     details_json: Optional[str] = None
     status: Optional[str] = 'Pending Woreda Review'
+    submitted_by: Optional[str] = 'System'
 
 class ProblemCreate(BaseModel):
     equipment: str
@@ -128,17 +130,26 @@ class ProblemCreate(BaseModel):
     urgency: str
     beneficiary_name: str
     submitted_by: str
-    status: Optional[str] = 'Open'
+    status: Optional[str] = 'Pending Woreda'
     details_json: Optional[str] = None
+    occurred_date: Optional[datetime] = None
+    supplier: Optional[str] = None
+
+class ProblemFixedUpdate(BaseModel):
+    fixed_date: datetime
+    submitted_by: Optional[str] = 'System'
 
 class BeneficiaryStatusUpdate(BaseModel):
     status: str
+    submitted_by: Optional[str] = 'System'
 
 class ProblemStatusUpdate(BaseModel):
     status: str
+    submitted_by: Optional[str] = 'System'
 
 class DemandAssignSupplier(BaseModel):
     supplier_id: int
+    submitted_by: Optional[str] = 'System'
 
 
 class DashboardStatsResponse(BaseModel):

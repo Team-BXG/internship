@@ -57,6 +57,7 @@ const DemandStatistics = ({ selectedZone }) => {
   };
 
   const filteredStatistics = statistics.filter(stat => {
+    if (stat.status === 'Pending Woreda Review') return false;
     const matchesSearch = !searchTerm || 
       stat.woreda?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stat.solar_panel_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -11,14 +11,10 @@ const Beneficiaries = ({ supplier }) => {
     const fetchBeneficiaries = async () => {
       try {
         setLoading(true);
-        // We fetch all and filter client side. In production, pass ?supplier_id=1
-        const res = await fetch('http://localhost:8000/api/beneficiaries');
+        const res = await fetch(`http://localhost:8000/api/beneficiaries?supplier=${encodeURIComponent(supplier.name)}`);
         if (res.ok) {
           const data = await res.json();
-          // Mock filtering logic assuming half are assigned to this supplier for demo purposes
-          // since our seed script assigned random strings or nulls to `supplier` column
-          const filtered = data.filter((_, i) => i % 2 === 0);
-          setBeneficiaries(filtered);
+          setBeneficiaries(data);
         }
       } catch (e) {
         console.error(e);

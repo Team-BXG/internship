@@ -19,6 +19,31 @@ def hash_pw(pw: str) -> str:
 
 @router.post("/login")
 def login(req: LoginRequest, db: Session = Depends(get_db)):
+    # First check if it's a supplier
+    from app.models.supplier import Supplier
+    supplier = db.query(Supplier).filter(Supplier.name == req.username).first()
+    if not supplier:
+        supplier = db.query(Supplier).filter(Supplier.email == req.username).first()
+
+    if supplier:
+        if supplier.password != req.password:
+            raise HTTPException(status_code=401, detail="Incorrect password")
+        if supplier.status == 'Suspended' or supplier.status == 'Inactive':
+            raise HTTPException(status_code=403, detail="Supplier account is inactive")
+        return {
+            "id": supplier.id,
+            "name": supplier.name,
+            "username": supplier.name,
+            "role": "Supplier",
+            "email": supplier.email,
+            "company_type": getattr(supplier, 'company_type', 'Private Limited'),
+            "contact_person": getattr(supplier, 'contact_person', None),
+            "contact_phone": getattr(supplier, 'contact_phone', None),
+            "address": getattr(supplier, 'address', None),
+            "requires_password_change": supplier.password == 'sup123',
+            "message": "Login successful"
+        }
+
     user = db.query(Employee).filter(Employee.username == req.username).first()
     if not user:
         raise HTTPException(

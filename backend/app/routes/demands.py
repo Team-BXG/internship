@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import schemas, models
+from app.routes.activity_logs import log_activity
 
 router = APIRouter(prefix="/api/demands", tags=["demands"])
 
@@ -40,6 +41,14 @@ def create_demand(d: schemas.DemandCreate, db: Session = Depends(get_db)):
     db.add(db_demand)
     db.commit()
     db.refresh(db_demand)
+    
+    log_activity(
+        db=db,
+        user=d.submitted_by,
+        action="Registered Demand",
+        details=f"Registered demand for {d.full_name} in {d.woreda}, {d.zone} for {d.service_type}"
+    )
+
     return {"message": "Demand registered successfully", "id": db_demand.id}
 
 @router.put("/{id}/status")
@@ -49,6 +58,14 @@ def update_demand_status(id: int, status_update: schemas.BeneficiaryStatusUpdate
         raise HTTPException(status_code=404, detail="Demand not found")
     demand.status = status_update.status
     db.commit()
+
+    log_activity(
+        db=db,
+        user=status_update.submitted_by,
+        action="Updated Demand Status",
+        details=f"Updated status of demand {id} to {status_update.status}"
+    )
+
     return {"message": "Status updated successfully"}
 
 @router.patch("/{id}/assign")
@@ -59,6 +76,17 @@ def assign_demand_supplier(id: int, supplier_update: schemas.DemandAssignSupplie
     demand.status = 'Assigned'
     demand.assigned_supplier_id = supplier_update.supplier_id
     db.commit()
+
+    supplier = db.query(models.Supplier).filter(models.Supplier.id == supplier_update.supplier_id).first()
+    supplier_name = supplier.name if supplier else f"Supplier {supplier_update.supplier_id}"
+
+    log_activity(
+        db=db,
+        user=supplier_update.submitted_by,
+        action="Assigned Supplier",
+        details=f"Assigned demand {id} to {supplier_name}"
+    )
+
     return {"message": "Supplier assigned successfully"}
 
 @router.get("/statistics")

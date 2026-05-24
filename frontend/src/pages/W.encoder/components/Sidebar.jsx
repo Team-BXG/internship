@@ -9,6 +9,7 @@ export default function Sidebar({ activeMenu, setActiveMenu, selectedScope, isCo
     { name: "Beneficiary Registration", icon: ClipboardList },
     { name: "Demand Registration", icon: Zap },
     { name: "Problem Register", icon: AlertTriangle },
+    { name: "Problem Handlings", icon: ClipboardList },
     { name: "Assigned Demands", icon: User },
     { name: "Change Status", icon: RefreshCw },
   ];

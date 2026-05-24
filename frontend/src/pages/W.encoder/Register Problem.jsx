@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { 
-  AlertTriangle, UploadCloud, Search, Plus, X, 
-  Eye, CheckCircle2, Wrench, AlertOctagon, ArrowLeft
+  Plus, Search, AlertTriangle, AlertOctagon, 
+  CheckCircle2, ArrowLeft, UploadCloud, Eye, Wrench, X, Download
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const MAIN_CAUSES = {
   'Home/Lantern': ['Solar Panels', 'Battery', 'Charge Control', 'Cable', 'Switch On/Off', 'Port', 'Lamp', 'Radio', 'Torch/Hand Battery', 'Tv'],
@@ -15,7 +17,8 @@ const MAIN_CAUSES = {
 const INITIAL_MOCK_PROBLEMS = [];
 
 const RegisterProblem = ({ selectedScope }) => {
-  const [problems, setProblems] = useState(INITIAL_MOCK_PROBLEMS);
+  const [problems, setProblems] = useState([]);
+  const [beneficiaries, setBeneficiaries] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedProblem, setSelectedProblem] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -31,14 +34,38 @@ const RegisterProblem = ({ selectedScope }) => {
     zone: selectedScope.zone,
     woreda: selectedScope.woreda,
     mainCause: '',
-    repairDate: '',
-    functionalAgainDate: '',
     problemDescription: '',
-    photo: null
+    photo: null,
+    supplier: ''
   };
 
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [draftExists, setDraftExists] = useState(false);
+
+  const handleBeneficiarySelect = (bId) => {
+    const ben = beneficiaries.find(b => b.id.toString() === bId);
+    if (ben) {
+      setFormData(prev => ({
+        ...prev,
+        beneficiaryName: ben.full_name,
+        equipmentType: ben.equipment_type,
+        supplier: ben.supplier || ''
+      }));
+    }
+  };
+
+  const fetchBeneficiaries = async () => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/beneficiaries?woreda=${selectedScope.woreda}`);
+      if (res.ok) {
+        const data = await res.json();
+        const woredaBens = data.filter(b => b.woreda === selectedScope.woreda);
+        setBeneficiaries(woredaBens);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const fetchProblems = useCallback(async () => {
     try {
@@ -74,12 +101,13 @@ const RegisterProblem = ({ selectedScope }) => {
 
   useEffect(() => {
     fetchProblems();
+    fetchBeneficiaries();
     
     const draft = localStorage.getItem('draft_problem');
     if (draft) {
       setDraftExists(true);
     }
-  }, [fetchProblems]);
+  }, [fetchProblems, selectedScope.woreda]);
 
   const saveDraft = () => {
     localStorage.setItem('draft_problem', JSON.stringify(formData));
@@ -115,7 +143,6 @@ const RegisterProblem = ({ selectedScope }) => {
         ...prev,
         mainCause: '',
         nonFunctionalDate: '',
-        functionalAgainDate: '',
         problemDescription: '',
         photo: null
       }));
@@ -148,6 +175,44 @@ const RegisterProblem = ({ selectedScope }) => {
     });
   }, [problems, searchQuery, statusFilter, selectedScope.zone, selectedScope.woreda]);
 
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(20);
+    doc.setTextColor(41, 128, 185);
+    doc.text('Equipment Problems Report', 14, 22);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
+    doc.text(`Scope: ${selectedScope.zone} / ${selectedScope.woreda}`, 14, 35);
+    
+    const tableColumn = ["Beneficiary", "Serial No", "Equipment", "Level", "Location", "Reported", "Status"];
+    const tableRows = [];
+    
+    filteredProblems.forEach(p => {
+      tableRows.push([
+        p.beneficiary,
+        p.serialNo,
+        p.equipmentTypeLabel,
+        p.problemLevel,
+        p.location,
+        p.reported,
+        p.status
+      ]);
+    });
+    
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 45,
+      theme: 'grid',
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 }
+    });
+    
+    doc.save(`Problems_Report_${selectedScope.woreda}_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
   const stats = {
     open: filteredProblems.filter(p => p.status === 'Open').length,
     repair: filteredProblems.filter(p => p.status === 'Under Repair').length,
@@ -172,7 +237,9 @@ const RegisterProblem = ({ selectedScope }) => {
         urgency: formData.problemLevel?.includes('Not functional') ? 'High' : 'Medium',
         beneficiary_name: formData.beneficiaryName || 'Unknown',
         submitted_by: 'Woreda Encoder',
-        status: 'Open',
+        status: 'Pending Woreda',
+        supplier: formData.supplier || '',
+        occurred_date: formData.nonFunctionalDate || new Date().toISOString(),
         details_json: JSON.stringify(dataToSave)
       };
 
@@ -269,14 +336,6 @@ const RegisterProblem = ({ selectedScope }) => {
               <div className="flex justify-between items-center">
                 <span className="text-slate-400">Reported Date</span>
                 <span className="font-semibold text-slate-800">{selectedProblem.reported}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-400">Repair Date</span>
-                <span className="font-semibold text-slate-800">Not yet</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-400">Functional Again</span>
-                <span className="font-semibold text-slate-800">Not yet</span>
               </div>
             </div>
           </div>
@@ -392,14 +451,30 @@ const RegisterProblem = ({ selectedScope }) => {
           
           <div className="p-6">
             <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2 col-span-2">
+                <label className="text-sm font-semibold text-slate-700">Search & Select Beneficiary *</label>
+                <select 
+                  className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50"
+                  onChange={(e) => handleBeneficiarySelect(e.target.value)}
+                  defaultValue=""
+                >
+                  <option value="" disabled>Select a beneficiary from {selectedScope.woreda}</option>
+                  {beneficiaries.map(b => (
+                    <option key={b.id} value={b.id}>{b.full_name} ({b.equipment_type || 'No Equipment'})</option>
+                  ))}
+                </select>
+                <p className="text-xs text-slate-500">Only beneficiaries in {selectedScope.woreda} are shown.</p>
+              </div>
+
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">Beneficiary Name *</label>
                 <input 
                   type="text" 
                   placeholder="Full name of beneficiary"
-                  className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-100"
                   value={formData.beneficiaryName}
                   onChange={(e) => updateFormData('beneficiaryName', e.target.value)}
+                  readOnly
                 />
               </div>
               <div className="space-y-2">
@@ -427,6 +502,18 @@ const RegisterProblem = ({ selectedScope }) => {
                   <option value="Hydro Power">Off Grid - Hydro Power</option>
                 </select>
               </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">Assigned Supplier</label>
+                <input 
+                  type="text" 
+                  placeholder="Supplier auto-filled"
+                  className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none bg-slate-100 text-slate-500"
+                  value={formData.supplier || 'Not assigned'}
+                  readOnly
+                />
+              </div>
+
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">Problem Level *</label>
                 <select 
@@ -497,25 +584,6 @@ const RegisterProblem = ({ selectedScope }) => {
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">Repair Date (if applicable)</label>
-                <input 
-                  type="date"
-                  className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-600 bg-white"
-                  value={formData.repairDate}
-                  onChange={(e) => updateFormData('repairDate', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">System Functional Again Date</label>
-                <input 
-                  type="date"
-                  className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-600 bg-white"
-                  value={formData.functionalAgainDate}
-                  onChange={(e) => updateFormData('functionalAgainDate', e.target.value)}
-                />
-              </div>
-
               <div className="col-span-2 space-y-2 mt-2">
                 <label className="text-sm font-semibold text-slate-700">Upload Photo (Optional)</label>
                 <label className="w-full h-32 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:border-blue-400 hover:bg-slate-50 transition-colors cursor-pointer">
@@ -535,13 +603,7 @@ const RegisterProblem = ({ selectedScope }) => {
                 <div className="col-span-2 space-y-4 mt-8 p-6 border-t border-slate-200 bg-slate-50/50 rounded-b-xl">
                    <h5 className="font-bold text-slate-800">Additional Survey Information</h5>
                    <div className="space-y-2">
-                     <label className="text-sm text-slate-700 block font-semibold">Enter the date you started working again after stopping.</label>
-                     <input 
-                      type="date"
-                      className="w-1/2 p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-600 bg-white"
-                      value={formData.functionalAgainDate}
-                      onChange={(e) => updateFormData('functionalAgainDate', e.target.value)}
-                    />
+                     <p className="text-sm text-slate-700">System is fully functional. No additional info needed.</p>
                    </div>
                 </div>
               )}
@@ -660,6 +722,13 @@ const RegisterProblem = ({ selectedScope }) => {
             <option value="Under Repair">Under Repair</option>
             <option value="Resolved">Resolved</option>
           </select>
+          <button 
+            onClick={exportToPDF}
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold border border-slate-200"
+          >
+            <Download className="w-4 h-4" />
+            Export PDF
+          </button>
         </div>
 
         <div className="overflow-x-auto">

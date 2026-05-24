@@ -15,3 +15,4 @@ class Supplier(Base):
     company_type = Column(String(100))
     score = Column(Integer, default=0)
     status = Column(String(50), default='Active')
+    password = Column(String(255), default='sup123')

@@ -14,23 +14,19 @@ const Dashboard = ({ supplier }) => {
     const fetchStats = async () => {
       try {
         const [benRes, probRes] = await Promise.all([
-          fetch('http://localhost:8000/api/beneficiaries'),
-          fetch('http://localhost:8000/api/problems')
+          fetch(`http://localhost:8000/api/beneficiaries?supplier=${encodeURIComponent(supplier.name)}`),
+          fetch(`http://localhost:8000/api/problems?supplier=${encodeURIComponent(supplier.name)}`)
         ]);
 
         if (benRes.ok && probRes.ok) {
           const beneficiaries = await benRes.json();
           const problems = await probRes.json();
-
-          // In real implementation, backend would do this based on supplier ID token
-          // Since we don't have supplier ID linked cleanly to problems yet, we mock the stats a bit
-          // or filter by some dummy logic
           
-          setStats({
-            totalBeneficiaries: beneficiaries.length > 0 ? Math.floor(beneficiaries.length / 2) + 1 : 12,
-            openProblems: problems.filter(p => p.status === 'Open').length || 2,
-            resolvedProblems: problems.filter(p => p.status === 'Resolved').length || 5
-          });
+            setStats({
+              totalBeneficiaries: beneficiaries.length,
+              openProblems: problems.filter(p => p.status === 'Open').length,
+              resolvedProblems: problems.filter(p => p.status === 'Seen' || p.status === 'Resolved').length
+            });
         }
       } catch (e) {
         console.error(e);
@@ -69,7 +65,7 @@ const Dashboard = ({ supplier }) => {
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-slate-500 mb-1">Resolved Issues</p>
+            <p className="text-sm font-medium text-slate-500 mb-1">Seen Issues</p>
             <h3 className="text-3xl font-bold text-emerald-600">{stats.resolvedProblems}</h3>
           </div>
           <div className="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">

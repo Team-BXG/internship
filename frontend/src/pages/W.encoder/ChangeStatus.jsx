@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { 
   ArrowLeft, ArrowRight, CheckCircle2, AlertTriangle, 
-  RefreshCw, Eye, MessageSquare, Clock, User
+  RefreshCw, Eye, MessageSquare, Clock, User, Download
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const ChangeStatus = ({ selectedScope }) => {
   const [activeTab, setActiveTab] = useState('demands');
@@ -138,6 +140,43 @@ const ChangeStatus = ({ selectedScope }) => {
     }
   };
 
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(20);
+    doc.setTextColor(41, 128, 185);
+    doc.text('Submissions Status Report', 14, 22);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
+    doc.text(`Scope: ${selectedScope.zone} / ${selectedScope.woreda}`, 14, 35);
+    doc.text(`Category: ${activeTab.toUpperCase()}`, 14, 40);
+    
+    const tableColumn = ["Name", "Type", "Kebele", "Status", "Date"];
+    const tableRows = [];
+    
+    filteredSubmissions.forEach(s => {
+      tableRows.push([
+        s.full_name,
+        s.submissionType.toUpperCase(),
+        s.kebele,
+        s.status,
+        new Date(s.created_at).toLocaleDateString()
+      ]);
+    });
+    
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 50,
+      theme: 'grid',
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 }
+    });
+    
+    doc.save(`Status_Report_${activeTab}_${selectedScope.woreda}.pdf`);
+  };
+
   const getStatusIcon = (status) => {
     switch (status) {
       case 'Pending Woreda Review':
@@ -173,13 +212,22 @@ const ChangeStatus = ({ selectedScope }) => {
           <h3 className="text-2xl font-bold text-slate-800">Change Status</h3>
           <p className="text-slate-500">Manage your demand submissions and responses from approvers</p>
         </div>
-        <button 
-          onClick={fetchSubmissions}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={exportToPDF}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-semibold"
+          >
+            <Download className="w-4 h-4" />
+            Export PDF
+          </button>
+          <button 
+            onClick={fetchSubmissions}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Submissions List */}
@@ -279,7 +327,7 @@ const ChangeStatus = ({ selectedScope }) => {
 
       {/* Details Modal */}
       {showDetailsModal && selectedSubmission && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-white/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-slate-800">Submission Details</h3>

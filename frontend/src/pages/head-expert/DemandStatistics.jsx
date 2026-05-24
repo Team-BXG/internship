@@ -85,6 +85,7 @@ const DemandStatistics = () => {
   };
 
   const filteredDemands = demands.filter(d => {
+    if (d.status === 'Pending Woreda Review') return false;
     const matchesSearch = !searchTerm || 
       d.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       d.zone?.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -133,18 +133,35 @@ def seed_data():
     # --------------------------------
     # Seed Employees
     # --------------------------------
+    c.execute("DELETE FROM employees")
+    
     default_pw = hash_pw("emp123")
     employees = [
-        ("wencoder", default_pw, "Woreda Encoder", "wencoder@sedms.et", "1990-01-01", None, None, now),
-        ("wapprover", default_pw, "Woreda Approver", "wapprover@sedms.et", "1988-02-02", None, None, now),
-        ("zapprover", default_pw, "Zone Approver", "zapprover@sedms.et", "1985-03-03", None, None, now),
-        ("zexpert", default_pw, "Zone Expert", "zexpert@sedms.et", "1980-04-04", None, None, now),
-        ("headexpert", default_pw, "Head Expert", "headexpert@sedms.et", "1975-05-05", None, None, now),
-        ("superadmin", default_pw, "Super Admin", "superadmin@sedms.et", "1970-06-06", None, None, now),
+        # (username, hashed_password, role, email, zone_id, woreda_id, created_at)
+        ("headexpert", default_pw, "Head Expert", "headexpert@sedms.et", None, None, now),
+        ("superadmin", default_pw, "Super Admin", "superadmin@sedms.et", None, None, now),
     ]
+
+    for z_idx, z_tuple in enumerate(zones):
+        zone_id = z_idx + 1
+        zone_name = z_tuple[0].replace(" ", "")
+        employees.extend([
+            (f"{zone_name}ZA", default_pw, "Zone Approver", f"za{zone_id}@sedms.et", zone_id, None, now),
+            (f"{zone_name}ZE", default_pw, "Zone Expert", f"ze{zone_id}@sedms.et", zone_id, None, now),
+        ])
+
+    for w_idx, w_tuple in enumerate(woredas):
+        zone_id = w_tuple[0]
+        woreda_name_clean = w_tuple[1].replace(" ", "")
+        zone_name = zones[zone_id - 1][0].replace(" ", "")
+        woreda_id = w_idx + 1
+        employees.extend([
+            (f"{zone_name}{woreda_name_clean}WE", default_pw, "Woreda Encoder", f"we{zone_id}_{woreda_id}@sedms.et", zone_id, woreda_id, now),
+            (f"{zone_name}{woreda_name_clean}WA", default_pw, "Woreda Approver", f"wa{zone_id}_{woreda_id}@sedms.et", zone_id, woreda_id, now),
+        ])
     c.executemany('''
-        INSERT IGNORE INTO employees (username, hashed_password, role, email, birth_date, national_id_path, profile_photo_path, created_at)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO employees (username, hashed_password, role, email, zone_id, woreda_id, created_at)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     ''', employees)
 
 

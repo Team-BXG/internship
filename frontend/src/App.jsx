@@ -91,19 +91,57 @@ function HeadExpertApp() {
 import SuperAdminDashboard from './pages/SuperAdmin/Dashboard';
 import Login from './pages/Auth/Login';
 
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const userStr = localStorage.getItem('user');
+  if (!userStr) return <Navigate to="/login" replace />;
+  try {
+    const user = JSON.parse(userStr);
+    if (allowedRoles && !allowedRoles.includes(user.role)) {
+       return <Navigate to="/login" replace />;
+    }
+    return children;
+  } catch (e) {
+    return <Navigate to="/login" replace />;
+  }
+};
+
 function App() {
   return (
     <Router>
       <Toaster position="top-right" />
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/wencoder/*" element={<WoredaEncoderDashboard />} />
-        <Route path="/wapprover/*" element={<WoredaApproverDashboard />} />
-        <Route path="/zoneE/*" element={<ZoneExpertDashboard />} />
-        <Route path="/zoneA/*" element={<ZoneApproverDashboard />} />
-        <Route path="/superadmin/*" element={<SuperAdminDashboard />} />
+        <Route path="/wencoder/*" element={
+          <ProtectedRoute allowedRoles={['Woreda Encoder']}>
+            <WoredaEncoderDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/wapprover/*" element={
+          <ProtectedRoute allowedRoles={['Woreda Approver']}>
+            <WoredaApproverDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/zoneE/*" element={
+          <ProtectedRoute allowedRoles={['Zone Expert']}>
+            <ZoneExpertDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/zoneA/*" element={
+          <ProtectedRoute allowedRoles={['Zone Approver']}>
+            <ZoneApproverDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/superadmin/*" element={
+          <ProtectedRoute allowedRoles={['Super Admin']}>
+            <SuperAdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/headexpert/*" element={
+          <ProtectedRoute allowedRoles={['Head Expert']}>
+            <HeadExpertApp />
+          </ProtectedRoute>
+        } />
         <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/headexpert/*" element={<HeadExpertApp />} />
       </Routes>
     </Router>
   );

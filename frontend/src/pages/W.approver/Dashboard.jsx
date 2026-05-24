@@ -4,28 +4,18 @@ import Header from './components/Header';
 import ApproveBeneficiary from './Approve Beneficiary';
 import ReviewDemands from './Review Demands';
 import ApproveProblem from './Approve Problem';
-import ScopeSelector from '../../components/ScopeSelector';
 
 const WoredaApproverDashboard = () => {
   const [activeMenu, setActiveMenu] = useState('Approve Beneficiaries');
-  const [selectedScope, setSelectedScope] = useState({ zone: '', woreda: '' });
-
-  if (!selectedScope.zone || !selectedScope.woreda) {
-    return (
-      <ScopeSelector
-        title="Select Woreda Approver Workspace"
-        subtitle="Choose your zone and woreda. Approvals and updates will be restricted to this area."
-        requireWoreda
-        onConfirm={({ zone, woreda }) => setSelectedScope({ zone, woreda })}
-      />
-    );
-  }
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [selectedScope, setSelectedScope] = useState({ zone: user.zone || '', woreda: user.woreda || '' });
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <div className="flex bg-slate-50 min-h-screen font-sans">
-      <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} selectedScope={selectedScope} />
+      <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} selectedScope={selectedScope} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
-      <div className="flex-1 ml-64 flex flex-col min-h-screen">
+      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
         <Header activeMenu={activeMenu} selectedScope={selectedScope} />
 
         <main className="flex-1 p-8 overflow-y-auto w-full">

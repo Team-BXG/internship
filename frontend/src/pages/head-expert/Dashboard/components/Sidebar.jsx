@@ -1,7 +1,9 @@
 import { LayoutDashboard, Users, Map, Wrench, FileText, UserCog, History, Settings, LogOut, ChevronLeft, Zap } from "lucide-react";
 import logo from '../../../../assets/logo.png';
+import { useNavigate } from 'react-router-dom';
 
 export default function Sidebar({ activeMenu, setActiveMenu, isCollapsed, setIsCollapsed }) {
+  const navigate = useNavigate();
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard },
     { name: "Demand Statistics", icon: Zap },
@@ -14,8 +16,13 @@ export default function Sidebar({ activeMenu, setActiveMenu, isCollapsed, setIsC
     { name: "Settings", icon: Settings },
   ];
 
+  const handleSignOut = () => {
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
+
   return (
-    <aside className={`bg-white border-r border-slate-100 flex flex-col h-screen fixed left-0 top-0 overflow-y-auto transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
+    <aside className={`bg-white border-r border-slate-100 flex flex-col h-screen fixed left-0 top-0 overflow-y-auto z-20 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
       <div className="p-6 flex justify-center">
         <div className={`flex items-center gap-3 font-bold text-lg text-primary ${isCollapsed ? 'justify-center' : ''}`}>
           <img src={logo} alt="SEDMS Logo" className="w-10 h-10 object-contain shrink-0" />
@@ -64,7 +71,11 @@ export default function Sidebar({ activeMenu, setActiveMenu, isCollapsed, setIsC
           <ChevronLeft className={`w-5 h-5 shrink-0 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
           {!isCollapsed && "Collapse"}
         </button>
-        <button className={`flex items-center gap-3 py-2 text-sm font-medium text-slate-500 hover:text-red-500 transition-colors ${isCollapsed ? 'justify-center w-full px-0' : 'px-4'}`}>
+        <button 
+          onClick={handleSignOut}
+          title={isCollapsed ? "Sign Out" : ""}
+          className={`flex items-center gap-3 py-2 text-sm font-medium text-slate-500 hover:text-red-500 transition-colors ${isCollapsed ? 'justify-center w-full px-0' : 'px-4'}`}
+        >
           <LogOut className="w-5 h-5 shrink-0" />
           {!isCollapsed && "Sign Out"}
         </button>

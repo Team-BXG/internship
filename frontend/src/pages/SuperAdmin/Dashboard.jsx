@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Users, Search, Plus, Activity, ExternalLink, ShieldAlert, X, KeyRound, MapPin, Edit2, LayoutDashboard, LogOut, CheckCircle2, AlertCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import AuditLogs from './AuditLogs';
 
 export default function SuperAdminDashboard() {
+  const navigate = useNavigate();
   const [employees, setEmployees] = useState([]);
   const [zones, setZones] = useState([]);
   const [woredas, setWoredas] = useState([]);
@@ -29,6 +31,11 @@ export default function SuperAdminDashboard() {
   const [forcedPasswordData, setForcedPasswordData] = useState({ current: '', new: '', confirm: '' });
   const [newZone, setNewZone] = useState({ name: '' });
   const [newWoreda, setNewWoreda] = useState({ name: '', zone_id: '' });
+
+  const handleSignOut = () => {
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
   
   const fetchData = () => {
     // Note: backend was updated to return { items: [], total: X }
@@ -269,7 +276,7 @@ export default function SuperAdminDashboard() {
           ))}
         </nav>
         <div className="p-4 border-t border-slate-800">
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-500 transition-all">
+          <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-500 transition-all">
             <LogOut className="w-5 h-5" /> Sign Out
           </button>
         </div>

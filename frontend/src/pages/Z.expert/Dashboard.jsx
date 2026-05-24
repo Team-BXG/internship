@@ -2,28 +2,20 @@ import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import AgentRegistration from './AgentRegistration';
-import ScopeSelector from '../../components/ScopeSelector';
+
 import AreaAssignment from '../head-expert/Area assignment/AreaAssignment';
 
 const Dashboard = () => {
   const [activeMenu, setActiveMenu] = useState('Agent Management');
-  const [selectedZone, setSelectedZone] = useState('');
-
-  if (!selectedZone) {
-    return (
-      <ScopeSelector
-        title="Select Zone Expert Workspace"
-        subtitle="Choose the zone to open. All records will be limited to this zone."
-        onConfirm={({ zone }) => setSelectedZone(zone)}
-      />
-    );
-  }
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [selectedZone, setSelectedZone] = useState(user.zone || '');
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <div className="flex bg-slate-50 min-h-screen font-sans">
-      <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} selectedZone={selectedZone} />
+      <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} selectedZone={selectedZone} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
-      <div className="flex-1 ml-64 flex flex-col min-h-screen">
+      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
         <Header activeMenu={activeMenu} selectedZone={selectedZone} />
 
         <main className="flex-1 p-8 overflow-y-auto w-full">

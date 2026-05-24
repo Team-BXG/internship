@@ -4,12 +4,15 @@ import BeneficiaryDetailsModal from '../../components/BeneficiaryDetailsModal';
 
 const BeneficiaryView = ({ selectedZone }) => {
   const [beneficiaries, setBeneficiaries] = useState([]);
+  const [woredas, setWoredas] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Status');
+  const [woredaFilter, setWoredaFilter] = useState('All Woredas');
   const [activeBeneficiary, setActiveBeneficiary] = useState(null);
 
   useEffect(() => {
     fetchBeneficiaries();
+    fetchWoredas();
   }, []);
 
   const fetchBeneficiaries = async () => {
@@ -19,6 +22,32 @@ const BeneficiaryView = ({ selectedZone }) => {
       if (res.ok) {
         const data = await res.json();
         setBeneficiaries(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const fetchWoredas = async () => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/locations/woredas`);
+      if (res.ok) {
+        const data = await res.json();
+        // Filter woredas that belong to the selectedZone
+        // Note: The API returns woredas with a zone_id, we need to match the zone name.
+        // As a shortcut, we can fetch zones to map name -> id, or if data includes zone name, use that.
+        // Assuming woreda has zone_id, let's fetch zones first or just rely on backend zone matching.
+        // Alternatively, the API might not include zone_name. We'll fetch zones to map it.
+        const zonesRes = await fetch(`http://localhost:8000/api/locations/zones`);
+        if (zonesRes.ok) {
+           const zones = await zonesRes.json();
+           const currentZone = zones.find(z => z.name === selectedZone);
+           if (currentZone) {
+               setWoredas(data.filter(w => w.zone_id === currentZone.id));
+           } else {
+               setWoredas(data); // Fallback
+           }
+        }
       }
     } catch (e) {
       console.error(e);
@@ -46,7 +75,8 @@ const BeneficiaryView = ({ selectedZone }) => {
     const matchSearch = b.full_name?.toLowerCase().includes(term) || b.national_id?.toLowerCase().includes(term) || b.woreda?.toLowerCase().includes(term);
     const matchZone = b.zone === selectedZone;
     const matchStatus = statusFilter === 'All Status' ? true : b.status === statusFilter;
-    return matchSearch && matchZone && matchStatus;
+    const matchWoreda = woredaFilter === 'All Woredas' ? true : b.woreda === woredaFilter;
+    return matchSearch && matchZone && matchStatus && matchWoreda;
   });
 
   const uniqueStatuses = [...new Set(beneficiaries.map(b => b.status).filter(Boolean))];
@@ -80,6 +110,14 @@ const BeneficiaryView = ({ selectedZone }) => {
              />
            </div>
            <div className="flex gap-3">
+             <select 
+               className="px-4 py-2.5 bg-white border border-slate-200 rounded-full text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20"
+               value={woredaFilter}
+               onChange={(e) => setWoredaFilter(e.target.value)}
+             >
+                <option value="All Woredas">All Woredas</option>
+                {woredas.map(w => <option key={w.id} value={w.name}>{w.name}</option>)}
+             </select>
              <select 
                className="px-4 py-2.5 bg-white border border-slate-200 rounded-full text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20"
                value={statusFilter}

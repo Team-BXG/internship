@@ -6,32 +6,23 @@ import RegisterDemand from './Register Demand';
 import RegisterProblem from './Register Problem';
 import ChangeStatus from './ChangeStatus';
 import AssignedDemands from './AssignedDemands';
-import ScopeSelector from '../../components/ScopeSelector';
+import WoredaDashboard from './WoredaDashboard';
 
 const Dashboard = () => {
   const [activeMenu, setActiveMenu] = useState('Notifications');
-  const [selectedScope, setSelectedScope] = useState({ zone: '', woreda: '' });
-
-  if (!selectedScope.zone || !selectedScope.woreda) {
-    return (
-      <ScopeSelector
-        title="Select Woreda Encoder Workspace"
-        subtitle="Choose your zone first, then select woreda. Data entry and lists will only use this scope."
-        requireWoreda
-        onConfirm={({ zone, woreda }) => setSelectedScope({ zone, woreda })}
-      />
-    );
-  }
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [selectedScope, setSelectedScope] = useState({ zone: user.zone || '', woreda: user.woreda || '' });
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <div className="flex bg-slate-100 min-h-screen">
-      <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} selectedScope={selectedScope} />
+      <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} selectedScope={selectedScope} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
-      <div className="flex-1 ml-64 flex flex-col min-h-screen">
+      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
         <Header activeMenu={activeMenu} selectedScope={selectedScope} />
 
         <main className="flex-1 p-8 overflow-y-auto">
-          {activeMenu === 'Notifications' && <div className="text-slate-500">Notifications content goes here</div>}
+          {activeMenu === 'Notifications' && <WoredaDashboard selectedScope={selectedScope} />}
           {activeMenu === 'Beneficiary Registration' && <RegisterBeneficiary selectedScope={selectedScope} />}
           {activeMenu === 'Demand Registration' && <RegisterDemand selectedScope={selectedScope} />}
           {activeMenu === 'Problem Register' && <RegisterProblem selectedScope={selectedScope} />}

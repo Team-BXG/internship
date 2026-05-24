@@ -41,11 +41,26 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
     user.last_activity = datetime.datetime.utcnow()
     db.commit()
 
+    zone_name = None
+    woreda_name = None
+    
+    if user.zone_id:
+        from app.models.zone import Zone
+        zone = db.query(Zone).filter(Zone.id == user.zone_id).first()
+        if zone: zone_name = zone.name
+        
+    if user.woreda_id:
+        from app.models.woreda import Woreda
+        woreda = db.query(Woreda).filter(Woreda.id == user.woreda_id).first()
+        if woreda: woreda_name = woreda.name
+
     return {
         "id": user.id,
         "username": user.username,
         "role": user.role,
         "email": user.email,
+        "zone": zone_name,
+        "woreda": woreda_name,
         "requires_password_change": user.requires_password_change,
         "message": "Login successful"
     }

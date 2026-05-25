@@ -11,7 +11,7 @@ const Beneficiaries = ({ supplier }) => {
     const fetchBeneficiaries = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`http://localhost:8000/api/beneficiaries?supplier=${encodeURIComponent(supplier.name)}`);
+        const res = await fetch(`http://localhost:8000/api/beneficiaries?supplier=${supplier.id}`);
         if (res.ok) {
           const data = await res.json();
           setBeneficiaries(data);

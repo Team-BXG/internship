@@ -45,11 +45,15 @@ const RegisterProblem = ({ selectedScope }) => {
   const handleBeneficiarySelect = (bId) => {
     const ben = beneficiaries.find(b => b.id.toString() === bId);
     if (ben) {
+      let details = {};
+      try { details = ben.details_json ? JSON.parse(ben.details_json) : {}; } catch(e){}
       setFormData(prev => ({
         ...prev,
         beneficiaryName: ben.full_name,
         equipmentType: ben.equipment_type,
-        supplier: ben.supplier || ''
+        supplier: ben.supplier || '',
+        serialNumber: details.serialNumber || '',
+        installationDate: details.installationDate || ''
       }));
     }
   };
@@ -237,7 +241,7 @@ const RegisterProblem = ({ selectedScope }) => {
         urgency: formData.problemLevel?.includes('Not functional') ? 'High' : 'Medium',
         beneficiary_name: formData.beneficiaryName || 'Unknown',
         submitted_by: 'Woreda Encoder',
-        status: 'Pending Woreda',
+        status: 'Open',
         supplier: formData.supplier || '',
         occurred_date: formData.nonFunctionalDate || new Date().toISOString(),
         details_json: JSON.stringify(dataToSave)

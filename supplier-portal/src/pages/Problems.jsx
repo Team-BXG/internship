@@ -16,13 +16,10 @@ const Problems = ({ supplier }) => {
   const fetchProblems = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:8000/api/problems');
+      const res = await fetch(`http://localhost:8000/api/problems?supplier=${supplier.id}`);
       if (res.ok) {
         const data = await res.json();
-        // Since we don't have supplier ID linked cleanly to problems yet, we mock the filtering a bit
-        // by only keeping some problems for this supplier for demo purposes.
-        // In a real backend, we'd do: SELECT * FROM problems WHERE ...
-        const filtered = data.filter((_, i) => i % 2 === 0);
+        const filtered = data;
         
         const mapped = filtered.map(p => {
           const details = p.details_json ? JSON.parse(p.details_json) : {};

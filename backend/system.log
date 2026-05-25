@@ -97,3 +97,8 @@
 2026-05-24 14:30:24,160 - sedms_app - INFO - Logtail Better Stack Integration Activated!
 2026-05-24 14:50:09,347 - sedms_app - INFO - {"action": "Supplier Created", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "Created supplier Ethio sele with license 0998", "status": "SUCCESS", "timestamp": "2026-05-24T11:50:09.347135"}
 2026-05-24 14:59:02,821 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-25 07:58:28,751 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-25 07:58:31,146 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-25 08:07:23,812 - sedms_app - INFO - {"action": "Supplier Created", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "Created supplier Solar High with license 9899", "status": "SUCCESS", "timestamp": "2026-05-25T05:07:23.812405"}
+2026-05-25 08:21:39,823 - sedms_app - INFO - {"action": "Password Reset", "user": "superadmin", "role": "Super Admin", "woreda": "N/A", "zone": "N/A", "details": "Reset password for employee AwiZA", "status": "SUCCESS", "timestamp": "2026-05-25T05:21:39.823585"}
+2026-05-25 08:23:07,717 - sedms_app - INFO - {"action": "Password Changed", "user": "AwiZA", "role": "Zone Approver", "woreda": "N/A", "zone": "N/A", "details": "AwiZA changed their initial password", "status": "SUCCESS", "timestamp": "2026-05-25T05:23:07.717163"}

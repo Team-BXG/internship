@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 
 const ChangePassword = ({ user, onComplete }) => {
   const [newPassword, setNewPassword] = useState('');
@@ -9,7 +10,7 @@ const ChangePassword = ({ user, onComplete }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
     
@@ -26,12 +27,13 @@ const ChangePassword = ({ user, onComplete }) => {
       const data = await res.json();
       
       if (res.ok) {
+        toast.success("Password changed successfully!");
         onComplete();
       } else {
-        setError(data.detail || 'Failed to update password');
+        toast.error(data.detail || 'Failed to update password');
       }
     } catch (err) {
-      setError('Unable to connect to the server.');
+      toast.error('Unable to connect to the server.');
     } finally {
       setLoading(false);
     }
@@ -44,12 +46,6 @@ const ChangePassword = ({ user, onComplete }) => {
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">Set New Password</h1>
           <p className="text-slate-500 mt-2 text-sm">Please change your default password to continue using the portal.</p>
         </div>
-
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100 font-medium text-center">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>

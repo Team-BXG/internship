@@ -15,7 +15,7 @@ class Problem(Base):
     serial_number = Column(String(100))
     beneficiary_name = Column(String(255))
     submitted_by = Column(String(255))
-    status = Column(String(50), default='Pending')
+    status = Column(String(50), default='Open')
     urgency = Column(String(50))
     details_json = Column(Text)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)

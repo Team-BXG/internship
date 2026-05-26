@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogIn, User, Lock, ShieldAlert, KeyRound, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
+import api from '../../api';
 
 import heroBg from '../../assets/hero_uploaded.jpg';
 import logo from '../../assets/logo.png';
@@ -10,14 +11,14 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   // Forced Password Change States
   const [showPwdModal, setShowPwdModal] = useState(false);
   const [tempUserData, setTempUserData] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [pwdLoading, setPwdLoading] = useState(false);
-  
+
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -25,26 +26,21 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:8000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
+      const res = await api.post('/auth/login', { username, password });
+      const data = res.data;
 
-      const data = await res.json();
-
-      if (res.ok) {
-        if (data.requires_password_change) {
-          setTempUserData(data);
-          setShowPwdModal(true);
-        } else {
-          proceedWithLogin(data);
-        }
+      if (data.requires_password_change) {
+        setTempUserData(data);
+        setShowPwdModal(true);
       } else {
-        toast.error(data.detail || 'Login failed');
+        proceedWithLogin(data);
       }
     } catch (err) {
-      toast.error('Network error during login');
+      if (err.response && err.response.data) {
+        toast.error(err.response.data.detail || 'Login failed');
+      } else {
+        toast.error('Network error during login');
+      }
     } finally {
       setLoading(false);
     }
@@ -52,9 +48,24 @@ export default function Login() {
 
   const proceedWithLogin = (userData) => {
     toast.success(`Welcome back!`);
-    localStorage.setItem('user', JSON.stringify(userData));
     
-    switch(userData.role) {
+    // Save tokens if they are provided
+    if (userData.access_token) {
+      localStorage.setItem('access_token', userData.access_token);
+    }
+    if (userData.refresh_token) {
+      localStorage.setItem('refresh_token', userData.refresh_token);
+    }
+    
+    // Clean up tokens from user object before saving
+    const userToSave = { ...userData };
+    delete userToSave.access_token;
+    delete userToSave.refresh_token;
+    delete userToSave.token_type;
+
+    localStorage.setItem('user', JSON.stringify(userToSave));
+
+    switch (userData.role) {
       case 'Woreda Encoder': navigate('/wencoder'); break;
       case 'Woreda Approver': navigate('/wapprover'); break;
       case 'Zone Approver': navigate('/zoneA'); break;
@@ -75,7 +86,7 @@ export default function Login() {
       toast.error("Password must be at least 8 characters long");
       return;
     }
-    
+
     setPwdLoading(true);
     try {
       const res = await fetch(`http://localhost:8000/api/employees/${tempUserData.id}/change-initial-password`, {
@@ -187,8 +198,8 @@ export default function Login() {
                 <label className="text-sm font-semibold text-slate-700">New Password</label>
                 <div className="relative">
                   <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     required
                     value={newPassword}
                     onChange={e => setNewPassword(e.target.value)}
@@ -204,8 +215,8 @@ export default function Login() {
                 <label className="text-sm font-semibold text-slate-700">Confirm Password</label>
                 <div className="relative">
                   <Check className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
                     required
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
@@ -218,8 +229,8 @@ export default function Login() {
                 )}
               </div>
               <div className="pt-2">
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={pwdLoading}
                   className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-slate-900/20 transition-all disabled:opacity-50"
                 >

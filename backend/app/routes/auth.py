@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.employee import Employee
+from app.security import create_access_token, create_refresh_token, decode_token, verify_password
 import hashlib
+import datetime
 
 router = APIRouter(
     prefix="/api/auth",
@@ -14,7 +16,11 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
-def hash_pw(pw: str) -> str:
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
+def hash_pw_legacy(pw: str) -> str:
+    """Legacy SHA256 password hash function to support old accounts"""
     return hashlib.sha256(pw.encode()).hexdigest()
 
 @router.post("/login")
@@ -26,11 +32,23 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
         supplier = db.query(Supplier).filter(Supplier.email == req.username).first()
 
     if supplier:
-        if supplier.password != req.password:
+        # Support both plain text legacy and bcrypt
+        is_valid_pwd = False
+        if supplier.password == req.password:
+            is_valid_pwd = True
+        else:
+            try:
+                if verify_password(req.password, supplier.password):
+                    is_valid_pwd = True
+            except Exception:
+                pass
+
+        if not is_valid_pwd:
             raise HTTPException(status_code=401, detail="Incorrect password")
         if supplier.status == 'Suspended' or supplier.status == 'Inactive':
             raise HTTPException(status_code=403, detail="Supplier account is inactive")
-        return {
+        
+        user_data = {
             "id": supplier.id,
             "name": supplier.name,
             "username": supplier.name,
@@ -43,6 +61,16 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
             "requires_password_change": supplier.password == 'sup123',
             "message": "Login successful"
         }
+        
+        access_token = create_access_token(data={"sub": supplier.id, "role": "Supplier"})
+        refresh_token = create_refresh_token(data={"sub": supplier.id, "role": "Supplier"})
+        
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            **user_data
+        }
 
     user = db.query(Employee).filter(Employee.username == req.username).first()
     if not user:
@@ -51,7 +79,18 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
             detail="Incorrect username or password",
         )
     
-    if user.hashed_password != hash_pw(req.password):
+    # Support both legacy sha256 and bcrypt
+    is_valid_pwd = False
+    if user.hashed_password == hash_pw_legacy(req.password):
+        is_valid_pwd = True
+    else:
+        try:
+            if verify_password(req.password, user.hashed_password):
+                is_valid_pwd = True
+        except Exception:
+            pass
+            
+    if not is_valid_pwd:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -62,7 +101,6 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
             detail="Account is disabled",
         )
         
-    import datetime
     user.last_activity = datetime.datetime.utcnow()
     db.commit()
 
@@ -79,7 +117,7 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
         woreda = db.query(Woreda).filter(Woreda.id == user.woreda_id).first()
         if woreda: woreda_name = woreda.name
 
-    return {
+    user_data = {
         "id": user.id,
         "username": user.username,
         "role": user.role,
@@ -89,3 +127,40 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
         "requires_password_change": user.requires_password_change,
         "message": "Login successful"
     }
+
+    access_token = create_access_token(data={"sub": user.id, "role": user.role})
+    refresh_token = create_refresh_token(data={"sub": user.id, "role": user.role})
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        **user_data
+    }
+
+@router.post("/refresh")
+def refresh_token(req: RefreshRequest):
+    """Refreshes an access token using a valid refresh token."""
+    try:
+        payload = decode_token(req.refresh_token)
+        if payload.get("type") != "refresh":
+            raise ValueError("Invalid token type")
+            
+        user_id = payload.get("sub")
+        role = payload.get("role")
+        
+        if user_id is None or role is None:
+            raise ValueError("Invalid token payload")
+            
+        # Issue a new access token
+        new_access_token = create_access_token(data={"sub": user_id, "role": role})
+        return {
+            "access_token": new_access_token,
+            "token_type": "bearer"
+        }
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e),
+            headers={"WWW-Authenticate": "Bearer"},
+        )

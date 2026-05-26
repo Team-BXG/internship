@@ -102,3 +102,5 @@
 2026-05-25 08:07:23,812 - sedms_app - INFO - {"action": "Supplier Created", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "Created supplier Solar High with license 9899", "status": "SUCCESS", "timestamp": "2026-05-25T05:07:23.812405"}
 2026-05-25 08:21:39,823 - sedms_app - INFO - {"action": "Password Reset", "user": "superadmin", "role": "Super Admin", "woreda": "N/A", "zone": "N/A", "details": "Reset password for employee AwiZA", "status": "SUCCESS", "timestamp": "2026-05-25T05:21:39.823585"}
 2026-05-25 08:23:07,717 - sedms_app - INFO - {"action": "Password Changed", "user": "AwiZA", "role": "Zone Approver", "woreda": "N/A", "zone": "N/A", "details": "AwiZA changed their initial password", "status": "SUCCESS", "timestamp": "2026-05-25T05:23:07.717163"}
+2026-05-26 17:38:41,127 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-05-26 17:38:46,694 - sedms_app - INFO - Logtail Better Stack Integration Activated!

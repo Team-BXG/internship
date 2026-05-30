@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text
+from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
+from sqlalchemy.orm import relationship
 import datetime
 from app.database import Base
 
@@ -9,8 +10,7 @@ class Problem(Base):
     title = Column(String(255))
     category = Column(String(100))
     kebele = Column(String(255))
-    woreda = Column(String(255))
-    zone = Column(String(255))
+    woreda_id = Column(Integer, ForeignKey("woredas.id"), nullable=True)
     equipment = Column(String(255))
     serial_number = Column(String(100))
     beneficiary_name = Column(String(255))
@@ -23,3 +23,5 @@ class Problem(Base):
     fixed_date = Column(DateTime, nullable=True)
     days_unfunctional = Column(Integer, nullable=True)
     supplier = Column(String(255), nullable=True)
+
+    woreda = relationship("Woreda")

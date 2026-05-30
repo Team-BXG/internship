@@ -1,9 +1,10 @@
-import React from 'react';
-import { MapContainer, TileLayer, Marker, Tooltip } from 'react-leaflet';
+import React, { useState } from 'react';
+import { MapContainer, TileLayer, Marker, Tooltip, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { Info, ShieldAlert, CheckCircle, AlertTriangle } from 'lucide-react';
 
-
+// Reset Leaflet icon paths
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -11,93 +12,246 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+// Setup premium multi-colored marker icons for equipment status
+const shadowUrl = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png';
+const iconSize = [25, 41];
+const iconAnchor = [12, 41];
+const popupAnchor = [1, -34];
+const shadowSize = [41, 41];
+
+const greenIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl, iconSize, iconAnchor, popupAnchor, shadowSize
+});
+
+const yellowIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png',
+  shadowUrl, iconSize, iconAnchor, popupAnchor, shadowSize
+});
+
+const orangeIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+  shadowUrl, iconSize, iconAnchor, popupAnchor, shadowSize
+});
 
 const redIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
+  shadowUrl, iconSize, iconAnchor, popupAnchor, shadowSize
 });
 
-// Approximate coordinate centers for zones in Amhara region
-const zoneCoordinates = {
-  "North Gondar": [12.6000, 37.4600],
-  "East Gojam": [10.3300, 37.7300],
-  "South Wollo": [11.1300, 39.6300],
-  "Awi": [10.6600, 36.5600],
-  "Wag Hemra": [12.6300, 38.6400],
-  "West Gojam": [10.9700, 37.4300],
-  "Oromia Zone": [10.8700, 40.0300],
-  "North Wollo": [11.9000, 39.3000],
-  "South Gondar": [11.7000, 38.0000],
-  "North Shewa": [9.8000, 39.4000]
-};
-
-// Amhara Region Center (Bahir Dar area)
-const defaultCenter = [11.5936, 37.3908];
-
-// Helper to generate a reliable scatter offset based purely on the assignment ID.
-// This ensures that pins scatter randomly, but stay PERMANENTLY in their exact spot without jumping around.
-function getStableOffset(seed) {
-  // A simple seeded random number generator
-  const x = Math.sin(seed * 12.9898 + 1) * 43758.5453;
-  const y = Math.sin(seed * 78.233 + 2) * 43758.5453;
-
-  // Convert to scatter offsets between -0.4 and +0.4 degrees (~44km spread)
-  const latOffset = (x - Math.floor(x) - 0.5) * 0.8;
-  const lngOffset = (y - Math.floor(y) - 0.5) * 0.8;
-
-  return [latOffset, lngOffset];
+function getMarkerIcon(problemUrgency) {
+  if (!problemUrgency) return greenIcon;
+  const urgency = problemUrgency.toLowerCase();
+  if (urgency === 'high' || urgency === 'critical') return redIcon;
+  if (urgency === 'medium') return orangeIcon;
+  return yellowIcon;
 }
 
-export default function AmharaMap({ assignments }) {
+// Custom DivIcon for cluster/representative badges (zoomed out mode)
+const createClusterIcon = (count, highestUrgency) => {
+  let colorClass = 'bg-emerald-500 border-emerald-200 text-white hover:bg-emerald-600';
+  if (highestUrgency === 'High' || highestUrgency === 'Critical') {
+    colorClass = 'bg-rose-500 border-rose-200 text-white animate-pulse hover:bg-rose-600';
+  } else if (highestUrgency === 'Medium') {
+    colorClass = 'bg-amber-500 border-amber-200 text-white hover:bg-amber-600';
+  } else if (highestUrgency === 'Low') {
+    colorClass = 'bg-yellow-400 border-yellow-200 text-slate-800 hover:bg-yellow-500';
+  }
+
+  return L.divIcon({
+    html: `<div class="flex items-center justify-center w-10 h-10 rounded-full shadow-lg border-2 font-black text-[13px] transition-all duration-300 transform hover:scale-110 ${colorClass}">
+             <span>${count}</span>
+           </div>`,
+    className: 'custom-cluster-icon',
+    iconSize: [40, 40],
+    iconAnchor: [20, 20]
+  });
+};
+
+// Stable offset to scatter pins in the same woreda coordinate slightly so they don't block each other
+function getStableOffset(id) {
+  const seed = parseInt(id) || 1;
+  const x = Math.sin(seed * 12.9898) * 0.007; // ~700m spread max
+  const y = Math.cos(seed * 78.233) * 0.007;
+  return [x, y];
+}
+
+// Zoom listener component
+function ZoomListener({ onChangeZoom }) {
+  useMapEvents({
+    zoomend: (e) => {
+      onChangeZoom(e.target.getZoom());
+    }
+  });
+  return null;
+}
+
+const defaultCenter = [11.5936, 37.3908]; // Centered on Bahir Dar / Amhara Region
+
+export default function AmharaMap({ beneficiaries, onSelectBeneficiary }) {
+  const [zoom, setZoom] = useState(7);
+
+  // Group beneficiaries for clustering when zoomed out (zoom < 9)
+  const renderClusteredMarkers = () => {
+    // Group by woreda_id
+    const groups = {};
+    beneficiaries.forEach(b => {
+      if (!b.woreda_id || b.latitude === null || b.longitude === null) return;
+      if (!groups[b.woreda_id]) {
+        groups[b.woreda_id] = {
+          woredaName: b.woreda_name,
+          zoneName: b.zone_name,
+          latitude: b.latitude,
+          longitude: b.longitude,
+          items: []
+        };
+      }
+      groups[b.woreda_id].items.push(b);
+    });
+
+    return Object.values(groups).map((group, idx) => {
+      const count = group.items.length;
+      
+      // Determine highest urgency problem in this woreda group
+      let highestUrgency = null;
+      group.items.forEach(item => {
+        if (!item.problem_urgency) return;
+        const urg = item.problem_urgency;
+        if (urg === 'High' || urg === 'Critical') highestUrgency = 'High';
+        else if (urg === 'Medium' && highestUrgency !== 'High') highestUrgency = 'Medium';
+        else if (urg === 'Low' && !highestUrgency) highestUrgency = 'Low';
+      });
+
+      const position = [group.latitude, group.longitude];
+      const clusterIcon = createClusterIcon(count, highestUrgency);
+
+      return (
+        <Marker 
+          key={`woreda-cluster-${idx}`} 
+          position={position} 
+          icon={clusterIcon}
+          eventHandlers={{
+            click: () => {
+              // Select the first beneficiary in the cluster as representative details
+              if (onSelectBeneficiary && group.items.length > 0) {
+                onSelectBeneficiary(group.items[0], group.items);
+              }
+            }
+          }}
+        >
+          <Tooltip direction="top" offset={[0, -20]} opacity={1}>
+            <div className="p-1 min-w-[140px] text-xs">
+              <strong className="block text-slate-800 text-[13px] font-bold border-b pb-1 mb-1">
+                {group.woredaName} Woreda
+              </strong>
+              <div className="text-slate-500 font-semibold mb-1">{group.zoneName}</div>
+              <div className="flex items-center gap-1.5 text-blue-600 font-bold">
+                <Info size={12} />
+                <span>{count} Equipment Systems</span>
+              </div>
+            </div>
+          </Tooltip>
+        </Marker>
+      );
+    });
+  };
+
+  // Render individual markers when zoomed in (zoom >= 9)
+  const renderIndividualMarkers = () => {
+    return beneficiaries.map((b, index) => {
+      if (b.latitude === null || b.longitude === null) return null;
+
+      // Apply microscopic stable offset so overlapping coordinates spread out beautifully
+      const [latOffset, lngOffset] = getStableOffset(b.id || index + 1);
+      const position = [b.latitude + latOffset, b.longitude + lngOffset];
+      const icon = getMarkerIcon(b.problem_urgency);
+
+      return (
+        <Marker 
+          key={`beneficiary-${b.id || index}`} 
+          position={position} 
+          icon={icon}
+          eventHandlers={{
+            click: () => {
+              if (onSelectBeneficiary) {
+                onSelectBeneficiary(b, null);
+              }
+            }
+          }}
+        >
+          <Tooltip direction="top" offset={[0, -30]} opacity={1}>
+            <div className="text-xs min-w-[160px]">
+              <strong className="block text-slate-800 text-[13px] font-bold border-b pb-1 mb-1 flex items-center justify-between">
+                <span>{b.full_name}</span>
+                {b.problem_urgency && (
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-white ${
+                    b.problem_urgency.toLowerCase() === 'high' || b.problem_urgency.toLowerCase() === 'critical' ? 'bg-red-500' :
+                    b.problem_urgency.toLowerCase() === 'medium' ? 'bg-orange-500' : 'bg-yellow-500'
+                  }`}>
+                    {b.problem_urgency} Issue
+                  </span>
+                )}
+              </strong>
+              <div className="text-slate-600 flex flex-col gap-0.5 font-medium">
+                <div><span className="text-slate-400 font-semibold">Equipment:</span> {b.equipment_type}</div>
+                <div><span className="text-slate-400 font-semibold">Zone:</span> {b.zone_name}</div>
+                <div><span className="text-slate-400 font-semibold">Woreda:</span> {b.woreda_name}</div>
+                <div><span className="text-slate-400 font-semibold">Kebele:</span> {b.kebele || 'N/A'}</div>
+              </div>
+            </div>
+          </Tooltip>
+        </Marker>
+      );
+    });
+  };
+
   return (
-    <div className="w-full rounded-[16px] overflow-hidden border border-blue-400/20 shadow-inner" style={{ height: '500px', minHeight: '500px' }}>
-      <MapContainer
-        center={defaultCenter}
-        zoom={7}
-        scrollWheelZoom={false}
-        style={{ height: '500px', width: '100%', zIndex: 0 }}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+    <div className="w-full flex flex-col gap-4">
+      {/* Interactive Map */}
+      <div className="w-full rounded-[24px] overflow-hidden border border-slate-200 shadow-md relative z-10" style={{ height: '550px' }}>
+        <MapContainer
+          center={defaultCenter}
+          zoom={7}
+          scrollWheelZoom={true}
+          style={{ height: '100%', width: '100%', zIndex: 0 }}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <ZoomListener onChangeZoom={setZoom} />
 
-        {assignments && assignments.map((assignment, index) => {
-          const baseCoords = zoneCoordinates[assignment.zone_name];
-          if (!baseCoords) return null; // If we don't know the zone coords, skip
+          {zoom < 9 ? renderClusteredMarkers() : renderIndividualMarkers()}
+        </MapContainer>
+      </div>
 
-          // Using a stable pseudo-random offset based on the unique assignment ID.
-          // This scatters them so they NEVER overlap, but permanently anchors them so they NEVER move!
-          const seed = parseInt(assignment.id) || index + 1;
-          const [latOffset, lngOffset] = getStableOffset(seed);
-
-          const position = [
-            baseCoords[0] + latOffset,
-            baseCoords[1] + lngOffset
-          ];
-
-          return (
-            <Marker key={assignment.id || index} position={position} icon={redIcon}>
-              <Tooltip direction="top" offset={[0, -30]} opacity={1}>
-                <div className="text-sm min-w-[150px]">
-                  <strong className="block text-red-600 text-base mb-2 border-b pb-1">
-                    {assignment.supplier_name}
-                  </strong>
-                  <div className="text-slate-700 flex flex-col gap-1">
-                    <div><span className="font-semibold text-slate-500">Zone:</span> {assignment.zone_name}</div>
-                    <div><span className="font-semibold text-slate-500">Woreda:</span> {assignment.woreda_name}</div>
-                    <div><span className="font-semibold text-slate-500">Kebele:</span> {assignment.kebele}</div>
-                  </div>
-                </div>
-              </Tooltip>
-            </Marker>
-          );
-        })}
-      </MapContainer>
+      {/* Premium Visual Legend */}
+      <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 mt-2 shadow-inner">
+        <div className="flex items-center gap-2">
+          <Info size={16} className="text-blue-500 stroke-[2.5]" />
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+            Map Mode: {zoom < 9 ? 'Representative Clusters (Zoom In for details)' : 'Individual Systems'}
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center gap-6">
+          <div className="flex items-center gap-2">
+            <CheckCircle size={16} className="text-emerald-500" />
+            <span className="text-xs font-bold text-slate-700">Healthy / Functional (Default Green)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <AlertTriangle size={16} className="text-yellow-500" />
+            <span className="text-xs font-bold text-slate-700">Low Urgency Problem (Yellow)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <AlertTriangle size={16} className="text-orange-500" />
+            <span className="text-xs font-bold text-slate-700">Medium Urgency Problem (Orange)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ShieldAlert size={16} className="text-rose-500 stroke-[2.5] animate-pulse" />
+            <span className="text-xs font-bold text-slate-700">Critical / High Severity Problem (Red)</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

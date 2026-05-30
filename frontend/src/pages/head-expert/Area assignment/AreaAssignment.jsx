@@ -1,235 +1,252 @@
 import { useState, useEffect } from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin, Info, ArrowLeftRight, User, Phone, CheckCircle, ShieldAlert, AlertTriangle, Layers, Calendar } from 'lucide-react';
 import AmharaMap from './AmharaMap';
 
-export default function AreaAssignment({ selectedZone }) {
-  const [options, setOptions] = useState({ suppliers: [], zones: [], woredas: [] });
-  const [formData, setFormData] = useState({
-    supplier_id: "",
-    zone_id: "",
-    woreda_id: "",
-    kebele: ""
-  });
-  const [assignments, setAssignments] = useState([]);
+export default function AreaAssignment() {
+  const [beneficiaries, setBeneficiaries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState(null);
+  const [selectedBeneficiary, setSelectedBeneficiary] = useState(null);
+  const [clusterList, setClusterList] = useState([]);
 
   useEffect(() => {
-    fetchOptions();
-    fetchAssignments();
+    fetchBeneficiaries();
   }, []);
 
-  const fetchOptions = async () => {
+  const fetchBeneficiaries = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/area-options');
+      const res = await fetch('http://localhost:8000/api/beneficiaries');
       const data = await res.json();
-      if (res.ok && data.suppliers) {
-        setOptions(data);
-      } else {
-        console.error("Error formatting option data:", data);
-        setOptions({ suppliers: [], zones: [], woredas: [] });
-      }
-    } catch (err) {
-      console.error("Error fetching options:", err);
-      setOptions({ suppliers: [], zones: [], woredas: [] });
-    }
-  };
-
-  const fetchAssignments = async () => {
-    try {
-      const res = await fetch('http://localhost:8000/api/area-assignments');
-      const data = await res.json();
-      setAssignments(data.assignments || []);
+      setBeneficiaries(data || []);
       setLoading(false);
     } catch (err) {
-      console.error("Error fetching assignments:", err);
+      console.error("Error fetching beneficiaries:", err);
       setLoading(false);
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === "zone_id") {
-      // Clear woreda when zone changes
-      setFormData(prev => ({ ...prev, zone_id: value, woreda_id: "" }));
+  const handleSelectBeneficiary = (beneficiary, clusterItems) => {
+    setSelectedBeneficiary(beneficiary);
+    if (clusterItems) {
+      setClusterList(clusterItems);
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setClusterList([]);
     }
   };
 
-  const calculateCoverage = () => {
-    const baseCoverage = 45;
-    const additional = assignments.length * 2;
-    return Math.min(100, baseCoverage + additional);
-  };
+  // Count active problems in the system
+  const totalIssuesCount = beneficiaries.filter(b => b.problem_urgency !== null).length;
+  const highIssuesCount = beneficiaries.filter(b => b.problem_urgency === 'High' || b.problem_urgency === 'Critical').length;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    setMessage(null);
-
-    if (!formData.supplier_id || !formData.zone_id || !formData.woreda_id || !formData.kebele) {
-      setSaving(false);
-      setMessage({ type: 'error', text: 'Please fill out all fields.' });
-      return;
-    }
-
-    try {
-      const res = await fetch('http://localhost:8000/api/area-assignments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          supplier_id: parseInt(formData.supplier_id),
-          zone_id: parseInt(formData.zone_id),
-          woreda_id: parseInt(formData.woreda_id),
-          kebele: formData.kebele
-        }),
-      });
-
-      if (res.ok) {
-        setMessage({ type: 'success', text: 'Assignment saved successfully!' });
-        setFormData({ supplier_id: "", zone_id: "", woreda_id: "", kebele: "" });
-        fetchAssignments();
-      } else {
-        const errData = await res.json();
-        setMessage({ type: 'error', text: errData.detail || 'Failed to save.' });
-      }
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Network error. Could not save.' });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const filteredWoredas = formData.zone_id
-    ? options.woredas.filter(w => w.zone_id === parseInt(formData.zone_id))
-    : options.woredas;
-
-  const coverage = calculateCoverage();
-
-  if (loading) return <div className="text-slate-400 font-bold p-8">Loading Area Data...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[500px] text-slate-400 font-bold p-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+        <span>Loading Equipment Distribution Data...</span>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-7xl mx-auto w-full">
-      <div className="mb-8">
-        <h1 className="text-2xl font-extrabold text-slate-800">Area Assignment</h1>
-        <p className="text-slate-500 text-sm mt-1">Assign suppliers to zones, woredas, and kebeles</p>
+    <div className="max-w-7xl mx-auto w-full flex flex-col gap-6">
+      {/* Premium Dashboard Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-6">
+        <div>
+          <h1 className="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+            <MapPin className="text-blue-600 stroke-[2.5] w-8 h-8" />
+            Equipment Distribution Map
+          </h1>
+          <p className="text-slate-500 text-sm mt-1 font-medium">
+            Monitor real-time system locations, status metrics, and equipment problems across Amhara woredas.
+          </p>
+        </div>
+
+        {/* Dynamic Metric Badges */}
+        <div className="flex flex-wrap gap-3">
+          <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 px-4 py-2 rounded-2xl flex items-center gap-2 shadow-sm">
+            <CheckCircle size={16} className="stroke-[2.5]" />
+            <div className="flex flex-col">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-500">Active Systems</span>
+              <span className="text-sm font-black">{beneficiaries.length - totalIssuesCount} / {beneficiaries.length}</span>
+            </div>
+          </div>
+
+          {totalIssuesCount > 0 && (
+            <div className="bg-amber-50 border border-amber-100 text-amber-700 px-4 py-2 rounded-2xl flex items-center gap-2 shadow-sm">
+              <AlertTriangle size={16} className="stroke-[2.5]" />
+              <div className="flex flex-col">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-500">Total Warnings</span>
+                <span className="text-sm font-black">{totalIssuesCount} Issues</span>
+              </div>
+            </div>
+          )}
+
+          {highIssuesCount > 0 && (
+            <div className="bg-rose-50 border border-rose-100 text-rose-700 px-4 py-2 rounded-2xl flex items-center gap-2 shadow-sm animate-pulse">
+              <ShieldAlert size={16} className="stroke-[2.5]" />
+              <div className="flex flex-col">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-500">Critical Alerts</span>
+                <span className="text-sm font-black">{highIssuesCount} Serious</span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Main Card */}
-      <div className="bg-white rounded-[24px] shadow-sm border border-slate-100 p-8 flex flex-col xl:flex-row gap-8 items-start w-full">
-
-        {/* Form Section (Left Side) */}
-        <div className="flex-1 w-full xl:max-w-[450px]">
-          <h2 className="text-lg font-bold text-[#1e3a8a] mb-6 flex items-center gap-2">
-            Assign Supplier to Area
-          </h2>
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-
-            {/* Row 1 */}
-            <div className="flex flex-row gap-6 w-full">
-              <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-semibold text-slate-700">Supplier</label>
-                <select
-                  name="supplier_id"
-                  value={formData.supplier_id}
-                  onChange={handleChange}
-                  className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none w-full"
-                >
-                  <option value="">Select Supplier</option>
-                  {options.suppliers.map(s => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-semibold text-slate-700">Zone</label>
-                <select
-                  name="zone_id"
-                  value={formData.zone_id}
-                  onChange={handleChange}
-                  className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none w-full"
-                >
-                  <option value="">Select Zone</option>
-                  {options.zones
-                    .filter(z => !selectedZone || z.name === selectedZone)
-                    .map(z => (
-                    <option key={z.id} value={z.id}>{z.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Row 2 */}
-            <div className="flex flex-row gap-6 w-full">
-              <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-semibold text-slate-700">Woreda</label>
-                <select
-                  name="woreda_id"
-                  value={formData.woreda_id}
-                  onChange={handleChange}
-                  className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none w-full"
-                >
-                  <option value="">Select Woreda</option>
-                  {filteredWoredas.map(w => (
-                    <option key={w.id} value={w.id}>{w.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-2 flex-1">
-                <label className="text-sm font-semibold text-slate-700">Kebele</label>
-                <input
-                  type="text"
-                  name="kebele"
-                  value={formData.kebele}
-                  onChange={handleChange}
-                  placeholder="Enter Kebele"
-                  className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-                />
-              </div>
-            </div>
-
-            {/* Message Alert */}
-            {message && (
-              <div className={`p-4 rounded-xl text-sm font-medium ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                {message.text}
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <div>
-              <button
-                type="submit"
-                disabled={saving}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-xl shadow-md shadow-blue-500/30 transition-all disabled:opacity-70 mt-2"
-              >
-                {saving ? 'Saving...' : 'New Assignment'}
-              </button>
-            </div>
-          </form>
+      {/* Main Split Layout */}
+      <div className="flex flex-col xl:flex-row gap-6 items-stretch w-full">
+        {/* Map Section (Main Card) */}
+        <div className="flex-1 min-w-[300px]">
+          <AmharaMap 
+            beneficiaries={beneficiaries} 
+            onSelectBeneficiary={handleSelectBeneficiary} 
+          />
         </div>
 
-        {/* Map Section (Right Side / Bottom) */}
-        <div className="w-full xl:flex-[2] bg-white border border-slate-200 rounded-[24px] p-4 flex flex-col relative overflow-hidden min-h-[600px] shadow-sm">
-          <h3 className="font-bold text-slate-800 mb-4 text-[16px] px-2 flex justify-between items-center">
-            Amhara Region Distribution
-            <span className="text-sm font-normal text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-              {assignments.length} Projects Deployed
-            </span>
-          </h3>
+        {/* Sliding Details Panel */}
+        <div className="w-full xl:w-[420px] shrink-0 bg-white border border-slate-200 rounded-[28px] p-6 shadow-md flex flex-col min-h-[600px]">
+          {!selectedBeneficiary ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
+              <div className="w-20 h-20 rounded-[24px] bg-slate-50 flex items-center justify-center text-blue-500 mb-6 shadow-inner">
+                <Layers size={40} className="stroke-[2]" />
+              </div>
+              <h3 className="text-lg font-black text-slate-800 tracking-tight mb-2">Explore Deployments</h3>
+              <p className="text-slate-400 text-xs font-semibold leading-relaxed max-w-[280px]">
+                Click on any cluster count badge or individual equipment pin to view detailed operational specifications, warning severities, and recipient details.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-6 flex-1 h-full">
+              {/* Header */}
+              <div className="border-b border-slate-100 pb-4">
+                <div className="flex justify-between items-start gap-2 mb-2">
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                    selectedBeneficiary.problem_urgency === 'High' || selectedBeneficiary.problem_urgency === 'Critical' ? 'bg-rose-100 text-rose-700 border border-rose-200' :
+                    selectedBeneficiary.problem_urgency === 'Medium' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+                    selectedBeneficiary.problem_urgency === 'Low' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
+                    'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                  }`}>
+                    {selectedBeneficiary.problem_urgency ? `${selectedBeneficiary.problem_urgency} Urgency Issue` : 'System Fully Operational'}
+                  </span>
+                  
+                  {clusterList.length > 1 && (
+                    <span className="text-[10px] bg-slate-100 text-slate-500 border border-slate-200 font-extrabold uppercase px-2 py-0.5 rounded-md">
+                      Cluster View ({clusterList.length})
+                    </span>
+                  )}
+                </div>
 
-          {/* Interactive Amhara Map (Huge mode!) */}
-          <div className="flex-1 w-full min-h-[500px] relative z-10 rounded-[16px] border border-slate-200 overflow-hidden shadow-inner">
-            <AmharaMap assignments={assignments} />
-          </div>
+                <h2 className="text-xl font-black text-slate-800 tracking-tight leading-tight mb-1">
+                  {selectedBeneficiary.full_name}
+                </h2>
+                <div className="text-slate-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mt-1.5">
+                  <MapPin size={14} className="text-blue-500 stroke-[2.5]" />
+                  <span>{selectedBeneficiary.woreda_name} Woreda, {selectedBeneficiary.zone_name}</span>
+                </div>
+              </div>
+
+              {/* Cluster Members List (if selecting a cluster) */}
+              {clusterList.length > 0 && (
+                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-3 flex flex-col gap-2 max-h-[150px] overflow-y-auto shadow-inner">
+                  <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest px-1">
+                    Systems in this Woreda Centroid
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    {clusterList.map(item => (
+                      <button
+                        key={item.id}
+                        onClick={() => setSelectedBeneficiary(item)}
+                        className={`w-full text-left p-2 rounded-xl text-xs font-bold transition-all flex items-center justify-between border ${
+                          selectedBeneficiary.id === item.id 
+                            ? 'bg-blue-600 border-blue-500 text-white shadow-sm' 
+                            : 'bg-white border-slate-100 hover:bg-slate-100 text-slate-600'
+                        }`}
+                      >
+                        <span className="truncate max-w-[150px]">{item.full_name}</span>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-[9px] uppercase tracking-wider opacity-90">{item.equipment_type}</span>
+                          {item.problem_urgency && (
+                            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Parameters List */}
+              <div className="flex flex-col gap-4 flex-1">
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-1">
+                  Recipient Profile & System Parameters
+                </h3>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Parameter item */}
+                  <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 shadow-inner">
+                    <div className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Equipment Type</div>
+                    <div className="text-xs font-black text-slate-800 truncate">{selectedBeneficiary.equipment_type}</div>
+                  </div>
+
+                  {/* Parameter item */}
+                  <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 shadow-inner">
+                    <div className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Supplier / Contractor</div>
+                    <div className="text-xs font-black text-slate-800 truncate">{selectedBeneficiary.supplier || 'Not Assigned'}</div>
+                  </div>
+
+                  {/* Parameter item */}
+                  <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 shadow-inner">
+                    <div className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">National ID</div>
+                    <div className="text-xs font-black text-slate-800">{selectedBeneficiary.national_id || 'N/A'}</div>
+                  </div>
+
+                  {/* Parameter item */}
+                  <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 shadow-inner">
+                    <div className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Contact Phone</div>
+                    <div className="text-xs font-black text-slate-800 flex items-center gap-1">
+                      <Phone size={10} className="text-slate-400" />
+                      <span>{selectedBeneficiary.phone || 'N/A'}</span>
+                    </div>
+                  </div>
+
+                  {/* Parameter item */}
+                  <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 shadow-inner">
+                    <div className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Gender / Household</div>
+                    <div className="text-xs font-black text-slate-800">
+                      {selectedBeneficiary.gender || 'N/A'} ({selectedBeneficiary.household_size || 'N/A'} pers)
+                    </div>
+                  </div>
+
+                  {/* Parameter item */}
+                  <div className="bg-slate-50 rounded-2xl p-3 border border-slate-100 shadow-inner">
+                    <div className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Kebele / Village</div>
+                    <div className="text-xs font-black text-slate-800 truncate">
+                      K. {selectedBeneficiary.kebele || 'N/A'} / V. {selectedBeneficiary.village || 'N/A'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Info Box */}
+                <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 flex gap-3 mt-auto">
+                  <Calendar size={18} className="text-blue-500 stroke-[2.5]" />
+                  <div className="flex flex-col gap-1">
+                    <div className="text-[9px] font-extrabold text-blue-500 uppercase tracking-widest leading-none">
+                      Registration Details
+                    </div>
+                    <p className="text-[11px] font-semibold text-slate-500 leading-normal">
+                      This equipment was certified registered via **{selectedBeneficiary.survey_type || 'Direct'}** on {
+                        selectedBeneficiary.created_at 
+                          ? new Date(selectedBeneficiary.created_at).toLocaleDateString(undefined, {
+                              year: 'numeric', month: 'long', day: 'numeric'
+                            }) 
+                          : 'Unknown Date'
+                      }.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-
       </div>
     </div>
   );

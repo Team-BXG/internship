@@ -17,9 +17,30 @@ def get_problems(status: str = None, supplier: str = None, db: Session = Depends
     
     results = []
     for p in problems:
-        p_dict = p.__dict__.copy()
-        p_dict["details"] = {"serialNumber": p.serial_number}
-        results.append(p_dict)
+        results.append({
+            "id": p.id,
+            "title": p.title,
+            "category": p.category,
+            "kebele": p.kebele,
+            "woreda_id": p.woreda_id,
+            "woreda_name": p.woreda.name if p.woreda else None,
+            "zone_name": p.woreda.zone.name if p.woreda and p.woreda.zone else None,
+            "woreda": p.woreda.name if p.woreda else None,
+            "zone": p.woreda.zone.name if p.woreda and p.woreda.zone else None,
+            "equipment": p.equipment,
+            "serial_number": p.serial_number,
+            "beneficiary_name": p.beneficiary_name,
+            "submitted_by": p.submitted_by,
+            "status": p.status,
+            "urgency": p.urgency,
+            "details_json": p.details_json,
+            "created_at": p.created_at.isoformat() if p.created_at else None,
+            "occurred_date": p.occurred_date.isoformat() if p.occurred_date else None,
+            "fixed_date": p.fixed_date.isoformat() if p.fixed_date else None,
+            "days_unfunctional": p.days_unfunctional,
+            "supplier": p.supplier,
+            "details": {"serialNumber": p.serial_number}
+        })
     return results
 
 @router.post("")
@@ -31,12 +52,17 @@ def create_problem(p: schemas.ProblemCreate, db: Session = Depends(get_db)):
         if beneficiary:
             supplier_name = beneficiary.supplier
 
+    woreda_id = p.woreda_id
+    if not woreda_id and p.woreda:
+        woreda_row = db.query(models.Woreda).filter(models.Woreda.name == p.woreda).first()
+        if woreda_row:
+            woreda_id = woreda_row.id
+
     db_problem = models.Problem(
         equipment=p.equipment,
         title=p.title,
         category=p.category,
-        zone=p.zone,
-        woreda=p.woreda,
+        woreda_id=woreda_id,
         kebele=p.kebele,
         urgency=p.urgency,
         beneficiary_name=p.beneficiary_name,
@@ -50,11 +76,14 @@ def create_problem(p: schemas.ProblemCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_problem)
 
+    woreda_name = db_problem.woreda.name if db_problem.woreda else "Unknown"
+    zone_name = db_problem.woreda.zone.name if db_problem.woreda and db_problem.woreda.zone else "Unknown"
+
     log_activity(
         db=db,
         user=p.submitted_by,
         action="Registered Problem",
-        details=f"Registered equipment issue for {p.beneficiary_name} in {p.woreda}, {p.zone} (Supplier: {supplier_name})"
+        details=f"Registered equipment issue for {p.beneficiary_name} in {woreda_name}, {zone_name} (Supplier: {supplier_name})"
     )
 
     return {"message": "Problem logged successfully", "id": db_problem.id}

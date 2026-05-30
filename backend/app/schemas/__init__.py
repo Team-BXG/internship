@@ -54,6 +54,12 @@ class WoredaResponse(BaseModel):
     id: int
     zone_id: int
     name: str
+    code: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+    class Config:
+        from_attributes = True
 
 class AreaOptionsResponse(BaseModel):
     suppliers: List[SupplierResponse]
@@ -90,8 +96,9 @@ class BeneficiaryCreate(BaseModel):
     phone: Optional[str] = None
     gender: Optional[str] = None
     household_size: Optional[str] = None
-    zone: str
-    woreda: str
+    zone: Optional[str] = None
+    woreda: Optional[str] = None
+    woreda_id: Optional[int] = None
     kebele: str
     village: Optional[str] = None
     survey_type: str
@@ -105,8 +112,9 @@ class DemandCreate(BaseModel):
     full_name: str
     national_id: Optional[str] = None
     phone: Optional[str] = None
-    zone: str
-    woreda: str
+    zone: Optional[str] = None
+    woreda: Optional[str] = None
+    woreda_id: Optional[int] = None
     kebele: str
     village: Optional[str] = None
     gender: str
@@ -124,8 +132,9 @@ class ProblemCreate(BaseModel):
     equipment: str
     title: str
     category: str
-    zone: str
-    woreda: str
+    zone: Optional[str] = None
+    woreda: Optional[str] = None
+    woreda_id: Optional[int] = None
     kebele: str
     urgency: str
     beneficiary_name: str

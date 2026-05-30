@@ -11,21 +11,54 @@ def get_demands(status: str = None, zone: str = None, woreda: str = None, db: Se
     query = db.query(models.Demand)
     if status:
         query = query.filter(models.Demand.status == status)
-    if zone:
-        query = query.filter(models.Demand.zone == zone)
     if woreda:
-        query = query.filter(models.Demand.woreda == woreda)
+        query = query.join(models.Woreda).filter(models.Woreda.name == woreda)
+    elif zone:
+        query = query.join(models.Woreda).join(models.Zone).filter(models.Zone.name == zone)
+        
     demands = query.order_by(models.Demand.created_at.desc()).all()
-    return demands
+    
+    results = []
+    for d in demands:
+        results.append({
+            "id": d.id,
+            "full_name": d.full_name,
+            "national_id": d.national_id,
+            "phone": d.phone,
+            "woreda_id": d.woreda_id,
+            "woreda_name": d.woreda.name if d.woreda else None,
+            "zone_name": d.woreda.zone.name if d.woreda and d.woreda.zone else None,
+            "woreda": d.woreda.name if d.woreda else None,
+            "zone": d.woreda.zone.name if d.woreda and d.woreda.zone else None,
+            "kebele": d.kebele,
+            "village": d.village,
+            "gender": d.gender,
+            "has_disability": d.has_disability,
+            "service_type": d.service_type,
+            "household_size": d.household_size,
+            "elderly_count": d.elderly_count,
+            "solar_panel_type": d.solar_panel_type,
+            "watt_level": d.watt_level,
+            "details_json": d.details_json,
+            "status": d.status,
+            "assigned_supplier_id": d.assigned_supplier_id,
+            "created_at": d.created_at.isoformat() if d.created_at else None
+        })
+    return results
 
 @router.post("")
 def create_demand(d: schemas.DemandCreate, db: Session = Depends(get_db)):
+    woreda_id = d.woreda_id
+    if not woreda_id and d.woreda:
+        woreda_row = db.query(models.Woreda).filter(models.Woreda.name == d.woreda).first()
+        if woreda_row:
+            woreda_id = woreda_row.id
+
     db_demand = models.Demand(
         full_name=d.full_name,
         national_id=d.national_id,
         phone=d.phone,
-        zone=d.zone,
-        woreda=d.woreda,
+        woreda_id=woreda_id,
         kebele=d.kebele,
         village=d.village,
         gender=d.gender,
@@ -42,11 +75,14 @@ def create_demand(d: schemas.DemandCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_demand)
     
+    woreda_name = db_demand.woreda.name if db_demand.woreda else "Unknown"
+    zone_name = db_demand.woreda.zone.name if db_demand.woreda and db_demand.woreda.zone else "Unknown"
+
     log_activity(
         db=db,
         user=d.submitted_by,
         action="Registered Demand",
-        details=f"Registered demand for {d.full_name} in {d.woreda}, {d.zone} for {d.service_type}"
+        details=f"Registered demand for {d.full_name} in {woreda_name}, {zone_name} for {d.service_type}"
     )
 
     return {"message": "Demand registered successfully", "id": db_demand.id}
@@ -91,21 +127,23 @@ def assign_demand_supplier(id: int, supplier_update: schemas.DemandAssignSupplie
 
 @router.get("/statistics")
 def get_demand_statistics(zone: str = None, db: Session = Depends(get_db)):
-    # Grouping using SQLAlchemy
     from sqlalchemy import func
     query = db.query(
-        models.Demand.zone,
-        models.Demand.woreda,
+        models.Zone.name.label('zone_name'),
+        models.Woreda.name.label('woreda_name'),
         models.Demand.solar_panel_type,
         models.Demand.watt_level,
         models.Demand.status,
         func.count(models.Demand.id).label('count')
-    )
+    ).join(models.Woreda, models.Demand.woreda_id == models.Woreda.id)\
+     .join(models.Zone, models.Woreda.zone_id == models.Zone.id)
+
     if zone:
-        query = query.filter(models.Demand.zone == zone)
+        query = query.filter(models.Zone.name == zone)
+
     stats = query.group_by(
-        models.Demand.zone,
-        models.Demand.woreda,
+        models.Zone.name,
+        models.Woreda.name,
         models.Demand.solar_panel_type,
         models.Demand.watt_level,
         models.Demand.status
@@ -113,8 +151,8 @@ def get_demand_statistics(zone: str = None, db: Session = Depends(get_db)):
     
     return [
         {
-            "zone": s.zone,
-            "woreda": s.woreda,
+            "zone": s.zone_name,
+            "woreda": s.woreda_name,
             "solar_panel_type": s.solar_panel_type,
             "watt_level": s.watt_level,
             "status": s.status,

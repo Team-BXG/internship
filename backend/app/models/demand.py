@@ -10,8 +10,7 @@ class Demand(Base):
     full_name = Column(String(255), nullable=False)
     national_id = Column(String(100))
     phone = Column(String(50))
-    zone = Column(String(255))
-    woreda = Column(String(255))
+    woreda_id = Column(Integer, ForeignKey("woredas.id"), nullable=True)
     kebele = Column(String(255))
     village = Column(String(255))
     gender = Column(String(20))
@@ -27,3 +26,4 @@ class Demand(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     
     assigned_supplier = relationship("Supplier")
+    woreda = relationship("Woreda")

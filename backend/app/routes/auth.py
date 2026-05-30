@@ -124,6 +124,8 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
         "email": user.email,
         "zone": zone_name,
         "woreda": woreda_name,
+        "zone_id": user.zone_id,
+        "woreda_id": user.woreda_id,
         "requires_password_change": user.requires_password_change,
         "message": "Login successful"
     }

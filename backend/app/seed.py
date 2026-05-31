@@ -248,43 +248,66 @@ def seed_data():
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     ''', agents)
 
-    # Seed Beneficiaries (mapped to GADM woredas)
-    # Abebe Bikila (Dabat - North Gondar)
-    # Almaz Tesfaye (Debark - North Gondar)
-    # Tadesse Mengistu (Dangila - Awi Zone)
-    # Sara Worku (Dessie Zuria - South Wollo -> DessieZuria)
-    # Fatima Hussein (Debre Markos -> Guzamn - East Gojjam)
-    beneficiaries = [
-        ("Abebe Bikila", "ET-BEN-001", "+251 920 111 001", "Male", "4-6", woreda_name_to_id["Dabat"], "05", "Warka", "Home Solar System", "Home Solar System", "Solar Solutions Ethiopia PLC", "Approved", "{}", (now - datetime.timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')),
-        ("Almaz Tesfaye", "ET-BEN-002", "+251 920 111 002", "Female", "2-4", woreda_name_to_id["Debark"], "02", "Tsehafi", "Home Solar System", "Solar Lantern", "EthioSun Light", "Pending Zone", "{}", (now - datetime.timedelta(days=2)).strftime('%Y-%m-%d %H:%M:%S')),
-        ("Tadesse Mengistu", "ET-BEN-003", "+251 920 111 003", "Male", "5+", woreda_name_to_id["Dangila"], "01", "Addis Alem", "Home Solar System", "Home Solar System", "Sunrise Contractors", "Approved", "{}", (now - datetime.timedelta(days=3)).strftime('%Y-%m-%d %H:%M:%S')),
-        ("Sara Worku", "ET-BEN-004", "+251 920 111 004", "Female", "1", woreda_name_to_id["DessieZuria"], "03", "Kurkur", "Home Solar System", "Solar Lantern", "Amhara Solar Cooperative", "Rejected", "{}", (now - datetime.timedelta(days=4)).strftime('%Y-%m-%d %H:%M:%S')),
-        ("Fatima Hussein", "ET-BEN-005", "+251 920 111 005", "Female", "2-4", woreda_name_to_id["Guzamn"], "04", "Gudguad", "Home Solar System", "Home Solar System", "Green Energy Amhara", "Pending Woreda", "{}", (now - datetime.timedelta(days=5)).strftime('%Y-%m-%d %H:%M:%S')),
-    ]
+    import random
+    
+    suppliers_names = [s[0] for s in suppliers]
+    equipment_types = ["Home Solar System", "Solar Lantern", "Institutional Solar", "Off-grid Solar Grid"]
+    b_statuses = ["Approved", "Pending Zone", "Pending Woreda", "Rejected"]
+    genders = ["Male", "Female"]
+    woreda_ids_list = list(woreda_name_to_id.values())
+    
+    # Seed Beneficiaries (Dynamic)
+    beneficiaries = []
+    for i in range(1, 201):
+        created_at = now - datetime.timedelta(days=random.randint(1, 240))
+        b = (
+            f"Beneficiary {i}", f"ET-BEN-{1000+i}", f"+251 920 {random.randint(100, 999)} {random.randint(100, 999)}",
+            random.choice(genders), random.choice(["1", "2-4", "5+"]), random.choice(woreda_ids_list),
+            f"0{random.randint(1, 9)}", f"Village {random.randint(1, 20)}", random.choice(equipment_types),
+            random.choice(equipment_types), random.choice(suppliers_names),
+            random.choices(b_statuses, weights=[70, 10, 10, 10])[0], "{}", created_at.strftime('%Y-%m-%d %H:%M:%S')
+        )
+        beneficiaries.append(b)
+        
     c.executemany('''
         INSERT INTO beneficiaries (full_name, national_id, phone, gender, household_size, woreda_id, kebele, village, survey_type, equipment_type, supplier, status, details_json, created_at)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     ''', beneficiaries)
 
-    # Seed Problems (mapped to GADM woredas)
-    problems = [
-        ("Delayed Solar Panel Delivery", "Logistics", "01", woreda_name_to_id["Dabat"], "Home Solar System", "N/A", "Abebe Bikila", "Encoder_01", "Pending", "High", (now - datetime.timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')),
-        ("Faulty Battery Component", "Hardware", "03", woreda_name_to_id["DessieZuria"], "Solar Lantern", "BAT-001", "Sara Worku", "Encoder_03", "Under Repair", "Medium", (now - datetime.timedelta(days=2)).strftime('%Y-%m-%d %H:%M:%S')),
-        ("Beneficiary Address Mismatch", "Data Issue", "02", woreda_name_to_id["Debark"], "Home Solar System", "SYS-912", "Almaz Tesfaye", "Encoder_02", "Pending", "Low", (now - datetime.timedelta(days=2, hours=5)).strftime('%Y-%m-%d %H:%M:%S')),
-        ("Inverter Failure", "Hardware", "04", woreda_name_to_id["Guzamn"], "Institutional Solar", "INV-100", "Fatima Hussein", "Encoder_04", "Open", "High", (now - datetime.timedelta(days=3)).strftime('%Y-%m-%d %H:%M:%S')),
-        ("Cable Disconnected", "Hardware", "05", woreda_name_to_id["Dangila"], "Home Solar System", "CBL-22", "Tadesse Mengistu", "Encoder_05", "Resolved", "Low", (now - datetime.timedelta(days=4)).strftime('%Y-%m-%d %H:%M:%S')),
-    ]
+    # Seed Problems (Dynamic)
+    problems = []
+    p_categories = ["Hardware", "Logistics", "Data Issue", "Other"]
+    p_statuses = ["Open", "Pending", "Under Repair", "Resolved"]
+    p_urgencies = ["High", "Medium", "Low"]
+    
+    for i in range(1, 81):
+        created_at = now - datetime.timedelta(days=random.randint(1, 240))
+        p = (
+            f"Issue {i}", random.choice(p_categories), f"0{random.randint(1, 9)}", random.choice(woreda_ids_list),
+            random.choice(equipment_types), f"SN-{1000+i}", f"Beneficiary {random.randint(1, 200)}", "Encoder_X",
+            random.choice(p_statuses), random.choice(p_urgencies), created_at.strftime('%Y-%m-%d %H:%M:%S')
+        )
+        problems.append(p)
+        
     c.executemany('''
         INSERT INTO problems (title, category, kebele, woreda_id, equipment, serial_number, beneficiary_name, submitted_by, status, urgency, created_at)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     ''', problems)
 
-    # Seed Demands (mapped to GADM woredas)
-    demands = [
-        ("Kebede Tadesse", "ET-DMD-001", "+251 911 345 678", woreda_name_to_id["Dabat"], "05", "Warka", "Male", "no", "home_lantern", "3", "No", "Home Solar System", "50W", "{}", "Pending Woreda Review", None),
-        ("Tigist Mengesha", "ET-DMD-002", "+251 912 345 678", woreda_name_to_id["DessieZuria"], "03", "Kurkur", "Female", "yes", "home_lantern", "2", "Yes", "Solar Lantern", "10W", "{}", "Pending Woreda Review", None),
-        ("Bale Robe Health Post", "ET-DMD-003", "+251 913 345 678", woreda_name_to_id["Dangila"], "01", "Addis Alem", "Male", "no", "institution", "N/A", "No", "Institutional Solar", "5000W", "{}", "Assigned", 1)
-    ]
+    # Seed Demands (Dynamic)
+    demands = []
+    d_statuses = ["Pending Woreda Review", "Assigned", "Rejected", "Pending Zone Review"]
+    for i in range(1, 101):
+        d = (
+            f"Applicant {i}", f"ET-DMD-{1000+i}", f"+251 911 {random.randint(100, 999)} {random.randint(100, 999)}",
+            random.choice(woreda_ids_list), f"0{random.randint(1, 9)}", f"Village {random.randint(1, 20)}",
+            random.choice(genders), random.choice(["yes", "no"]), "home_lantern",
+            random.choice(["1", "2", "3", "4+"]), random.choice(["Yes", "No"]),
+            random.choice(equipment_types), f"{random.choice([10, 50, 100, 500])}W", "{}",
+            random.choice(d_statuses), None
+        )
+        demands.append(d)
+        
     c.executemany('''
         INSERT INTO demands (full_name, national_id, phone, woreda_id, kebele, village, gender, has_disability, service_type, household_size, elderly_count, solar_panel_type, watt_level, details_json, status, assigned_supplier_id)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)

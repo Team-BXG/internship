@@ -9,6 +9,7 @@ const AgentRegistration = ({ selectedZone }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [zoneFilter, setZoneFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [zonesList, setZonesList] = useState([]);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -20,7 +21,7 @@ const AgentRegistration = ({ selectedZone }) => {
 
   const fetchAgents = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/agents');
+      const res = await fetch('http://127.0.0.1:8000/api/agents');
       if (res.ok) {
         const data = await res.json();
         setAgents(data);
@@ -37,20 +38,43 @@ const AgentRegistration = ({ selectedZone }) => {
 
   useEffect(() => {
     fetchAgents();
-  }, []);
+    fetch('http://127.0.0.1:8000/api/zones')
+      .then(res => res.json())
+      .then(data => {
+        setZonesList(data);
+        if (selectedZone) {
+          const matched = data.find(z => z.name.toLowerCase().includes(selectedZone.toLowerCase()) || selectedZone.toLowerCase().includes(z.name.toLowerCase()));
+          if (matched) {
+            setFormData(prev => ({ ...prev, zone_id: matched.id }));
+          }
+        }
+      })
+      .catch(console.error);
+  }, [selectedZone]);
 
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:8000/api/agents', {
+      const payload = {
+        ...formData,
+        zone_id: parseInt(formData.zone_id, 10)
+      };
+      
+      const res = await fetch('http://127.0.0.1:8000/api/agents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
       if (res.ok) {
         toast.success('Agent Registered Successfully!');
         setShowForm(false);
-        setFormData({ name: '', email: '', phone: '', zone_id: '', national_id: '' });
+        setFormData(prev => ({
+          name: '',
+          email: '',
+          phone: '',
+          national_id: '',
+          zone_id: selectedZone ? prev.zone_id : ''
+        }));
         fetchAgents();
       } else {
         toast.error('Failed to register agent.');
@@ -70,9 +94,14 @@ const AgentRegistration = ({ selectedZone }) => {
     const matchesSearch = a.name.toLowerCase().includes(term) || (a.phone || '').includes(term);
     const matchesZone = zoneFilter ? a.zone_id === Number(zoneFilter) : true;
     const matchesStatus = statusFilter ? a.status === statusFilter : true;
-    const zoneName = a.zone_name || `Zone ${a.zone_id}`;
-    const selectedMatch = zoneName === selectedZone;
-    return matchesSearch && matchesZone && matchesStatus && selectedMatch;
+    
+    if (selectedZone) {
+      const zoneName = String(a.zone_name || '');
+      const isMatch = zoneName.toLowerCase().includes(selectedZone.toLowerCase()) || 
+                      selectedZone.toLowerCase().includes(zoneName.toLowerCase());
+      return matchesSearch && matchesStatus && isMatch;
+    }
+    return matchesSearch && matchesZone && matchesStatus;
   });
 
   const getInitials = (name) => {
@@ -176,16 +205,12 @@ const AgentRegistration = ({ selectedZone }) => {
               <label className="text-sm font-semibold text-slate-700">Zone *</label>
               <select 
                 required
-                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
+                disabled={!!selectedZone}
+                className="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white disabled:bg-slate-100 disabled:text-slate-500"
                 value={formData.zone_id} onChange={(e) => setFormData({...formData, zone_id: e.target.value})}
               >
                 <option value="">Select Zone</option>
-                <option value="1">North Gondar</option>
-                <option value="2">East Gojam</option>
-                <option value="3">South Wollo</option>
-                <option value="4">Awi</option>
-                <option value="5">Wag Hemra</option>
-                <option value="6">West Gojam</option>
+                {zonesList.map(z => <option key={z.id} value={z.id}>{z.name}</option>)}
               </select>
             </div>
             <div className="col-span-2 flex items-center gap-3 pt-4 border-t border-slate-100">
@@ -213,15 +238,16 @@ const AgentRegistration = ({ selectedZone }) => {
             />
           </div>
           <div className="flex items-center gap-3">
-            <select 
-              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium text-slate-700"
-              value={zoneFilter}
-              onChange={(e) => setZoneFilter(e.target.value)}
-            >
-              <option value="">All Zones</option>
-              <option value="1">North Gondar</option>
-              <option value="2">East Gojam</option>
-            </select>
+            {!selectedZone && (
+              <select 
+                className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium text-slate-700"
+                value={zoneFilter}
+                onChange={(e) => setZoneFilter(e.target.value)}
+              >
+                <option value="">All Zones</option>
+                {zonesList.map(z => <option key={z.id} value={z.id}>{z.name}</option>)}
+              </select>
+            )}
             <select 
               className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium text-slate-700"
               value={statusFilter}

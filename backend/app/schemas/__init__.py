@@ -85,7 +85,7 @@ class AgentResponse(AgentCreate):
     performance: int
     served: int
     zone_name: Optional[str] = None
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

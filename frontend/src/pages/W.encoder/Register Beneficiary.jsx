@@ -26,12 +26,12 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
   const [agentsList, setAgentsList] = useState([]);
   
   useEffect(() => {
-    fetch('http://localhost:8000/api/suppliers')
+    fetch('http://127.0.0.1:8000/api/suppliers')
       .then(res => res.json())
       .then(data => setSuppliersList(Array.isArray(data) ? data : []))
       .catch(console.error);
       
-    fetch('http://localhost:8000/api/agents')
+    fetch('http://127.0.0.1:8000/api/agents')
       .then(res => res.json())
       .then(data => setAgentsList(Array.isArray(data) ? data : []))
       .catch(console.error);
@@ -183,8 +183,12 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
 
   const resetAfterSubmit = () => {
-    setFormData(INITIAL_FORM_STATE);
-    setCurrentStep(1);
+    const prevSurvey = formData.surveyType;
+    setFormData({
+      ...INITIAL_FORM_STATE,
+      surveyType: prevSurvey
+    });
+    setCurrentStep(2);
     setIsGroupRegistration(false);
     setGroupSize(1);
     setSavedForms([]);
@@ -223,8 +227,8 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
             proofPhoto: null
           };
           setFormData(resetData);
-          // Go back to step 1
-          setCurrentStep(1);
+          // Go back to step 3 (Customer Information) to skip survey type and location
+          setCurrentStep(3);
           toast.error(`Form ${currentFormIndex + 1} saved! Now filling form ${currentFormIndex + 2} of ${groupSize}.`);
           return;
         } else {
@@ -249,7 +253,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
               details_json: JSON.stringify(form)
             };
 
-            const res = await fetch('http://localhost:8000/api/beneficiaries', {
+            const res = await fetch('http://127.0.0.1:8000/api/beneficiaries', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(payload)
@@ -285,7 +289,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
         details_json: JSON.stringify(formData)
       };
 
-      const res = await fetch('http://localhost:8000/api/beneficiaries', {
+      const res = await fetch('http://127.0.0.1:8000/api/beneficiaries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -296,7 +300,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
         // Use an additional endpoint to resolve the demand if this came from a demand
         if (initialData && initialData.id) {
           try {
-            await fetch(`http://localhost:8000/api/demands/${initialData.id}/status`, {
+            await fetch(`http://127.0.0.1:8000/api/demands/${initialData.id}/status`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ status: 'Resolved to Beneficiary' })
@@ -843,7 +847,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
                 onChange={(e) => updateFormData('installerName', e.target.value)}
               >
                 <option value="">Select Agent</option>
-                {agentsList.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
+                {agentsList.filter(a => (a.zone_name && a.zone_name.includes(selectedScope.zone)) || (selectedScope.zone && selectedScope.zone.includes(a.zone_name)) || a.zone === selectedScope.zone || a.zone_id === selectedScope.zone_id).map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
               </select>
             </div>
 

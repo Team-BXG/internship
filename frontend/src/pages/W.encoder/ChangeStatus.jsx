@@ -4,6 +4,7 @@ import {
   ArrowLeft, ArrowRight, CheckCircle2, AlertTriangle, 
   RefreshCw, Eye, MessageSquare, Clock, User, Download
 } from 'lucide-react';
+import Papa from 'papaparse';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
@@ -16,7 +17,8 @@ const ChangeStatus = ({ selectedScope }) => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState({});
-
+  const [typeFilter, setTypeFilter] = useState('All');
+  
   useEffect(() => {
     fetchSubmissions();
   }, []);
@@ -60,13 +62,18 @@ const ChangeStatus = ({ selectedScope }) => {
     ...beneficiaries.map(b => ({ ...b, submissionType: 'beneficiary' }))
   ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-  const approvedStatuses = ['Approved for Zone Review', 'Pending Zone', 'Zone Approved', 'Approved', 'Assigned to Supplier'];
-  const correctionStatuses = ['Needs Adjustment', 'Adjustment Needed', 'Rejected'];
+  const approvedStatuses = ['Approved', 'Assigned', 'Approved for Zone Review', 'Zone Approved', 'Pending Zone', 'Assigned to Supplier'];
+  const correctionStatuses = ['Correction Needed', 'Needs Adjustment', 'Adjustment Needed', 'Rejected'];
 
   const getFilteredSubmissions = () => {
-    if (activeTab === 'approved') return allSubmissions.filter(s => approvedStatuses.includes(s.status));
-    if (activeTab === 'corrections') return allSubmissions.filter(s => correctionStatuses.includes(s.status));
-    return allSubmissions.filter(s => !approvedStatuses.includes(s.status) && !correctionStatuses.includes(s.status)); // Pending
+    let filtered = allSubmissions;
+    if (typeFilter !== 'All') {
+      filtered = filtered.filter(s => s.submissionType === typeFilter);
+    }
+    
+    if (activeTab === 'approved') return filtered.filter(s => approvedStatuses.includes(s.status));
+    if (activeTab === 'corrections') return filtered.filter(s => correctionStatuses.includes(s.status));
+    return filtered.filter(s => !approvedStatuses.includes(s.status) && !correctionStatuses.includes(s.status)); // Pending
   };
 
   const filteredSubmissions = getFilteredSubmissions();
@@ -107,7 +114,7 @@ const ChangeStatus = ({ selectedScope }) => {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          status: 'Pending Woreda Review'
+          status: 'Pending'
         })
       });
 
@@ -126,8 +133,10 @@ const ChangeStatus = ({ selectedScope }) => {
 
   const getStatusColor = (status) => {
     switch (status) {
+      case 'Pending':
       case 'Pending Woreda Review':
       case 'Pending Woreda': return 'bg-amber-100 text-amber-800';
+      case 'Correction Needed':
       case 'Needs Adjustment': 
       case 'Adjustment Needed': return 'bg-red-100 text-red-800';
       case 'Rejected': return 'bg-rose-100 text-rose-800 border border-rose-200';
@@ -135,6 +144,7 @@ const ChangeStatus = ({ selectedScope }) => {
       case 'Pending Zone': return 'bg-emerald-100 text-emerald-800';
       case 'Zone Approved': 
       case 'Approved': return 'bg-blue-100 text-blue-800';
+      case 'Assigned':
       case 'Assigned to Supplier': return 'bg-purple-100 text-purple-800';
       default: return 'bg-slate-100 text-slate-800';
     }
@@ -177,10 +187,32 @@ const ChangeStatus = ({ selectedScope }) => {
     doc.save(`Status_Report_${activeTab}_${selectedScope.woreda}.pdf`);
   };
 
+  const exportToCSV = () => {
+    if (filteredSubmissions.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
+    const dataToExport = filteredSubmissions.map(s => ({
+      Name: s.full_name,
+      Type: s.submissionType,
+      Kebele: s.kebele,
+      Status: s.status,
+      Date: new Date(s.created_at).toLocaleDateString()
+    }));
+    const csv = Papa.unparse(dataToExport);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Status_Report_${activeTab}_${selectedScope.woreda}.csv`;
+    link.click();
+  };
+
   const getStatusIcon = (status) => {
     switch (status) {
+      case 'Pending':
       case 'Pending Woreda Review':
       case 'Pending Woreda': return <Clock className="w-4 h-4" />;
+      case 'Correction Needed':
       case 'Needs Adjustment': 
       case 'Adjustment Needed': return <AlertTriangle className="w-4 h-4" />;
       case 'Rejected': return <AlertTriangle className="w-4 h-4" />;
@@ -188,6 +220,7 @@ const ChangeStatus = ({ selectedScope }) => {
       case 'Pending Zone': return <CheckCircle2 className="w-4 h-4" />;
       case 'Zone Approved': 
       case 'Approved': return <CheckCircle2 className="w-4 h-4" />;
+      case 'Assigned':
       case 'Assigned to Supplier': return <User className="w-4 h-4" />;
       default: return <MessageSquare className="w-4 h-4" />;
     }
@@ -213,6 +246,22 @@ const ChangeStatus = ({ selectedScope }) => {
           <p className="text-slate-500">Manage your demand submissions and responses from approvers</p>
         </div>
         <div className="flex items-center gap-3">
+          <select 
+            className="p-2 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+          >
+            <option value="All">All Types</option>
+            <option value="demand">Demands</option>
+            <option value="beneficiary">Beneficiaries</option>
+          </select>
+          <button 
+            onClick={exportToCSV}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-semibold"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
           <button 
             onClick={exportToPDF}
             className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-semibold"
@@ -461,20 +510,22 @@ const ChangeStatus = ({ selectedScope }) => {
                 </>
               ) : (
                 <>
-                  {['Needs Adjustment', 'Adjustment Needed', 'Rejected'].includes(selectedSubmission.status) && (
-                    <button 
-                      onClick={handleEdit}
-                      className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
-                    >
-                      Edit & Resubmit
-                    </button>
+                  {correctionStatuses.includes(selectedSubmission.status) && (
+                    <>
+                      <button 
+                        onClick={handleEdit}
+                        className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+                      >
+                        Edit & Resubmit
+                      </button>
+                      <button 
+                        onClick={handleResubmit}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Resubmit Without Edit
+                      </button>
+                    </>
                   )}
-                  <button 
-                    onClick={handleResubmit}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Resubmit
-                  </button>
                 </>
               )}
             </div>

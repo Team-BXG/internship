@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { 
   CheckCircle2, XCircle, AlertTriangle, Clock, User, MapPin, Zap, 
-  MessageSquare, Send, Search, Filter, ChevronDown, Eye
+  MessageSquare, Send, Search, Filter, ChevronDown, Eye, Download
 } from 'lucide-react';
+import Papa from 'papaparse';
 
 const ReviewDemands = ({ selectedScope }) => {
   const [demands, setDemands] = useState([]);
@@ -12,7 +13,7 @@ const ReviewDemands = ({ selectedScope }) => {
   const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [adjustmentComment, setAdjustmentComment] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('Pending Woreda Review');
+  const [statusFilter, setStatusFilter] = useState('Pending');
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
@@ -39,7 +40,7 @@ const ReviewDemands = ({ selectedScope }) => {
       const res = await fetch(`http://localhost:8000/api/demands/${demandId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Approved for Zone Review' })
+        body: JSON.stringify({ status: 'Approved' })
       });
       
       if (res.ok) {
@@ -63,8 +64,8 @@ const ReviewDemands = ({ selectedScope }) => {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          status: 'Needs Adjustment',
-          comment: adjustmentComment 
+          status: 'Correction Needed',
+          details_json: JSON.stringify({ adjustment_comments: adjustmentComment })
         })
       });
       
@@ -83,29 +84,56 @@ const ReviewDemands = ({ selectedScope }) => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Pending Woreda Review': return 'bg-amber-100 text-amber-800';
-      case 'Approved for Zone Review': return 'bg-emerald-100 text-emerald-800';
-      case 'Needs Adjustment': return 'bg-red-100 text-red-800';
-      case 'Zone Approved': return 'bg-blue-100 text-blue-800';
+      case 'Pending': return 'bg-amber-100 text-amber-800';
+      case 'Approved': return 'bg-emerald-100 text-emerald-800';
+      case 'Correction Needed': return 'bg-red-100 text-red-800';
+      case 'Assigned': return 'bg-blue-100 text-blue-800';
       default: return 'bg-slate-100 text-slate-800';
     }
   };
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'Pending Woreda Review': return <Clock className="w-4 h-4" />;
-      case 'Approved for Zone Review': return <CheckCircle2 className="w-4 h-4" />;
-      case 'Needs Adjustment': return <AlertTriangle className="w-4 h-4" />;
-      case 'Zone Approved': return <CheckCircle2 className="w-4 h-4" />;
+      case 'Pending': return <Clock className="w-4 h-4" />;
+      case 'Approved': return <CheckCircle2 className="w-4 h-4" />;
+      case 'Correction Needed': return <AlertTriangle className="w-4 h-4" />;
+      case 'Assigned': return <User className="w-4 h-4" />;
       default: return <Clock className="w-4 h-4" />;
     }
   };
 
   const filteredDemands = demands.filter(demand =>
-    demand.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (demand.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     demand.national_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    demand.village?.toLowerCase().includes(searchTerm.toLowerCase())
+    demand.village?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+    (statusFilter === '' || demand.status === statusFilter)
   );
+
+  const exportCSV = () => {
+    if (filteredDemands.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
+    const dataToExport = filteredDemands.map(d => ({
+      Name: d.full_name,
+      ID: d.national_id || '',
+      Phone: d.phone || '',
+      Zone: d.zone,
+      Woreda: d.woreda,
+      Kebele: d.kebele,
+      Village: d.village,
+      Equipment: d.solar_panel_type || 'Unknown',
+      Watt_Level: d.watt_level || 'Unknown',
+      Status: d.status,
+      Date: new Date(d.created_at).toISOString().split('T')[0]
+    }));
+    const csv = Papa.unparse(dataToExport);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Demands_${selectedScope.woreda}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
 
   return (
     <div className="space-y-6">
@@ -136,13 +164,21 @@ const ReviewDemands = ({ selectedScope }) => {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="Pending Woreda Review">Pending Review</option>
-            <option value="Approved for Zone Review">Approved</option>
-            <option value="Needs Adjustment">Needs Adjustment</option>
+            <option value="Pending">Pending Review</option>
+            <option value="Approved">Approved</option>
+            <option value="Correction Needed">Correction Needed</option>
+            <option value="Assigned">Assigned</option>
             <option value="">All Status</option>
           </select>
           <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-slate-400 pointer-events-none" />
         </div>
+        
+        <button 
+          onClick={exportCSV}
+          className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors font-medium text-sm whitespace-nowrap"
+        >
+          <Download className="w-4 h-4" /> CSV
+        </button>
       </div>
 
       {/* Stats Cards */}
@@ -154,7 +190,7 @@ const ReviewDemands = ({ selectedScope }) => {
             </div>
             <div>
               <p className="text-2xl font-bold text-amber-900">
-                {demands.filter(d => d.status === 'Pending Woreda Review').length}
+                {demands.filter(d => d.status === 'Pending').length}
               </p>
               <p className="text-xs text-amber-600">Pending Review</p>
             </div>
@@ -168,7 +204,7 @@ const ReviewDemands = ({ selectedScope }) => {
             </div>
             <div>
               <p className="text-2xl font-bold text-emerald-900">
-                {demands.filter(d => d.status === 'Approved for Zone Review').length}
+                {demands.filter(d => d.status === 'Approved').length}
               </p>
               <p className="text-xs text-emerald-600">Approved</p>
             </div>
@@ -182,9 +218,9 @@ const ReviewDemands = ({ selectedScope }) => {
             </div>
             <div>
               <p className="text-2xl font-bold text-red-900">
-                {demands.filter(d => d.status === 'Needs Adjustment').length}
+                {demands.filter(d => d.status === 'Correction Needed').length}
               </p>
-              <p className="text-xs text-red-600">Needs Adjustment</p>
+              <p className="text-xs text-red-600">Correction Needed</p>
             </div>
           </div>
         </div>
@@ -254,7 +290,7 @@ const ReviewDemands = ({ selectedScope }) => {
                       <Eye className="w-4 h-4" />
                     </button>
                     
-                    {demand.status === 'Pending Woreda Review' && (
+                    {demand.status === 'Pending' && (
                       <>
                         <button
                           onClick={() => handleApprove(demand.id)}

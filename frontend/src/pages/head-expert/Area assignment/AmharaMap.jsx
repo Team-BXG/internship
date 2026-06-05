@@ -185,8 +185,8 @@ export default function AmharaMap({ beneficiaries, onSelectBeneficiary }) {
                 <span>{b.full_name}</span>
                 {b.problem_urgency && (
                   <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-white ${
-                    b.problem_urgency.toLowerCase() === 'high' || b.problem_urgency.toLowerCase() === 'critical' ? 'bg-red-500' :
-                    b.problem_urgency.toLowerCase() === 'medium' ? 'bg-orange-500' : 'bg-yellow-500'
+                    b.problem_urgency.toLowerCase() === 'high' || b.problem_urgency.toLowerCase() === 'critical' ? 'bg-rose-500' :
+                    b.problem_urgency.toLowerCase() === 'medium' ? 'bg-amber-500' : 'bg-yellow-500'
                   }`}>
                     {b.problem_urgency} Issue
                   </span>
@@ -236,19 +236,19 @@ export default function AmharaMap({ beneficiaries, onSelectBeneficiary }) {
         <div className="flex flex-wrap items-center gap-6">
           <div className="flex items-center gap-2">
             <CheckCircle size={16} className="text-emerald-500" />
-            <span className="text-xs font-bold text-slate-700">Healthy / Functional (Default Green)</span>
+            <span className="text-xs font-bold text-slate-700">Healthy / Functional (Emerald)</span>
           </div>
           <div className="flex items-center gap-2">
             <AlertTriangle size={16} className="text-yellow-500" />
             <span className="text-xs font-bold text-slate-700">Low Urgency Problem (Yellow)</span>
           </div>
           <div className="flex items-center gap-2">
-            <AlertTriangle size={16} className="text-orange-500" />
-            <span className="text-xs font-bold text-slate-700">Medium Urgency Problem (Orange)</span>
+            <AlertTriangle size={16} className="text-amber-500" />
+            <span className="text-xs font-bold text-slate-700">Medium Urgency Problem (Amber)</span>
           </div>
           <div className="flex items-center gap-2">
             <ShieldAlert size={16} className="text-rose-500 stroke-[2.5] animate-pulse" />
-            <span className="text-xs font-bold text-slate-700">Critical / High Severity Problem (Red)</span>
+            <span className="text-xs font-bold text-slate-700">Critical / High Severity Problem (Rose)</span>
           </div>
         </div>
       </div>

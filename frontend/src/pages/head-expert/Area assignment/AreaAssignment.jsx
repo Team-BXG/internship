@@ -16,7 +16,9 @@ export default function AreaAssignment() {
     try {
       const res = await fetch('http://localhost:8000/api/beneficiaries');
       const data = await res.json();
-      setBeneficiaries(data || []);
+      // Only show Approved or Assigned beneficiaries on the map
+      const approvedOnly = (data || []).filter(b => b.status === 'Approved' || b.status === 'Assigned');
+      setBeneficiaries(approvedOnly);
       setLoading(false);
     } catch (err) {
       console.error("Error fetching beneficiaries:", err);

@@ -93,26 +93,20 @@ const BeneficiaryDetailsModal = ({ beneficiary, onClose, onAction, actionConfig 
                 <Upload className="w-4 h-4 text-blue-500" /> Uploaded Documents
               </h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                 <div className="border border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors cursor-pointer">
-                   <File className="w-6 h-6 text-blue-400" />
-                   <span className="font-semibold text-slate-700 text-center text-xs">National ID</span>
-                   <span className="text-[10px] text-emerald-500 font-bold uppercase">Uploaded</span>
-                 </div>
-                 <div className="border border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors cursor-pointer">
-                   <File className="w-6 h-6 text-blue-400" />
-                   <span className="font-semibold text-slate-700 text-center text-xs">Proof of Residence</span>
-                   <span className="text-[10px] text-emerald-500 font-bold uppercase">Uploaded</span>
-                 </div>
-                 <div className="border border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors cursor-pointer">
-                   <File className="w-6 h-6 text-slate-300" />
-                   <span className="font-semibold text-slate-500 text-center text-xs">Supporting Doc</span>
-                   <span className="text-[10px] text-slate-400 font-bold uppercase">Pending</span>
-                 </div>
-                 <div className="border border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors cursor-pointer">
-                   <File className="w-6 h-6 text-blue-400" />
-                   <span className="font-semibold text-slate-700 text-center text-xs">GPS Photo</span>
-                   <span className="text-[10px] text-emerald-500 font-bold uppercase">Uploaded</span>
-                 </div>
+                {details.documents && details.documents.length > 0 ? (
+                  details.documents.map((doc, idx) => (
+                    <div key={idx} className="border border-slate-200 rounded-lg p-4 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors cursor-pointer">
+                      <File className="w-6 h-6 text-blue-400" />
+                      <span className="font-semibold text-slate-700 text-center text-xs">{doc.name || 'Document'}</span>
+                      <span className="text-[10px] text-emerald-500 font-bold uppercase">Uploaded</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full py-4 flex flex-col items-center justify-center text-slate-400">
+                    <File className="w-8 h-8 mb-2 opacity-50" />
+                    <span className="text-sm font-semibold">No Upload</span>
+                  </div>
+                )}
               </div>
             </div>
 

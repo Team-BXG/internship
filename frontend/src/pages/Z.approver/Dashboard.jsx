@@ -14,6 +14,22 @@ const ZoneApproverDashboard = () => {
   const [selectedZone, setSelectedZone] = useState(user.zone || '');
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  React.useEffect(() => {
+    if (!selectedZone && user.zone_id) {
+      fetch('http://127.0.0.1:8000/api/zones')
+        .then(res => res.json())
+        .then(zones => {
+          const matched = zones.find(z => z.id === user.zone_id);
+          if (matched) {
+            setSelectedZone(matched.name);
+            user.zone = matched.name;
+            localStorage.setItem('user', JSON.stringify(user));
+          }
+        })
+        .catch(console.error);
+    }
+  }, [selectedZone, user.zone_id]);
+
   return (
     <div className="flex bg-slate-50 min-h-screen font-sans">
       <Sidebar selectedZone={selectedZone} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />

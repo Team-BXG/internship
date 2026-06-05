@@ -3,23 +3,23 @@ import toast from 'react-hot-toast';
 import { Search, AlertOctagon, CheckCircle2, Wrench, ChevronRight, X, Calendar, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import Papa from 'papaparse';
 
 const ProblemHandlings = ({ selectedScope }) => {
   const [problems, setProblems] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All Status');
   const [activeProblem, setActiveProblem] = useState(null);
   const [fixedDate, setFixedDate] = useState('');
 
   const fetchProblems = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/problems');
+      const res = await fetch('http://127.0.0.1:8000/api/problems');
       if (res.ok) {
         const data = await res.json();
-        // Only show problems in this woreda that are not yet Fixed
         const filtered = data.filter(p => 
           p.woreda === selectedScope.woreda && 
-          p.zone === selectedScope.zone && 
-          p.status !== 'Fixed'
+          p.zone === selectedScope.zone
         );
         setProblems(filtered);
       }
@@ -39,10 +39,10 @@ const ProblemHandlings = ({ selectedScope }) => {
     }
 
     try {
-      const res = await fetch(`http://localhost:8000/api/problems/${activeProblem.id}/fix`, {
+      const res = await fetch(`http://127.0.0.1:8000/api/problems/${activeProblem.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fixed_date: new Date(fixedDate).toISOString(), submitted_by: 'Woreda Encoder' })
+        body: JSON.stringify({ status: 'Fixed', fixed_date: new Date(fixedDate).toISOString(), submitted_by: 'Woreda Encoder' })
       });
       if (res.ok) {
         toast.success("Problem marked as Fixed!");
@@ -62,10 +62,17 @@ const ProblemHandlings = ({ selectedScope }) => {
     if (status === 'Seen') return 'text-blue-600 bg-blue-50 border-blue-200';
     if (status === 'Pending Woreda') return 'text-red-600 bg-red-50 border-red-200';
     if (status === 'Under Repair') return 'text-orange-600 bg-orange-50 border-orange-200';
+    if (status === 'Fixed') return 'text-emerald-600 bg-emerald-50 border-emerald-200';
     return 'text-slate-600 bg-slate-50 border-slate-200';
   };
 
-  const filtered = problems.filter(p => p.beneficiary_name?.toLowerCase().includes(searchQuery.toLowerCase()) || p.equipment?.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filtered = problems.filter(p => {
+    const matchSearch = p.beneficiary_name?.toLowerCase().includes(searchQuery.toLowerCase()) || p.equipment?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchStatus = statusFilter === 'All Status' ? true : p.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
+  const uniqueStatuses = [...new Set(problems.map(p => p.status).filter(Boolean))];
 
   const exportToPDF = () => {
     const doc = new jsPDF();
@@ -102,6 +109,25 @@ const ProblemHandlings = ({ selectedScope }) => {
     doc.save(`Problem_Handlings_${selectedScope.woreda}.pdf`);
   };
 
+  const exportToCSV = () => {
+    if (filtered.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
+    const dataToExport = filtered.map(p => ({
+      Beneficiary: p.beneficiary_name,
+      Equipment: p.equipment,
+      Supplier: p.supplier || 'Not Assigned',
+      Status: p.status
+    }));
+    const csv = Papa.unparse(dataToExport);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Problem_Handlings_${selectedScope.woreda}.csv`;
+    link.click();
+  };
+
   return (
     <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-8">
@@ -121,13 +147,30 @@ const ProblemHandlings = ({ selectedScope }) => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <button 
-            onClick={exportToPDF}
-            className="flex items-center gap-2 px-4 py-3 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold border border-slate-200"
-          >
-            <Download className="w-4 h-4" />
-            Export PDF
-          </button>
+          <div className="flex gap-3">
+            <select 
+              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium text-slate-700"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="All Status">All Status</option>
+              {uniqueStatuses.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <button 
+              onClick={exportToCSV}
+              className="flex items-center gap-2 px-4 py-3 bg-white text-slate-700 rounded-xl hover:bg-slate-50 transition-colors font-semibold border border-slate-200"
+            >
+              <Download className="w-4 h-4" />
+              CSV
+            </button>
+            <button 
+              onClick={exportToPDF}
+              className="flex items-center gap-2 px-4 py-3 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition-colors font-semibold border border-emerald-200"
+            >
+              <Download className="w-4 h-4" />
+              PDF
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -157,12 +200,14 @@ const ProblemHandlings = ({ selectedScope }) => {
                     </span>
                   </td>
                   <td className="p-4 text-center">
-                    <button 
-                      onClick={() => setActiveProblem(p)}
-                      className="px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 font-bold rounded-lg transition-colors inline-flex items-center gap-2"
-                    >
-                      <CheckCircle2 className="w-4 h-4" /> Finalize Fix
-                    </button>
+                    {p.status !== 'Fixed' && (
+                      <button 
+                        onClick={() => setActiveProblem(p)}
+                        className="px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 font-bold rounded-lg transition-colors inline-flex items-center gap-2"
+                      >
+                        <CheckCircle2 className="w-4 h-4" /> Finalize Fix
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

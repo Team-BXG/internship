@@ -1,12 +1,33 @@
-import React, { useMemo, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MapPin } from "lucide-react";
-import { ZONE_WOREDAS, ZONE_NAMES } from "../constants/locations";
 
 const ScopeSelector = ({ title, subtitle, requireWoreda = false, onConfirm }) => {
+  const [zoneList, setZoneList] = useState([]);
+  const [woredaList, setWoredaList] = useState([]);
   const [zone, setZone] = useState("");
   const [woreda, setWoreda] = useState("");
 
-  const woredas = useMemo(() => (zone ? ZONE_WOREDAS[zone] || [] : []), [zone]);
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/api/zones")
+      .then(res => res.json())
+      .then(data => setZoneList(Array.isArray(data) ? data : []))
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    if (!zone) {
+      setWoredaList([]);
+      return;
+    }
+    const matchedZone = zoneList.find(z => z.name === zone);
+    if (matchedZone) {
+      fetch(`http://127.0.0.1:8000/api/zones/${matchedZone.id}/woredas`)
+        .then(res => res.json())
+        .then(data => setWoredaList(Array.isArray(data) ? data : []))
+        .catch(console.error);
+    }
+  }, [zone, zoneList]);
+
   const canContinue = requireWoreda ? zone && woreda : zone;
 
   return (
@@ -32,9 +53,9 @@ const ScopeSelector = ({ title, subtitle, requireWoreda = false, onConfirm }) =>
               }}
             >
               <option value="">Select zone...</option>
-              {ZONE_NAMES.map((z) => (
-                <option key={z} value={z}>
-                  {z}
+              {zoneList.map((z) => (
+                <option key={z.id} value={z.name}>
+                  {z.name}
                 </option>
               ))}
             </select>
@@ -50,9 +71,9 @@ const ScopeSelector = ({ title, subtitle, requireWoreda = false, onConfirm }) =>
                 disabled={!zone}
               >
                 <option value="">{zone ? "Select woreda..." : "Select zone first"}</option>
-                {woredas.map((w) => (
-                  <option key={w} value={w}>
-                    {w}
+                {woredaList.map((w) => (
+                  <option key={w.id} value={w.name}>
+                    {w.name}
                   </option>
                 ))}
               </select>

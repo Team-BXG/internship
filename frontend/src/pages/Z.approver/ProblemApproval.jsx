@@ -14,7 +14,7 @@ const ProblemApproval = ({ selectedZone }) => {
 
   const fetchProblems = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/problems`);
+      const res = await fetch(`http://127.0.0.1:8000/api/problems`);
       const data = await res.json();
       if (Array.isArray(data)) {
         setProblems(data);
@@ -26,7 +26,7 @@ const ProblemApproval = ({ selectedZone }) => {
 
   const handleStatusUpdate = async (problem, newStatus) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/problems/${problem.id}/status`, {
+      const res = await fetch(`http://127.0.0.1:8000/api/problems/${problem.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -44,7 +44,10 @@ const ProblemApproval = ({ selectedZone }) => {
     const term = searchTerm.toLowerCase();
     const matchSearch = p.beneficiary_name?.toLowerCase().includes(term) || 
       p.equipment?.toLowerCase().includes(term);
-    const matchZone = p.zone === selectedZone;
+    const matchZone = !selectedZone || 
+                      (p.zone && p.zone.toLowerCase().includes(selectedZone.toLowerCase())) || 
+                      (p.zone_name && p.zone_name.toLowerCase().includes(selectedZone.toLowerCase())) ||
+                      selectedZone.toLowerCase().includes(String(p.zone || '').toLowerCase());
     const matchStatus = statusFilter === 'All Status' ? true : p.status === statusFilter;
     return matchSearch && matchZone && matchStatus;
   });
@@ -66,7 +69,9 @@ const ProblemApproval = ({ selectedZone }) => {
     return 'text-slate-600 bg-slate-50 border-slate-200';
   };
 
-  const actionConfig = [];
+  const actionConfig = [
+    { label: 'Acknowledge Problem', className: 'bg-blue-500 hover:bg-blue-600 text-white', onClick: (p) => handleStatusUpdate(p, 'Acknowledged') }
+  ];
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto">

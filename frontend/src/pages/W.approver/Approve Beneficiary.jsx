@@ -3,12 +3,17 @@ import { Search, Eye, Filter, Download } from 'lucide-react';
 import BeneficiaryDetailsModal from '../../components/BeneficiaryDetailsModal';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import Papa from 'papaparse';
+import { XCircle, Send } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const ApproveBeneficiary = ({ selectedScope }) => {
   const [beneficiaries, setBeneficiaries] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All Status');
+  const [statusFilter, setStatusFilter] = useState('Pending');
   const [activeBeneficiary, setActiveBeneficiary] = useState(null);
+  const [showAdjustModal, setShowAdjustModal] = useState(false);
+  const [adjustmentComment, setAdjustmentComment] = useState('');
 
   useEffect(() => {
     fetchBeneficiaries();
@@ -16,7 +21,7 @@ const ApproveBeneficiary = ({ selectedScope }) => {
 
   const fetchBeneficiaries = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/beneficiaries?status=Pending Woreda`);
+      const res = await fetch(`http://127.0.0.1:8000/api/beneficiaries`);
       if (res.ok) {
         const data = await res.json();
         setBeneficiaries(data);
@@ -28,13 +33,18 @@ const ApproveBeneficiary = ({ selectedScope }) => {
 
   const handleStatusUpdate = async (beneficiary, newStatus) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/beneficiaries/${beneficiary.id}/status`, {
+      const res = await fetch(`http://127.0.0.1:8000/api/beneficiaries/${beneficiary.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ 
+          status: newStatus,
+          ...(adjustmentComment && { details_json: JSON.stringify({ adjustment_comments: adjustmentComment }) })
+        })
       });
       if (res.ok) {
         setActiveBeneficiary(null);
+        setShowAdjustModal(false);
+        setAdjustmentComment('');
         fetchBeneficiaries();
       }
     } catch (e) {
@@ -43,33 +53,58 @@ const ApproveBeneficiary = ({ selectedScope }) => {
   };
 
   const exportPDF = () => {
-    const doc = new jsPDF()
-    doc.text(`Beneficiaries Report - ${selectedScope.zone} / ${selectedScope.woreda}`, 14, 15)
-    
-    doc.setFontSize(10)
-    doc.text(`Total Records: ${filtered.length}`, 14, 25)
-    
-    const tableColumn = ["Beneficiary", "Location", "Equipment", "Status", "Date"]
-    const tableRows = []
+    try {
+      const doc = new jsPDF()
+      doc.text(`Beneficiaries Report - ${selectedScope.zone} / ${selectedScope.woreda}`, 14, 15)
+      
+      doc.setFontSize(10)
+      doc.text(`Total Records: ${filtered.length}`, 14, 25)
+      
+      const tableColumn = ["Beneficiary", "Location", "Equipment", "Status", "Date"]
+      const tableRows = []
+  
+      filtered.forEach(b => {
+        const bData = [
+          `${b.full_name}\n${b.national_id || '-'}`,
+          `${b.kebele || b.woreda}\n${b.zone}`,
+          b.equipment_type || 'Unknown',
+          b.status,
+          b.created_at ? new Date(b.created_at).toISOString().split('T')[0] : 'N/A'
+        ]
+        tableRows.push(bData)
+      })
+  
+      doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 35,
+      })
+  
+      doc.save(`beneficiaries_${selectedScope.woreda}_${new Date().toISOString().split('T')[0]}.pdf`)
+      toast.success("PDF exported successfully!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Error exporting PDF: " + error.message);
+    }
+  };
 
-    filtered.forEach(b => {
-      const bData = [
-        `${b.full_name}\n${b.national_id || '-'}`,
-        `${b.kebele || b.woreda}\n${b.zone}`,
-        b.equipment_type || 'Unknown',
-        b.status,
-        new Date(b.created_at).toISOString().split('T')[0]
-      ]
-      tableRows.push(bData)
-    })
-
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 35,
-    })
-
-    doc.save(`beneficiaries_${selectedScope.woreda}_${new Date().toISOString().split('T')[0]}.pdf`)
+  const exportCSV = () => {
+    if (filtered.length === 0) return;
+    const dataToExport = filtered.map(b => ({
+      Beneficiary: b.full_name,
+      ID: b.national_id || '',
+      Kebele: b.kebele || b.woreda,
+      Zone: b.zone,
+      Equipment: b.equipment_type || 'Unknown',
+      Status: b.status,
+      Date: new Date(b.created_at).toISOString().split('T')[0]
+    }));
+    const csv = Papa.unparse(dataToExport);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `beneficiaries_${selectedScope.woreda}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
   };
 
   const filtered = beneficiaries.filter(b => {
@@ -84,14 +119,14 @@ const ApproveBeneficiary = ({ selectedScope }) => {
 
   const getStatusColor = (status) => {
     if (status === 'Approved') return 'text-emerald-700 bg-emerald-50 border-emerald-200';
-    if (status === 'Pending Woreda' || status === 'Pending Zone') return 'text-orange-700 bg-orange-50 border-orange-200';
-    if (status === 'Rejected') return 'text-red-700 bg-red-50 border-red-200';
+    if (status === 'Pending' || status === 'Pending Woreda' || status === 'Pending Zone') return 'text-orange-700 bg-orange-50 border-orange-200';
+    if (status === 'Correction Needed' || status === 'Rejected') return 'text-red-700 bg-red-50 border-red-200';
     return 'text-slate-600 bg-slate-50 border-slate-200';
   };
 
   const actionConfig = [
-    { label: 'Approve Submission', className: 'bg-emerald-500 hover:bg-emerald-600 text-white', onClick: (b) => handleStatusUpdate(b, 'Pending Zone') },
-    { label: 'Return for Correction', className: 'bg-amber-500 hover:bg-amber-600 text-white', onClick: (b) => handleStatusUpdate(b, 'Adjustment Needed') }
+    { label: 'Approve Submission', className: 'bg-emerald-500 hover:bg-emerald-600 text-white', onClick: (b) => handleStatusUpdate(b, 'Approved') },
+    { label: 'Return for Correction', className: 'bg-amber-500 hover:bg-amber-600 text-white', onClick: (b) => { setActiveBeneficiary(b); setShowAdjustModal(true); } }
   ];
 
   return (
@@ -115,10 +150,16 @@ const ApproveBeneficiary = ({ selectedScope }) => {
            </div>
            <div className="flex gap-3">
              <button 
+               onClick={exportCSV}
+               className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-full hover:bg-slate-50 transition font-medium text-sm"
+             >
+               <Download className="w-4 h-4" /> CSV
+             </button>
+             <button 
                onClick={exportPDF}
                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-full hover:bg-emerald-700 transition font-medium text-sm"
              >
-               <Download className="w-4 h-4" /> Export
+               <Download className="w-4 h-4" /> PDF
              </button>
              <select 
                className="px-4 py-2.5 bg-white border border-slate-200 rounded-full text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20"
@@ -190,12 +231,59 @@ const ApproveBeneficiary = ({ selectedScope }) => {
         </div>
       </div>
 
-      {activeBeneficiary && (
+      {activeBeneficiary && !showAdjustModal && (
         <BeneficiaryDetailsModal 
           beneficiary={activeBeneficiary} 
           onClose={() => setActiveBeneficiary(null)} 
           actionConfig={actionConfig} 
         />
+      )}
+
+      {showAdjustModal && activeBeneficiary && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-xl font-bold text-slate-800">Request Adjustment</h4>
+              <button
+                onClick={() => { setShowAdjustModal(false); setActiveBeneficiary(null); }}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <XCircle className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm text-slate-600 mb-2">
+                Request adjustment for: <span className="font-semibold">{activeBeneficiary.full_name}</span>
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-semibold text-slate-700 block mb-2">
+                  Adjustment Comments *
+                </label>
+                <textarea
+                  className="w-full p-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  rows={4}
+                  placeholder="Describe what needs to be adjusted..."
+                  value={adjustmentComment}
+                  onChange={(e) => setAdjustmentComment(e.target.value)}
+                />
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleStatusUpdate(activeBeneficiary, 'Correction Needed')}
+                  className="flex-1 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Send className="w-4 h-4" />
+                  Send Request
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

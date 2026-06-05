@@ -149,6 +149,17 @@ def seed_data():
     conn = get_db_connection()
     c = conn.cursor()
     
+    # Check if database is already seeded (e.g. if zones table exists and has rows)
+    try:
+        c.execute("SELECT COUNT(*) as cnt FROM zones")
+        res = c.fetchone()
+        if res and res['cnt'] > 0:
+            print("Database already seeded. Skipping seeding.")
+            conn.close()
+            return
+    except Exception:
+        pass
+    
     # 0. Disable foreign keys and drop/recreate all tables using metadata
     c.execute("SET FOREIGN_KEY_CHECKS = 0;")
     tables = [

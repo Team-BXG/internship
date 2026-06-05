@@ -40,9 +40,7 @@ const Sidebar = ({ activeMenu, setActiveMenu, selectedZone, isCollapsed, setIsCo
         <nav className={`mt-2 flex flex-col gap-1 ${isCollapsed ? 'px-2' : 'px-4'}`}>
           {[
             { id: 'Dashboard', icon: LayoutDashboard },
-            { id: 'Agent Management', icon: Users },
-            { id: 'Area Assignment', icon: Map },
-            { id: 'Zone Beneficiaries', icon: FileText }
+            { id: 'Agent Management', icon: Users }
           ].map((item) => (
             <button 
               key={item.id}

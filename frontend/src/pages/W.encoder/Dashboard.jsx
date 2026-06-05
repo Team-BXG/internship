@@ -15,6 +15,28 @@ const Dashboard = () => {
   const [selectedScope, setSelectedScope] = useState({ zone: user.zone || '', woreda: user.woreda || '' });
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  React.useEffect(() => {
+    if ((!selectedScope.zone || !selectedScope.woreda) && (user.zone_id || user.woreda_id)) {
+      Promise.all([
+        fetch('http://127.0.0.1:8000/api/zones').then(r => r.json()),
+        fetch('http://127.0.0.1:8000/api/woredas').then(r => r.json())
+      ]).then(([zones, woredas]) => {
+        const zMatch = zones.find(z => z.id === user.zone_id);
+        const wMatch = woredas.find(w => w.id === user.woreda_id);
+        const newScope = {
+          zone: zMatch ? zMatch.name : selectedScope.zone,
+          woreda: wMatch ? wMatch.name : selectedScope.woreda,
+          zone_id: user.zone_id,
+          woreda_id: user.woreda_id
+        };
+        setSelectedScope(newScope);
+        user.zone = newScope.zone;
+        user.woreda = newScope.woreda;
+        localStorage.setItem('user', JSON.stringify(user));
+      }).catch(console.error);
+    }
+  }, []);
+
   return (
     <div className="flex bg-slate-100 min-h-screen">
       <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} selectedScope={selectedScope} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />

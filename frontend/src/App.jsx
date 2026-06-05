@@ -10,6 +10,8 @@ import AreaAssignment from './pages/head-expert/Area assignment/AreaAssignment';
 import SupplierManagement from './pages/head-expert/Supplier management';
 import ContractorRegistration from './pages/head-expert/Contractor registration';
 import DemandStatistics from './pages/head-expert/DemandStatistics';
+import ProblemHandlings from './pages/head-expert/ProblemHandlings';
+import Reports from './pages/head-expert/Reports';
 import WoredaEncoderDashboard from './pages/W.encoder/Dashboard';
 import WoredaApproverDashboard from './pages/W.approver/Dashboard';
 import ZoneExpertDashboard from './pages/Z.expert/Dashboard';
@@ -22,7 +24,7 @@ function HeadExpertApp() {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/dashboard')
+    fetch('http://127.0.0.1:8000/api/dashboard')
       .then(res => res.json())
       .then(data => {
         setData(data);
@@ -76,6 +78,10 @@ function HeadExpertApp() {
             ) : (
               <div className="flex h-full items-center justify-center font-bold text-red-400">Failed to load data.</div>
             )
+          ) : activeMenu === "Problem Statistics" ? (
+            <ProblemHandlings />
+          ) : activeMenu === "Reports" ? (
+            <Reports />
           ) : (
             <div className="flex h-full items-center justify-center flex-col text-slate-400">
               <h2 className="text-2xl font-bold mb-2">Page Under Construction</h2>

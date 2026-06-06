@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Download, Filter, Activity } from 'lucide-react';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-
 export default function AuditLogs() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,34 +48,7 @@ export default function AuditLogs() {
     link.click();
   };
 
-  const exportPDF = () => {
-    const doc = new jsPDF();
-    doc.text('System Audit Logs', 14, 15);
-    
-    const tableColumn = ['Timestamp', 'User', 'Action', 'Details', 'Status'];
-    const tableRows = [];
-
-    filteredLogs.forEach(log => {
-      const rowData = [
-        new Date(log.timestamp).toLocaleString(),
-        log.user,
-        log.action,
-        log.details,
-        log.status
-      ];
-      tableRows.push(rowData);
-    });
-
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 20,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [59, 130, 246] }
-    });
-    
-    doc.save('audit_logs.pdf');
-  };
+  ;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -116,9 +86,7 @@ export default function AuditLogs() {
             <Download className="w-4 h-4" /> CSV
           </button>
           
-          <button onClick={exportPDF} className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-colors shadow-lg shadow-red-200">
-            <Download className="w-4 h-4" /> PDF
-          </button>
+          
         </div>
       </div>
 

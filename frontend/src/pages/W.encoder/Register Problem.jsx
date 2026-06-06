@@ -4,9 +4,6 @@ import {
   Plus, Search, AlertTriangle, AlertOctagon, 
   CheckCircle2, ArrowLeft, UploadCloud, Eye, Wrench, X, Download
 } from 'lucide-react';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-
 const MAIN_CAUSES = {
   'Home/Lantern': ['Solar Panels', 'Battery', 'Charge Control', 'Cable', 'Switch On/Off', 'Port', 'Lamp', 'Radio', 'Torch/Hand Battery', 'Tv'],
   'Institution': ['Solar Panels', 'Battery', 'Invertor', 'Cable', 'Barker (Breaker)'],
@@ -179,43 +176,7 @@ const RegisterProblem = ({ selectedScope }) => {
     });
   }, [problems, searchQuery, statusFilter, selectedScope.zone, selectedScope.woreda]);
 
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(20);
-    doc.setTextColor(41, 128, 185);
-    doc.text('Equipment Problems Report', 14, 22);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
-    doc.text(`Scope: ${selectedScope.zone} / ${selectedScope.woreda}`, 14, 35);
-    
-    const tableColumn = ["Beneficiary", "Serial No", "Equipment", "Level", "Location", "Reported", "Status"];
-    const tableRows = [];
-    
-    filteredProblems.forEach(p => {
-      tableRows.push([
-        p.beneficiary,
-        p.serialNo,
-        p.equipmentTypeLabel,
-        p.problemLevel,
-        p.location,
-        p.reported,
-        p.status
-      ]);
-    });
-    
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 45,
-      theme: 'grid',
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 }
-    });
-    
-    doc.save(`Problems_Report_${selectedScope.woreda}_${new Date().toISOString().split('T')[0]}.pdf`);
-  };
+  ;
 
   const stats = {
     open: filteredProblems.filter(p => p.status === 'Open').length,
@@ -726,13 +687,7 @@ const RegisterProblem = ({ selectedScope }) => {
             <option value="Under Repair">Under Repair</option>
             <option value="Resolved">Resolved</option>
           </select>
-          <button 
-            onClick={exportToPDF}
-            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-semibold border border-slate-200"
-          >
-            <Download className="w-4 h-4" />
-            Export PDF
-          </button>
+          
         </div>
 
         <div className="overflow-x-auto">

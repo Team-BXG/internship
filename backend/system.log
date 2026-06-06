@@ -118,8 +118,16 @@
 2026-06-03 12:21:30,640 - sedms_app - INFO - Logtail Better Stack Integration Activated!
 2026-06-04 06:00:42,322 - sedms_app - INFO - Logtail Better Stack Integration Activated!
 2026-06-04 06:00:47,262 - sedms_app - INFO - Logtail Better Stack Integration Activated!
-2026-06-05 08:27:03,654 - sedms_app - INFO - Logtail Better Stack Integration Activated!
-2026-06-05 09:32:20,812 - sedms_app - INFO - Logtail Better Stack Integration Activated!
-2026-06-05 09:32:23,382 - sedms_app - INFO - Logtail Better Stack Integration Activated!
-2026-06-05 10:35:17,569 - sedms_app - INFO - Logtail Better Stack Integration Activated!
-2026-06-05 10:59:32,494 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-04 07:09:20,287 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-04 07:09:27,982 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-04 07:21:09,166 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-04 07:21:11,057 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-04 08:34:41,685 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-04 08:36:55,259 - sedms_app - INFO - {"action": "Supplier Created", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "Created supplier tere solutions with license 6789", "status": "SUCCESS", "timestamp": "2026-06-04T07:36:55.259835"}
+2026-06-04 08:45:11,860 - sedms_app - INFO - {"action": "Supplier Created", "user": "SouthGondarFartaWE", "role": "Woreda Encoder", "woreda": "N/A", "zone": "N/A", "details": "Created supplier ethioden solutions with license 34687", "status": "SUCCESS", "timestamp": "2026-06-04T07:45:11.860738"}
+2026-06-06 06:28:44,874 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-06 06:28:48,682 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-06 06:47:26,712 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-06 06:57:40,843 - sedms_app - INFO - {"action": "Supplier Created", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "Created supplier ethioden solutions with license 34687", "status": "SUCCESS", "timestamp": "2026-06-06T05:57:40.843618"}
+2026-06-06 06:58:35,678 - sedms_app - INFO - {"action": "Supplier Created", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "Created supplier BAHIR with license 23", "status": "SUCCESS", "timestamp": "2026-06-06T05:58:35.678081"}
+2026-06-06 07:02:34,314 - sedms_app - INFO - Logtail Better Stack Integration Activated!

@@ -3,9 +3,6 @@ import {
   Zap, MapPin, Users, TrendingUp, BarChart3, PieChart, 
   Filter, Search, ChevronDown, Download, Eye
 } from 'lucide-react';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
-
 const DemandStatistics = ({ selectedZone }) => {
   const [statistics, setStatistics] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -141,35 +138,7 @@ const DemandStatistics = ({ selectedZone }) => {
     );
   }
 
-  const exportPDF = () => {
-    const doc = new jsPDF()
-    doc.text(`Demand Statistics Report - ${selectedZone}`, 14, 15)
-    
-    doc.setFontSize(10)
-    doc.text(`Total Demands: ${getTotalDemands()}`, 14, 25)
-    
-    const tableColumn = ["Woreda", "Solar Type", "Watt Level", "Status", "Count"]
-    const tableRows = []
-
-    filteredStatistics.forEach(stat => {
-      const statData = [
-        stat.woreda,
-        stat.solar_panel_type,
-        stat.watt_level,
-        stat.status,
-        stat.count
-      ]
-      tableRows.push(statData)
-    })
-
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 35,
-    })
-
-    doc.save(`zone_demand_report_${new Date().toISOString().split('T')[0]}.pdf`)
-  };
+  ;
 
   return (
     <div className="space-y-6">
@@ -178,13 +147,7 @@ const DemandStatistics = ({ selectedZone }) => {
           <h3 className="text-2xl font-bold text-slate-800">Demand Statistics</h3>
           <p className="text-slate-500">Numerical view of solar equipment demands across {selectedZone}</p>
         </div>
-        <button 
-          onClick={exportPDF}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Download className="w-4 h-4" />
-          Export Report
-        </button>
+        
       </div>
 
       {/* Summary Cards */}

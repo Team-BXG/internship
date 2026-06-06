@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Search, AlertOctagon, CheckCircle2, Wrench, ChevronRight, X, Calendar, Download } from 'lucide-react';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import Papa from 'papaparse';
 
 const ProblemHandlings = ({ selectedScope }) => {
@@ -74,40 +72,7 @@ const ProblemHandlings = ({ selectedScope }) => {
 
   const uniqueStatuses = [...new Set(problems.map(p => p.status).filter(Boolean))];
 
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(20);
-    doc.setTextColor(41, 128, 185);
-    doc.text('Problem Handlings Report', 14, 22);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
-    doc.text(`Scope: ${selectedScope.zone} / ${selectedScope.woreda}`, 14, 35);
-    
-    const tableColumn = ["Beneficiary", "Equipment", "Supplier", "Status"];
-    const tableRows = [];
-    
-    filtered.forEach(p => {
-      tableRows.push([
-        p.beneficiary_name,
-        p.equipment,
-        p.supplier || 'Not Assigned',
-        p.status
-      ]);
-    });
-    
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 45,
-      theme: 'grid',
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 }
-    });
-    
-    doc.save(`Problem_Handlings_${selectedScope.woreda}.pdf`);
-  };
+  ;
 
   const exportToCSV = () => {
     if (filtered.length === 0) {
@@ -163,13 +128,7 @@ const ProblemHandlings = ({ selectedScope }) => {
               <Download className="w-4 h-4" />
               CSV
             </button>
-            <button 
-              onClick={exportToPDF}
-              className="flex items-center gap-2 px-4 py-3 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition-colors font-semibold border border-emerald-200"
-            >
-              <Download className="w-4 h-4" />
-              PDF
-            </button>
+            
           </div>
         </div>
 

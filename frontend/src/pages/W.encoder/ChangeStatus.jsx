@@ -5,9 +5,6 @@ import {
   RefreshCw, Eye, MessageSquare, Clock, User, Download
 } from 'lucide-react';
 import Papa from 'papaparse';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-
 const ChangeStatus = ({ selectedScope }) => {
   const [activeTab, setActiveTab] = useState('demands');
   const [submissions, setSubmissions] = useState([]);
@@ -150,42 +147,7 @@ const ChangeStatus = ({ selectedScope }) => {
     }
   };
 
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(20);
-    doc.setTextColor(41, 128, 185);
-    doc.text('Submissions Status Report', 14, 22);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
-    doc.text(`Scope: ${selectedScope.zone} / ${selectedScope.woreda}`, 14, 35);
-    doc.text(`Category: ${activeTab.toUpperCase()}`, 14, 40);
-    
-    const tableColumn = ["Name", "Type", "Kebele", "Status", "Date"];
-    const tableRows = [];
-    
-    filteredSubmissions.forEach(s => {
-      tableRows.push([
-        s.full_name,
-        s.submissionType.toUpperCase(),
-        s.kebele,
-        s.status,
-        new Date(s.created_at).toLocaleDateString()
-      ]);
-    });
-    
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 50,
-      theme: 'grid',
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 }
-    });
-    
-    doc.save(`Status_Report_${activeTab}_${selectedScope.woreda}.pdf`);
-  };
+  ;
 
   const exportToCSV = () => {
     if (filteredSubmissions.length === 0) {
@@ -262,13 +224,7 @@ const ChangeStatus = ({ selectedScope }) => {
             <Download className="w-4 h-4" />
             Export CSV
           </button>
-          <button 
-            onClick={exportToPDF}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-semibold"
-          >
-            <Download className="w-4 h-4" />
-            Export PDF
-          </button>
+          
           <button 
             onClick={fetchSubmissions}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

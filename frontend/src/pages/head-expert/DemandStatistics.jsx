@@ -5,9 +5,6 @@ import {
   Filter, Search, ChevronDown, Download, Eye, Globe,
   Activity, Target, Award, UserCheck
 } from 'lucide-react';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
-
 const DemandStatistics = () => {
   const [demands, setDemands] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
@@ -124,38 +121,7 @@ const DemandStatistics = () => {
     }
   };
 
-  const exportPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Head Office Demand Statistics", 14, 15);
-    
-    doc.setFontSize(10);
-    doc.text(`Total Demands: ${totalDemands}`, 14, 25);
-    doc.text(`Gender Distribution (M/F): ${maleCount} / ${femaleCount}`, 14, 30);
-    doc.text(`Disabled Beneficiaries: ${disabledCount}`, 14, 35);
-    doc.text(`Elderly Presence: ${elderlyCount}`, 14, 40);
-    
-    const tableColumn = ["Name & Phone", "Location", "Demographics", "Equipment", "Status"];
-    const tableRows = [];
-
-    filteredDemands.forEach(demand => {
-      const demandData = [
-        `${demand.full_name}\n${demand.phone}`,
-        `${demand.zone}\n${demand.woreda}`,
-        `Gen: ${demand.gender}\nDis: ${demand.has_disability || 'No'}\nEld: ${demand.elderly_count || 'No'}`,
-        `${demand.solar_panel_type}\n${demand.watt_level}`,
-        demand.status
-      ];
-      tableRows.push(demandData);
-    });
-
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 45,
-    });
-
-    doc.save(`head_office_demand_report_${new Date().toISOString().split('T')[0]}.pdf`);
-  };
+  ;
 
   if (loading) {
     return (
@@ -179,12 +145,7 @@ const DemandStatistics = () => {
           >
             <Activity className="w-4 h-4" /> Refresh Data
           </button>
-          <button 
-            onClick={exportPDF}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
-          >
-            <Download className="w-4 h-4" /> Export PDF
-          </button>
+          
         </div>
       </div>
 

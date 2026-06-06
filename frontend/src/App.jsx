@@ -67,8 +67,7 @@ function HeadExpertApp() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
-                  <BeneficiariesBarChart data={data.beneficiaries_by_zone} />
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
                   <SupplierPerformanceChart data={data.supplier_performance} />
                   <FunctionalStatusChart data={data.functional_status} />
                 </div>

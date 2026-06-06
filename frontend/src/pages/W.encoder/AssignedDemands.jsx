@@ -3,8 +3,6 @@ import {
   User, CheckCircle2, AlertTriangle, RefreshCw, 
   Eye, ArrowRight, Clock, MapPin, Zap, Download
 } from 'lucide-react';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import RegisterBeneficiary from './Register Beneficiary';
 
 const AssignedDemands = ({ selectedScope }) => {
@@ -78,45 +76,7 @@ const AssignedDemands = ({ selectedScope }) => {
     }
   };
 
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    
-    // Add Header
-    doc.setFontSize(20);
-    doc.setTextColor(41, 128, 185);
-    doc.text('Assigned Demands Report', 14, 22);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
-    doc.text(`Scope: ${selectedScope.zone} / ${selectedScope.woreda}`, 14, 35);
-    
-    // Table
-    const tableColumn = ["Full Name", "Service", "Solar Panel", "Phone", "Kebele/Village"];
-    const tableRows = [];
-    
-    assignedDemands.forEach(d => {
-      const rowData = [
-        d.full_name,
-        getServiceTypeDisplay(d.service_type),
-        `${d.solar_panel_type} (${d.watt_level})`,
-        d.phone,
-        `${d.kebele} / ${d.village}`
-      ];
-      tableRows.push(rowData);
-    });
-    
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 45,
-      theme: 'grid',
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 }
-    });
-    
-    doc.save(`Assigned_Demands_${selectedScope.woreda}_${new Date().toISOString().split('T')[0]}.pdf`);
-  };
+  ;
 
   if (loading) {
     return (
@@ -138,13 +98,7 @@ const AssignedDemands = ({ selectedScope }) => {
           <p className="text-slate-500">Demands assigned to suppliers for your area</p>
         </div>
         <div className="flex items-center gap-3">
-          <button 
-            onClick={exportToPDF}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-semibold"
-          >
-            <Download className="w-4 h-4" />
-            Export PDF
-          </button>
+          
           <button 
             onClick={fetchAssignedDemands}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"

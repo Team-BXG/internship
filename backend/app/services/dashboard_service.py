@@ -60,9 +60,9 @@ def get_dashboard_data(db: Session, zone: str = None, woreda: str = None, gender
     
     stats = {
         "total_suppliers": total_suppliers,
-        "suppliers_trend": 5.0, # static mock positive trend
+        "suppliers_trend": 0.0, # no created_at field to calculate trend
         "registered_contractors": registered_contractors,
-        "contractors_trend": 2.5, # static mock positive trend
+        "contractors_trend": 0.0, # no created_at field to calculate trend
         "total_beneficiaries": total_beneficiaries,
         "beneficiaries_trend": beneficiaries_trend,
         "units_distributed": units_distributed,
@@ -79,27 +79,37 @@ def get_dashboard_data(db: Session, zone: str = None, woreda: str = None, gender
     # Activity logs
     logs = db.query(models.ActivityLog).order_by(models.ActivityLog.timestamp.desc()).limit(5).all()
     
-    # Dynamic chart data - Distribution Trend
-    # Grouping by month formatted as "Jan", "Feb" etc. using date_format
-    trend_query = db.query(
-        func.date_format(models.Beneficiary.created_at, '%b').label('month'),
-        func.count(models.Beneficiary.id).label('units_distributed'),
-        func.count(models.Beneficiary.id).label('beneficiaries')
-    )
-    if zone or woreda:
-        trend_query = trend_query.join(models.Woreda)
-        if zone:
-            trend_query = trend_query.join(models.Zone, models.Woreda.zone_id == models.Zone.id).filter(models.Zone.name == zone)
-        if woreda:
-            trend_query = trend_query.filter(models.Woreda.name == woreda)
+    # Dynamic chart data - Distribution Trend (By Zone)
+    # Beneficiaries Trend
+    ben_trend_query = db.query(
+        models.Zone.name.label('month'), # Reusing 'month' alias for schema compatibility
+        func.count(models.Beneficiary.id).label('count')
+    ).join(models.Woreda).join(models.Zone, models.Woreda.zone_id == models.Zone.id)
+    
+    # Demands Trend (Units Distributed)
+    dem_trend_query = db.query(
+        models.Zone.name.label('month'),
+        func.count(models.Demand.id).label('count')
+    ).join(models.Woreda).join(models.Zone, models.Woreda.zone_id == models.Zone.id)\
+    .filter(models.Demand.status.in_(["Fulfilled/Installed", "Installed", "Fulfilled", "Assigned"]))
+
+    if zone:
+        ben_trend_query = ben_trend_query.filter(models.Zone.name == zone)
+        dem_trend_query = dem_trend_query.filter(models.Zone.name == zone)
+    if woreda:
+        ben_trend_query = ben_trend_query.filter(models.Woreda.name == woreda)
+        dem_trend_query = dem_trend_query.filter(models.Woreda.name == woreda)
     if gender:
-        trend_query = trend_query.filter(models.Beneficiary.gender == gender)
-        
-    # Order by min created_at so months appear in chronological order
-    trend_results = trend_query.group_by('month').order_by(func.min(models.Beneficiary.created_at)).all()
+        ben_trend_query = ben_trend_query.filter(models.Beneficiary.gender == gender)
+        dem_trend_query = dem_trend_query.filter(models.Demand.gender == gender)
+
+    ben_results = ben_trend_query.group_by(models.Zone.name).all()
+    dem_results = dem_trend_query.group_by(models.Zone.name).all()
+
+    dem_dict = {row.month: row.count for row in dem_results}
     distribution_trend = [
-        {"month": row.month, "units_distributed": row.units_distributed, "beneficiaries": row.beneficiaries}
-        for row in trend_results
+        {"month": row.month, "units_distributed": dem_dict.get(row.month, 0), "beneficiaries": row.count}
+        for row in ben_results
     ]
     
     # Equipment Type
@@ -141,11 +151,15 @@ def get_dashboard_data(db: Session, zone: str = None, woreda: str = None, gender
         for row in bz_results if row.beneficiaries > 0
     ]
     
-    # Supplier performance (Mock for now, or just calculate real if possible)
+    # Supplier performance
+    supplier_perf_query = db.query(
+        models.Supplier.name.label('supplier'),
+        models.Supplier.score.label('score')
+    ).order_by(models.Supplier.score.desc()).limit(5).all()
+
     supplier_performance = [
-        {"supplier": "Solar Solutions", "score": 95},
-        {"supplier": "SunPower Tech", "score": 88},
-        {"supplier": "BrightFuture", "score": 98},
+        {"supplier": row.supplier, "score": row.score}
+        for row in supplier_perf_query
     ]
     
     functional_status = [

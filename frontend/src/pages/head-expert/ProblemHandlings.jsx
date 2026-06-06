@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Search, Filter, Download, AlertOctagon, CheckCircle2, MapPin } from 'lucide-react';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-
 const ProblemHandlings = () => {
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -59,41 +56,7 @@ const ProblemHandlings = () => {
     return matchesSearch && matchesZone && matchesWoreda && matchesStatus;
   });
 
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(20);
-    doc.setTextColor(41, 128, 185);
-    doc.text('Global Problem Handlings Report', 14, 22);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
-    doc.text(`Total Records: ${filtered.length}`, 14, 35);
-    
-    const tableColumn = ["Beneficiary", "Equipment", "Zone/Woreda", "Supplier", "Status"];
-    const tableRows = [];
-    
-    filtered.forEach(p => {
-      tableRows.push([
-        p.beneficiary_name || 'N/A',
-        p.equipment || 'N/A',
-        `${p.zone || '-'} / ${p.woreda || '-'}`,
-        p.supplier || 'Not Assigned',
-        p.status || 'N/A'
-      ]);
-    });
-    
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 45,
-      theme: 'grid',
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 }
-    });
-    
-    doc.save(`Global_Problem_Handlings.pdf`);
-  };
+  ;
 
   return (
     <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -107,12 +70,7 @@ const ProblemHandlings = () => {
             Monitor equipment issues reported globally. Filter by zone, woreda, or status to narrow down your analysis.
           </p>
         </div>
-        <button 
-          onClick={exportToPDF}
-          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold shadow-lg shadow-blue-600/20"
-        >
-          <Download className="w-4 h-4" /> Export PDF
-        </button>
+        
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">

@@ -251,32 +251,30 @@ export default function SuperAdminDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      {/* Sidebar Navigation */}
-      <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col fixed inset-y-0 z-10 shadow-xl">
-        <div className="p-6 border-b border-slate-800">
-          <h1 className="text-2xl font-black text-white flex items-center gap-2">
+      <aside className="w-64 bg-white border-r border-slate-100 text-slate-500 flex flex-col fixed inset-y-0 z-10 shadow-xl">
+        <div className="p-6 border-b border-slate-100">
+          <h1 className="text-2xl font-black text-slate-800 flex items-center gap-2">
             <ShieldAlert className="w-6 h-6 text-blue-500" /> Enterprise
           </h1>
-          <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-bold">Super Admin Panel</p>
+          <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Super Admin Panel</p>
         </div>
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {[
             { id: 'overview', icon: LayoutDashboard, label: 'Overview Dashboard' },
             { id: 'employees', icon: Users, label: 'Employee Directory' },
-            { id: 'locations', icon: MapPin, label: 'Location Management' },
             { id: 'logs', icon: Activity, label: 'Audit Logs' },
           ].map(item => (
             <button
               key={item.id}
               onClick={() => setActiveMenu(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${activeMenu === item.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'hover:bg-slate-800 hover:text-white'}`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${activeMenu === item.id ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'hover:bg-slate-50 hover:text-slate-900'}`}
             >
               <item.icon className="w-5 h-5" /> {item.label}
             </button>
           ))}
         </nav>
-        <div className="p-4 border-t border-slate-800">
-          <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-500 transition-all">
+        <div className="p-4 border-t border-slate-100">
+          <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all">
             <LogOut className="w-5 h-5" /> Sign Out
           </button>
         </div>
@@ -425,57 +423,7 @@ export default function SuperAdminDashboard() {
           </div>
         )}
 
-        {activeMenu === 'locations' && (
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[600px]">
-              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-green-500" /> Zones
-                </h2>
-                <button 
-                  onClick={() => setShowAddZoneModal(true)}
-                  className="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg shadow-green-500/20 transition-all flex items-center gap-1">
-                  <Plus className="w-3.5 h-3.5" /> Add Zone
-                </button>
-              </div>
-              <ul className="divide-y divide-slate-100 flex-1 overflow-y-auto">
-                {zones.map(z => (
-                  <li key={z.id} className="p-4 hover:bg-slate-50 flex justify-between items-center">
-                    <span className="font-semibold text-slate-700">{z.name}</span>
-                    <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-1 rounded-md">ID: {z.id}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[600px]">
-              <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-teal-500" /> Woredas
-                </h2>
-                <button 
-                  onClick={() => setShowAddWoredaModal(true)}
-                  className="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg shadow-teal-500/20 transition-all flex items-center gap-1">
-                  <Plus className="w-3.5 h-3.5" /> Add Woreda
-                </button>
-              </div>
-              <ul className="divide-y divide-slate-100 flex-1 overflow-y-auto">
-                {woredas.map(w => {
-                  const zone = zones.find(z => z.id === w.zone_id);
-                  return (
-                    <li key={w.id} className="p-4 hover:bg-slate-50 flex justify-between items-center">
-                      <div>
-                        <div className="font-semibold text-slate-700">{w.name}</div>
-                        <div className="text-xs text-slate-500 font-medium mt-0.5">Zone: {zone?.name || w.zone_id}</div>
-                      </div>
-                      <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-1 rounded-md">ID: {w.id}</span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
-        )}
+
 
         {activeMenu === 'logs' && <AuditLogs />}
       </main>
@@ -726,77 +674,6 @@ export default function SuperAdminDashboard() {
         </div>
       )}
 
-      {/* Add Zone Modal */}
-      {showAddZoneModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-6 border-b border-slate-100">
-              <h3 className="text-lg font-bold text-slate-800">Add New Zone</h3>
-              <button onClick={() => setShowAddZoneModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <form onSubmit={handleAddZone} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Zone Name</label>
-                <input 
-                  type="text" required
-                  value={newZone.name}
-                  onChange={e => setNewZone({name: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all"
-                  placeholder="e.g. North Gondar"
-                />
-              </div>
-              <div className="pt-4 flex gap-3">
-                <button type="button" onClick={() => setShowAddZoneModal(false)} className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 shadow-lg shadow-green-500/20 transition-all">Save Zone</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Add Woreda Modal */}
-      {showAddWoredaModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-6 border-b border-slate-100">
-              <h3 className="text-lg font-bold text-slate-800">Add New Woreda</h3>
-              <button onClick={() => setShowAddWoredaModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <form onSubmit={handleAddWoreda} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Woreda Name</label>
-                <input 
-                  type="text" required
-                  value={newWoreda.name}
-                  onChange={e => setNewWoreda({...newWoreda, name: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none transition-all"
-                  placeholder="e.g. Debark"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Parent Zone</label>
-                <select 
-                  required
-                  value={newWoreda.zone_id}
-                  onChange={e => setNewWoreda({...newWoreda, zone_id: e.target.value})}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none transition-all bg-white"
-                >
-                  <option value="" disabled>Select a Zone</option>
-                  {zones.map(z => <option key={z.id} value={z.id}>{z.name}</option>)}
-                </select>
-              </div>
-              <div className="pt-4 flex gap-3">
-                <button type="button" onClick={() => setShowAddWoredaModal(false)} className="flex-1 px-4 py-2 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors">Cancel</button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-teal-600 text-white font-medium rounded-xl hover:bg-teal-700 shadow-lg shadow-teal-500/20 transition-all">Save Woreda</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

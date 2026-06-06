@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Download, Search, Filter, Layers, CheckCircle2, ShieldAlert } from 'lucide-react';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
 import Papa from 'papaparse';
 import toast from 'react-hot-toast';
 
@@ -110,47 +108,7 @@ export default function Reports() {
     return statuses;
   };
 
-  const exportPDF = () => {
-    if (filteredData.length === 0) {
-      toast.error("No data to export");
-      return;
-    }
-
-    try {
-      const doc = new jsPDF('landscape');
-      doc.setFontSize(16);
-      doc.text(`${TAB_CONFIGS[activeTab].title}`, 14, 20);
-      doc.setFontSize(10);
-      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
-      doc.text(`Total Records: ${filteredData.length}`, 14, 35);
-
-      // Dynamic columns based on the first item excluding EXCLUDED_KEYS
-      const keys = Object.keys(filteredData[0]).filter(k => !EXCLUDED_KEYS.includes(k));
-      const head = [keys.map(k => k.replace(/_/g, ' ').toUpperCase())];
-      const body = filteredData.map(item => keys.map(k => {
-        let val = item[k];
-        if (typeof val === 'object' && val !== null) {
-          val = 'Object Data';
-        }
-        return String(val ?? '');
-      }));
-
-      doc.autoTable({
-        head: head,
-        body: body,
-        startY: 40,
-        theme: 'striped',
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [37, 99, 235], textColor: 255 }
-      });
-
-      doc.save(`${activeTab}_Report_${new Date().toISOString().split('T')[0]}.pdf`);
-      toast.success("PDF exported successfully!");
-    } catch (error) {
-      console.error(error);
-      toast.error("Error generating PDF: " + error.message);
-    }
-  };
+  ;
 
   const exportCSV = () => {
     if (filteredData.length === 0) {
@@ -331,12 +289,7 @@ export default function Reports() {
             >
               <Download className="w-4 h-4" /> CSV
             </button>
-            <button 
-              onClick={exportPDF}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-colors font-bold text-sm shadow-md shadow-emerald-500/20"
-            >
-              <Download className="w-4 h-4" /> PDF
-            </button>
+            
           </div>
         </div>
 

@@ -47,7 +47,7 @@ app.add_middleware(
 # 2️⃣ Seed the database if tables don't exist
 try:
     init_db()
-    seed.seed_data()
+    # seed.seed_data() # Commented out to prevent wiping the database on every restart
 except Exception as e:
     print(f"Error during DB init/seed: {e}")
 

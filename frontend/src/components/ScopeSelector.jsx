@@ -8,7 +8,7 @@ const ScopeSelector = ({ title, subtitle, requireWoreda = false, onConfirm }) =>
   const [woreda, setWoreda] = useState("");
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/zones")
+    fetch("http://localhost:8000/api/zones")
       .then(res => res.json())
       .then(data => setZoneList(Array.isArray(data) ? data : []))
       .catch(console.error);
@@ -21,7 +21,7 @@ const ScopeSelector = ({ title, subtitle, requireWoreda = false, onConfirm }) =>
     }
     const matchedZone = zoneList.find(z => z.name === zone);
     if (matchedZone) {
-      fetch(`http://127.0.0.1:8000/api/zones/${matchedZone.id}/woredas`)
+      fetch(`http://localhost:8000/api/zones/${matchedZone.id}/woredas`)
         .then(res => res.json())
         .then(data => setWoredaList(Array.isArray(data) ? data : []))
         .catch(console.error);

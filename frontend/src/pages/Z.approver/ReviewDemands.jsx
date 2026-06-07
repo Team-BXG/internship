@@ -6,24 +6,24 @@ import {
 } from 'lucide-react';
 import Papa from 'papaparse';
 
-const ReviewDemands = ({ selectedScope }) => {
+const ReviewDemands = ({ selectedZone }) => {
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDemand, setSelectedDemand] = useState(null);
   const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [adjustmentComment, setAdjustmentComment] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('Pending Woreda Review');
+  const [statusFilter, setStatusFilter] = useState('Pending Zone Review');
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
     fetchDemands();
-  }, [selectedScope, statusFilter]);
+  }, [selectedZone, statusFilter]);
 
   const fetchDemands = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:8000/api/demands?status=${statusFilter}&zone=${selectedScope.zone}&woreda=${selectedScope.woreda}`);
+      const res = await fetch(`http://localhost:8000/api/demands?status=${statusFilter}&zone=${selectedZone}`);
       if (res.ok) {
         const data = await res.json();
         setDemands(data);
@@ -40,11 +40,11 @@ const ReviewDemands = ({ selectedScope }) => {
       const res = await fetch(`http://localhost:8000/api/demands/${demandId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Pending Zone Review' })
+        body: JSON.stringify({ status: 'Approved' })
       });
       
       if (res.ok) {
-        toast.success("Demand approved and sent to Zone Approver");
+        toast.success("Demand fully approved");
         fetchDemands();
       }
     } catch (error) {
@@ -131,7 +131,7 @@ const ReviewDemands = ({ selectedScope }) => {
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `Demands_${selectedScope.woreda}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `Demands_${selectedZone}_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
   };
 
@@ -164,7 +164,7 @@ const ReviewDemands = ({ selectedScope }) => {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="Pending Woreda Review">Pending Review</option>
+            <option value="Pending Zone Review">Pending Review</option>
             <option value="Approved">Approved</option>
             <option value="Correction Needed">Correction Needed</option>
             <option value="Assigned">Assigned</option>
@@ -190,7 +190,7 @@ const ReviewDemands = ({ selectedScope }) => {
             </div>
             <div>
               <p className="text-2xl font-bold text-amber-900">
-                {demands.filter(d => d.status === 'Pending Woreda Review').length}
+                {demands.filter(d => d.status === 'Pending Zone Review').length}
               </p>
               <p className="text-xs text-amber-600">Pending Review</p>
             </div>
@@ -290,7 +290,7 @@ const ReviewDemands = ({ selectedScope }) => {
                       <Eye className="w-4 h-4" />
                     </button>
                     
-                    {demand.status === 'Pending Woreda Review' && (
+                    {demand.status === 'Pending Zone Review' && (
                       <>
                         <button
                           onClick={() => handleApprove(demand.id)}

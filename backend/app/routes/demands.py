@@ -111,10 +111,29 @@ def assign_demand_supplier(id: int, supplier_update: schemas.DemandAssignSupplie
         raise HTTPException(status_code=404, detail="Demand not found")
     demand.status = 'Assigned'
     demand.assigned_supplier_id = supplier_update.supplier_id
-    db.commit()
 
     supplier = db.query(models.Supplier).filter(models.Supplier.id == supplier_update.supplier_id).first()
     supplier_name = supplier.name if supplier else f"Supplier {supplier_update.supplier_id}"
+
+    # Auto-create beneficiary record for the assigned demand
+    new_beneficiary = models.Beneficiary(
+        full_name=demand.full_name,
+        national_id=demand.national_id,
+        phone=demand.phone,
+        gender=demand.gender,
+        household_size=demand.household_size,
+        woreda_id=demand.woreda_id,
+        kebele=demand.kebele,
+        village=demand.village,
+        survey_type='Demand Request',
+        equipment_type=demand.solar_panel_type,
+        supplier=supplier_name,
+        status='Assigned',
+        details_json=demand.details_json
+    )
+    db.add(new_beneficiary)
+
+    db.commit()
 
     log_activity(
         db=db,

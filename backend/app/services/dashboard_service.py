@@ -84,13 +84,13 @@ def get_dashboard_data(db: Session, zone: str = None, woreda: str = None, gender
     ben_trend_query = db.query(
         models.Zone.name.label('month'), # Reusing 'month' alias for schema compatibility
         func.count(models.Beneficiary.id).label('count')
-    ).join(models.Woreda).join(models.Zone, models.Woreda.zone_id == models.Zone.id)
+    ).select_from(models.Beneficiary).join(models.Woreda, models.Beneficiary.woreda_id == models.Woreda.id).join(models.Zone, models.Woreda.zone_id == models.Zone.id)
     
     # Demands Trend (Units Distributed)
     dem_trend_query = db.query(
         models.Zone.name.label('month'),
         func.count(models.Demand.id).label('count')
-    ).join(models.Woreda).join(models.Zone, models.Woreda.zone_id == models.Zone.id)\
+    ).select_from(models.Demand).join(models.Woreda, models.Demand.woreda_id == models.Woreda.id).join(models.Zone, models.Woreda.zone_id == models.Zone.id)\
     .filter(models.Demand.status.in_(["Fulfilled/Installed", "Installed", "Fulfilled", "Assigned"]))
 
     if zone:

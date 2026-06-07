@@ -26,12 +26,12 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
   const [agentsList, setAgentsList] = useState([]);
   
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/suppliers')
+    fetch('http://localhost:8000/api/suppliers')
       .then(res => res.json())
       .then(data => setSuppliersList(Array.isArray(data) ? data : []))
       .catch(console.error);
       
-    fetch('http://127.0.0.1:8000/api/agents')
+    fetch('http://localhost:8000/api/agents')
       .then(res => res.json())
       .then(data => setAgentsList(Array.isArray(data) ? data : []))
       .catch(console.error);
@@ -253,7 +253,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
               details_json: JSON.stringify(form)
             };
 
-            const res = await fetch('http://127.0.0.1:8000/api/beneficiaries', {
+            const res = await fetch('http://localhost:8000/api/beneficiaries', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(payload)
@@ -289,7 +289,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
         details_json: JSON.stringify(formData)
       };
 
-      const res = await fetch('http://127.0.0.1:8000/api/beneficiaries', {
+      const res = await fetch('http://localhost:8000/api/beneficiaries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -300,7 +300,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
         // Use an additional endpoint to resolve the demand if this came from a demand
         if (initialData && initialData.id) {
           try {
-            await fetch(`http://127.0.0.1:8000/api/demands/${initialData.id}/status`, {
+            await fetch(`http://localhost:8000/api/demands/${initialData.id}/status`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ status: 'Resolved to Beneficiary' })

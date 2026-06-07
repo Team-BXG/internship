@@ -237,17 +237,22 @@ export default function SuperAdminDashboard() {
     });
   };
 
-  const pieData = [
-    { name: 'Active', value: stats.active, color: '#10B981' },
-    { name: 'Disabled', value: stats.disabled, color: '#EF4444' },
-  ];
+  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#6366F1'];
+  const pieData = Object.entries(
+    employees.reduce((acc, emp) => {
+      acc[emp.role] = (acc[emp.role] || 0) + 1;
+      return acc;
+    }, {})
+  ).map(([name, value], index) => ({
+    name,
+    value,
+    color: COLORS[index % COLORS.length]
+  }));
 
-  const barData = [
-    { name: 'Super Admin', count: employees.filter(e => e.role === 'Super Admin').length },
-    { name: 'Head Expert', count: employees.filter(e => e.role === 'Head Expert').length },
-    { name: 'Zone', count: employees.filter(e => e.role.includes('Zone')).length },
-    { name: 'Woreda', count: employees.filter(e => e.role.includes('Woreda')).length },
-  ];
+  const barData = zones.map(zone => ({
+    name: zone.name,
+    count: woredas.filter(w => w.zone_id === zone.id).length
+  }));
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -307,24 +312,24 @@ export default function SuperAdminDashboard() {
                 </div>
               </div>
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                <div className="bg-green-100 p-4 rounded-xl text-green-600"><CheckCircle2 className="w-8 h-8" /></div>
+                <div className="bg-green-100 p-4 rounded-xl text-green-600"><MapPin className="w-8 h-8" /></div>
                 <div>
-                  <p className="text-sm text-slate-500 font-semibold">Active Accounts</p>
-                  <p className="text-3xl font-black text-slate-800">{stats.active}</p>
+                  <p className="text-sm text-slate-500 font-semibold">Total Zones</p>
+                  <p className="text-3xl font-black text-slate-800">{zones.length}</p>
                 </div>
               </div>
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                <div className="bg-red-100 p-4 rounded-xl text-red-600"><AlertCircle className="w-8 h-8" /></div>
+                <div className="bg-purple-100 p-4 rounded-xl text-purple-600"><MapPin className="w-8 h-8" /></div>
                 <div>
-                  <p className="text-sm text-slate-500 font-semibold">Disabled Accounts</p>
-                  <p className="text-3xl font-black text-slate-800">{stats.disabled}</p>
+                  <p className="text-sm text-slate-500 font-semibold">Total Woredas</p>
+                  <p className="text-3xl font-black text-slate-800">{woredas.length}</p>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <h3 className="text-lg font-bold text-slate-800 mb-6">Employee Roles Distribution</h3>
+                <h3 className="text-lg font-bold text-slate-800 mb-6">Woredas per Zone</h3>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={barData}>
@@ -339,7 +344,7 @@ export default function SuperAdminDashboard() {
               </div>
 
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <h3 className="text-lg font-bold text-slate-800 mb-6">Account Status</h3>
+                <h3 className="text-lg font-bold text-slate-800 mb-6">Employee Roles</h3>
                 <div className="h-64 flex justify-center items-center">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>

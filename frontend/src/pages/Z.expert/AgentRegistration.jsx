@@ -21,7 +21,7 @@ const AgentRegistration = ({ selectedZone }) => {
 
   const fetchAgents = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/agents');
+      const res = await fetch('http://localhost:8000/api/agents');
       if (res.ok) {
         const data = await res.json();
         setAgents(data);
@@ -38,7 +38,7 @@ const AgentRegistration = ({ selectedZone }) => {
 
   useEffect(() => {
     fetchAgents();
-    fetch('http://127.0.0.1:8000/api/zones')
+    fetch('http://localhost:8000/api/zones')
       .then(res => res.json())
       .then(data => {
         setZonesList(data);
@@ -60,7 +60,7 @@ const AgentRegistration = ({ selectedZone }) => {
         zone_id: parseInt(formData.zone_id, 10)
       };
       
-      const res = await fetch('http://127.0.0.1:8000/api/agents', {
+      const res = await fetch('http://localhost:8000/api/agents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

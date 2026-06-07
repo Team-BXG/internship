@@ -14,7 +14,7 @@ const ProblemHandlings = () => {
   const fetchProblems = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/problems');
+      const res = await fetch('http://localhost:8000/api/problems');
       if (res.ok) {
         const data = await res.json();
         setProblems(data);

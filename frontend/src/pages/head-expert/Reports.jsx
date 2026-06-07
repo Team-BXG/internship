@@ -31,12 +31,12 @@ export default function Reports() {
   const [woredaFilter, setWoredaFilter] = useState('All');
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/zones')
+    fetch('http://localhost:8000/api/zones')
       .then(res => res.json())
       .then(data => setZonesList(Array.isArray(data) ? data : []))
       .catch(console.error);
 
-    fetch('http://127.0.0.1:8000/api/woredas')
+    fetch('http://localhost:8000/api/woredas')
       .then(res => res.json())
       .then(data => setWoredasList(Array.isArray(data) ? data : []))
       .catch(console.error);
@@ -50,7 +50,7 @@ export default function Reports() {
     setLoading(true);
     try {
       const endpoint = TAB_CONFIGS[activeTab].endpoint;
-      const res = await fetch(`http://127.0.0.1:8000${endpoint}`);
+      const res = await fetch(`http://localhost:8000${endpoint}`);
       if (res.ok) {
         const result = await res.json();
         if (Array.isArray(result)) {

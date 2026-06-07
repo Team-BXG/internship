@@ -12,7 +12,7 @@ const ProblemHandlings = ({ selectedScope }) => {
 
   const fetchProblems = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/problems');
+      const res = await fetch('http://localhost:8000/api/problems');
       if (res.ok) {
         const data = await res.json();
         const filtered = data.filter(p => 
@@ -37,7 +37,7 @@ const ProblemHandlings = ({ selectedScope }) => {
     }
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/problems/${activeProblem.id}/status`, {
+      const res = await fetch(`http://localhost:8000/api/problems/${activeProblem.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Fixed', fixed_date: new Date(fixedDate).toISOString(), submitted_by: 'Woreda Encoder' })

@@ -12,7 +12,7 @@ const Dashboard = () => {
 
   React.useEffect(() => {
     if (!selectedZone && user.zone_id) {
-      fetch('http://127.0.0.1:8000/api/zones')
+      fetch('http://localhost:8000/api/zones')
         .then(res => res.json())
         .then(zones => {
           const matched = zones.find(z => z.id === user.zone_id);

@@ -24,7 +24,7 @@ function HeadExpertApp() {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/dashboard')
+    fetch('http://localhost:8000/api/dashboard')
       .then(res => res.json())
       .then(data => {
         setData(data);

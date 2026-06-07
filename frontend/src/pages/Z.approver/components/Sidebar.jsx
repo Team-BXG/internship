@@ -50,6 +50,9 @@ const Sidebar = ({ selectedZone, isCollapsed, setIsCollapsed }) => {
             <NavLink to="/zoneA/demands" title={isCollapsed ? "Demand Statistics" : ""} className={({isActive}) => `flex items-center gap-3 py-3 rounded-xl transition-all font-medium text-sm text-left ${isCollapsed ? 'justify-center px-0' : 'px-4'} ${isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 border border-transparent'}`}>
               <Zap className="w-5 h-5 shrink-0" /> {!isCollapsed && "Demand Statistics"}
             </NavLink>
+            <NavLink to="/zoneA/review-demands" title={isCollapsed ? "Review Demands" : ""} className={({isActive}) => `flex items-center gap-3 py-3 rounded-xl transition-all font-medium text-sm text-left ${isCollapsed ? 'justify-center px-0' : 'px-4'} ${isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 border border-transparent'}`}>
+              <CheckSquare className="w-5 h-5 shrink-0" /> {!isCollapsed && "Review Demands"}
+            </NavLink>
             <NavLink to="/zoneA/queue" title={isCollapsed ? "Beneficiary View" : ""} className={({isActive}) => `flex items-center gap-3 py-3 rounded-xl transition-all font-medium text-sm text-left ${isCollapsed ? 'justify-center px-0' : 'px-4'} ${isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 border border-transparent'}`}>
               <CheckSquare className="w-5 h-5 shrink-0" /> {!isCollapsed && "Beneficiary View"}
             </NavLink>

@@ -6,6 +6,7 @@ import ApprovalQueue from './ApprovalQueue';
 import ProblemApproval from './ProblemApproval';
 import Overview from './Overview';
 import DemandStatistics from './DemandStatistics';
+import ReviewDemands from './ReviewDemands';
 
 import { useState } from 'react';
 
@@ -16,7 +17,7 @@ const ZoneApproverDashboard = () => {
 
   React.useEffect(() => {
     if (!selectedZone && user.zone_id) {
-      fetch('http://127.0.0.1:8000/api/zones')
+      fetch('http://localhost:8000/api/zones')
         .then(res => res.json())
         .then(zones => {
           const matched = zones.find(z => z.id === user.zone_id);
@@ -39,6 +40,7 @@ const ZoneApproverDashboard = () => {
           <Routes>
             <Route path="overview" element={<Overview selectedZone={selectedZone} />} />
             <Route path="demands" element={<DemandStatistics selectedZone={selectedZone} />} />
+            <Route path="review-demands" element={<ReviewDemands selectedZone={selectedZone} />} />
             <Route path="queue" element={<ApprovalQueue selectedZone={selectedZone} />} />
             <Route path="problems" element={<ProblemApproval selectedZone={selectedZone} />} />
             <Route path="/" element={<Navigate to="overview" replace />} />

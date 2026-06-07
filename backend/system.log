@@ -131,3 +131,11 @@
 2026-06-06 06:57:40,843 - sedms_app - INFO - {"action": "Supplier Created", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "Created supplier ethioden solutions with license 34687", "status": "SUCCESS", "timestamp": "2026-06-06T05:57:40.843618"}
 2026-06-06 06:58:35,678 - sedms_app - INFO - {"action": "Supplier Created", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "Created supplier BAHIR with license 23", "status": "SUCCESS", "timestamp": "2026-06-06T05:58:35.678081"}
 2026-06-06 07:02:34,314 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-07 08:36:16,443 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-07 08:36:21,418 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-07 19:12:40,059 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-07 19:12:43,137 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-07 19:25:02,790 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-07 19:25:38,459 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-07 19:48:08,960 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-07 19:48:19,223 - sedms_app - INFO - Logtail Better Stack Integration Activated!

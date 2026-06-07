@@ -19,7 +19,7 @@ const BeneficiaryView = ({ selectedZone }) => {
   const fetchBeneficiaries = async () => {
     try {
       // Fetch all beneficiaries for the zone
-      const res = await fetch(`http://127.0.0.1:8000/api/beneficiaries`);
+      const res = await fetch(`http://localhost:8000/api/beneficiaries`);
       if (res.ok) {
         const data = await res.json();
         setBeneficiaries(data);
@@ -31,7 +31,7 @@ const BeneficiaryView = ({ selectedZone }) => {
 
   const fetchWoredas = async () => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/locations/woredas`);
+      const res = await fetch(`http://localhost:8000/api/locations/woredas`);
       if (res.ok) {
         const data = await res.json();
         // Filter woredas that belong to the selectedZone
@@ -39,7 +39,7 @@ const BeneficiaryView = ({ selectedZone }) => {
         // As a shortcut, we can fetch zones to map name -> id, or if data includes zone name, use that.
         // Assuming woreda has zone_id, let's fetch zones first or just rely on backend zone matching.
         // Alternatively, the API might not include zone_name. We'll fetch zones to map it.
-        const zonesRes = await fetch(`http://127.0.0.1:8000/api/locations/zones`);
+        const zonesRes = await fetch(`http://localhost:8000/api/locations/zones`);
         if (zonesRes.ok) {
            const zones = await zonesRes.json();
            const currentZone = zones.find(z => z.name === selectedZone);
@@ -57,7 +57,7 @@ const BeneficiaryView = ({ selectedZone }) => {
 
   const handleStatusUpdate = async (beneficiary, newStatus) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/beneficiaries/${beneficiary.id}/status`, {
+      const res = await fetch(`http://localhost:8000/api/beneficiaries/${beneficiary.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })

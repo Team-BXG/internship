@@ -7,9 +7,11 @@ from app.routes.activity_logs import log_activity
 router = APIRouter(prefix="/api/demands", tags=["demands"])
 
 @router.get("")
-def get_demands(status: str = None, zone: str = None, woreda: str = None, supplier_id: int = None, db: Session = Depends(get_db)):
+def get_demands(status: str = None, zone: str = None, woreda: str = None, supplier_id: int = None, approved_only: bool = False, db: Session = Depends(get_db)):
     query = db.query(models.Demand)
-    if status:
+    if approved_only:
+        query = query.filter(models.Demand.status.in_(["Approved", "Assigned", "Beneficiary"]))
+    elif status:
         query = query.filter(models.Demand.status == status)
     if supplier_id is not None:
         query = query.filter(models.Demand.assigned_supplier_id == supplier_id)
@@ -47,6 +49,22 @@ def get_demands(status: str = None, zone: str = None, woreda: str = None, suppli
             "created_at": d.created_at.isoformat() if d.created_at else None
         })
     return results
+
+@router.put("/{id}")
+def update_demand(id: int, payload: dict, db: Session = Depends(get_db)):
+    demand = db.query(models.Demand).filter(models.Demand.id == id).first()
+    if not demand:
+        raise HTTPException(status_code=404, detail="Demand not found")
+    
+    for field in ['full_name', 'national_id', 'phone', 'kebele', 'village', 'gender', 
+                  'has_disability', 'service_type', 'household_size', 'elderly_count', 
+                  'solar_panel_type', 'watt_level', 'details_json']:
+        if field in payload:
+            setattr(demand, field, payload[field])
+            
+    demand.status = 'Pending'
+    db.commit()
+    return {"message": "Demand updated successfully", "status": "Pending"}
 
 @router.post("")
 def create_demand(d: schemas.DemandCreate, db: Session = Depends(get_db)):

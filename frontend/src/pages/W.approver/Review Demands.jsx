@@ -13,7 +13,7 @@ const ReviewDemands = ({ selectedScope }) => {
   const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [adjustmentComment, setAdjustmentComment] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('Pending Woreda Review');
+  const [statusFilter, setStatusFilter] = useState('Pending');
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
@@ -40,11 +40,11 @@ const ReviewDemands = ({ selectedScope }) => {
       const res = await fetch(`http://localhost:8000/api/demands/${demandId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Pending Zone Review' })
+        body: JSON.stringify({ status: 'Approved' })
       });
       
       if (res.ok) {
-        toast.success("Demand approved and sent to Zone Approver");
+        toast.success("Demand approved and sent to Zone/Head Expert");
         fetchDemands();
       }
     } catch (error) {
@@ -164,7 +164,7 @@ const ReviewDemands = ({ selectedScope }) => {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="Pending Woreda Review">Pending Review</option>
+            <option value="Pending">Pending Review</option>
             <option value="Approved">Approved</option>
             <option value="Correction Needed">Correction Needed</option>
             <option value="Assigned">Assigned</option>
@@ -190,7 +190,7 @@ const ReviewDemands = ({ selectedScope }) => {
             </div>
             <div>
               <p className="text-2xl font-bold text-amber-900">
-                {demands.filter(d => d.status === 'Pending Woreda Review').length}
+                {demands.filter(d => d.status === 'Pending').length}
               </p>
               <p className="text-xs text-amber-600">Pending Review</p>
             </div>
@@ -290,7 +290,7 @@ const ReviewDemands = ({ selectedScope }) => {
                       <Eye className="w-4 h-4" />
                     </button>
                     
-                    {demand.status === 'Pending Woreda Review' && (
+                    {demand.status === 'Pending' && (
                       <>
                         <button
                           onClick={() => handleApprove(demand.id)}

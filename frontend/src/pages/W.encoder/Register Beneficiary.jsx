@@ -236,6 +236,10 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
           const allForms = [...savedForms, formData];
           
           for (const form of allForms) {
+            const cleanForm = { ...form };
+            if (cleanForm.idPhoto instanceof File) cleanForm.idPhoto = cleanForm.idPhoto.name;
+            if (cleanForm.proofPhoto instanceof File) cleanForm.proofPhoto = cleanForm.proofPhoto.name;
+
             const payload = {
               full_name: form.fullName,
               national_id: form.nationalId || '-',
@@ -249,8 +253,8 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
               survey_type: form.surveyType,
               equipment_type: form.equipmentType,
               supplier: form.assignedSupplier,
-              status: 'Pending Woreda',
-              details_json: JSON.stringify(form)
+              status: 'Pending',
+              details_json: JSON.stringify(cleanForm)
             };
 
             const res = await fetch('http://localhost:8000/api/beneficiaries', {
@@ -271,6 +275,10 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
         }
       }
 
+      const cleanFormData = { ...formData };
+      if (cleanFormData.idPhoto instanceof File) cleanFormData.idPhoto = cleanFormData.idPhoto.name;
+      if (cleanFormData.proofPhoto instanceof File) cleanFormData.proofPhoto = cleanFormData.proofPhoto.name;
+
       // Normal single form submission
       const payload = {
         full_name: formData.fullName || formData.institutionName || formData.representativeName,
@@ -285,8 +293,8 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
         survey_type: formData.surveyType,
         equipment_type: formData.equipmentType,
         supplier: formData.assignedSupplier,
-        status: 'Pending Woreda',
-        details_json: JSON.stringify(formData)
+        status: 'Pending',
+        details_json: JSON.stringify(cleanFormData)
       };
 
       const res = await fetch('http://localhost:8000/api/beneficiaries', {
@@ -303,13 +311,16 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
             await fetch(`http://localhost:8000/api/demands/${initialData.id}/status`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ status: 'Resolved to Beneficiary' })
+              body: JSON.stringify({ status: 'Beneficiary' })
             });
           } catch (err) { console.error(err); }
         }
 
         if (onCompleted) onCompleted();
         else resetAfterSubmit();
+      } else {
+        const errText = await res.text();
+        toast.error(`Error: ${errText || 'Failed to submit'}`);
       }
     } catch (e) {
       console.error(e);

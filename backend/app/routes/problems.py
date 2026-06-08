@@ -7,12 +7,18 @@ from app.routes.activity_logs import log_activity
 router = APIRouter(prefix="/api/problems", tags=["problems"])
 
 @router.get("")
-def get_problems(status: str = None, supplier: str = None, db: Session = Depends(get_db)):
+def get_problems(status: str = None, supplier: str = None, zone: str = None, woreda: str = None, approved_only: bool = False, db: Session = Depends(get_db)):
     query = db.query(models.Problem)
-    if status:
+    if approved_only:
+        query = query.filter(models.Problem.status.in_(["Approved", "Seen", "Fixed"]))
+    elif status:
         query = query.filter(models.Problem.status == status)
     if supplier:
         query = query.filter(models.Problem.supplier == supplier)
+    if woreda:
+        query = query.join(models.Woreda).filter(models.Woreda.name == woreda)
+    elif zone:
+        query = query.join(models.Woreda).join(models.Zone).filter(models.Zone.name == zone)
     problems = query.order_by(models.Problem.created_at.desc()).all()
     
     results = []

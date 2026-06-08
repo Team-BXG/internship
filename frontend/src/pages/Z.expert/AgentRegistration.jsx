@@ -234,14 +234,6 @@ const AgentRegistration = ({ selectedZone }) => {
           <div className="flex items-center gap-3">
             <select 
               className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium text-slate-700"
-              value={zoneFilter}
-              onChange={(e) => setZoneFilter(e.target.value)}
-            >
-              <option value="">All Zones</option>
-              {zonesList.map(z => <option key={z.id} value={z.id}>{z.name}</option>)}
-            </select>
-            <select 
-              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium text-slate-700"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >

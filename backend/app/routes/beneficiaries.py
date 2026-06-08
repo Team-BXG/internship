@@ -7,9 +7,11 @@ from app.routes.activity_logs import log_activity
 router = APIRouter(prefix="/api/beneficiaries", tags=["beneficiaries"])
 
 @router.get("")
-def get_beneficiaries(status: str = None, supplier: str = None, db: Session = Depends(get_db)):
+def get_beneficiaries(status: str = None, supplier: str = None, zone: str = None, woreda: str = None, approved_only: bool = False, db: Session = Depends(get_db)):
     query = db.query(models.Beneficiary).filter(models.Beneficiary.status != 'Assigned')
-    if status:
+    if approved_only:
+        query = query.filter(models.Beneficiary.status == 'Approved')
+    elif status:
         query = query.filter(models.Beneficiary.status == status)
     if supplier:
         if supplier.isdigit():
@@ -20,6 +22,11 @@ def get_beneficiaries(status: str = None, supplier: str = None, db: Session = De
                 query = query.filter(models.Beneficiary.supplier == supplier)
         else:
             query = query.filter(models.Beneficiary.supplier == supplier)
+    if woreda:
+        query = query.join(models.Woreda).filter(models.Woreda.name == woreda)
+    elif zone:
+        query = query.join(models.Woreda).join(models.Zone).filter(models.Zone.name == zone)
+        
     beneficiaries = query.order_by(models.Beneficiary.created_at.desc()).all()
     
     # Get all active problems (not Fixed or Resolved)
@@ -57,6 +64,27 @@ def get_beneficiaries(status: str = None, supplier: str = None, db: Session = De
             "problem_urgency": problem_map.get(b.full_name, None)
         })
     return results
+
+@router.put("/{id}")
+def update_beneficiary(id: int, payload: dict, db: Session = Depends(get_db)):
+    beneficiary = db.query(models.Beneficiary).filter(models.Beneficiary.id == id).first()
+    if not beneficiary:
+        raise HTTPException(status_code=404, detail="Beneficiary not found")
+        
+    for field in ['full_name', 'national_id', 'phone', 'gender', 'household_size', 
+                  'kebele', 'village', 'survey_type', 'equipment_type', 'supplier', 
+                  'details_json']:
+        if field in payload:
+            val = payload[field]
+            if field == 'supplier' and val and str(val).isdigit():
+                supplier_row = db.query(models.Supplier).filter(models.Supplier.id == int(val)).first()
+                if supplier_row:
+                    val = supplier_row.name
+            setattr(beneficiary, field, val)
+            
+    beneficiary.status = 'Pending'
+    db.commit()
+    return {"message": "Beneficiary updated successfully", "status": "Pending"}
 
 @router.post("")
 def create_beneficiary(b: schemas.BeneficiaryCreate, db: Session = Depends(get_db)):

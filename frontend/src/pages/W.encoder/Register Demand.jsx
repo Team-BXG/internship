@@ -109,7 +109,7 @@ const RegisterDemand = ({ selectedScope }) => {
         elderly_count: formData.hasElderly ? 'Yes' : 'No',
         solar_panel_type: formData.solarPanelType,
         watt_level: formData.wattLevel,
-        status: 'Pending Woreda Review',
+        status: 'Pending',
         details_json: JSON.stringify(formData)
       };
 

@@ -40,7 +40,7 @@ def get_dashboard_data(db: Session, zone: str = None, woreda: str = None, gender
     pending_approvals = b_query.filter(models.Beneficiary.status.like("Pending%")).count()
     
     # Non-functional systems
-    non_functional_systems = p_query.filter(models.Problem.status != "Resolved").count()
+    non_functional_systems = p_query.filter(models.Problem.status != "Fixed").count()
     
     functional_systems = max(0, total_beneficiaries - non_functional_systems)
     units_distributed = total_beneficiaries
@@ -54,8 +54,8 @@ def get_dashboard_data(db: Session, zone: str = None, woreda: str = None, gender
     prev_pend = b_query.filter(models.Beneficiary.status.like("Pending%"), models.Beneficiary.created_at >= sixty_days_ago, models.Beneficiary.created_at < thirty_days_ago).count()
     pending_trend = calc_trend(curr_pend, prev_pend)
     
-    curr_prob = p_query.filter(models.Problem.status != "Resolved", models.Problem.created_at >= thirty_days_ago).count()
-    prev_prob = p_query.filter(models.Problem.status != "Resolved", models.Problem.created_at >= sixty_days_ago, models.Problem.created_at < thirty_days_ago).count()
+    curr_prob = p_query.filter(models.Problem.status != "Fixed", models.Problem.created_at >= thirty_days_ago).count()
+    prev_prob = p_query.filter(models.Problem.status != "Fixed", models.Problem.created_at >= sixty_days_ago, models.Problem.created_at < thirty_days_ago).count()
     non_functional_trend = calc_trend(curr_prob, prev_prob)
     
     stats = {
@@ -91,7 +91,7 @@ def get_dashboard_data(db: Session, zone: str = None, woreda: str = None, gender
         models.Zone.name.label('month'),
         func.count(models.Demand.id).label('count')
     ).select_from(models.Demand).join(models.Woreda, models.Demand.woreda_id == models.Woreda.id).join(models.Zone, models.Woreda.zone_id == models.Zone.id)\
-    .filter(models.Demand.status.in_(["Fulfilled/Installed", "Installed", "Fulfilled", "Assigned"]))
+    .filter(models.Demand.status.in_(["Assigned", "Beneficiary"]))
 
     if zone:
         ben_trend_query = ben_trend_query.filter(models.Zone.name == zone)

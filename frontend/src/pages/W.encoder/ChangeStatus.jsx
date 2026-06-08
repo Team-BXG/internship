@@ -474,12 +474,6 @@ const ChangeStatus = ({ selectedScope }) => {
                       >
                         Edit & Resubmit
                       </button>
-                      <button 
-                        onClick={handleResubmit}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        Resubmit Without Edit
-                      </button>
                     </>
                   )}
                 </>

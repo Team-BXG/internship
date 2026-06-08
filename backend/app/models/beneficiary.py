@@ -18,7 +18,7 @@ class Beneficiary(Base):
     survey_type = Column(String(100))
     equipment_type = Column(String(100))
     supplier = Column(String(255))
-    status = Column(String(50), default='Pending Woreda')
+    status = Column(String(50), default='Pending')
     details_json = Column(Text)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 

@@ -21,7 +21,7 @@ class Demand(Base):
     solar_panel_type = Column(String(100))
     watt_level = Column(String(50))
     details_json = Column(Text)
-    status = Column(String(50), default='Pending Woreda Review')
+    status = Column(String(50), default='Pending')
     assigned_supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     

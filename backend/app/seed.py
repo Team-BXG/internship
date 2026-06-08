@@ -263,7 +263,7 @@ def seed_data():
     
     suppliers_names = [s[0] for s in suppliers]
     equipment_types = ["Home Solar System", "Solar Lantern", "Institutional Solar", "Off-grid Solar Grid"]
-    b_statuses = ["Approved", "Pending Zone", "Pending Woreda", "Rejected"]
+    b_statuses = ["Approved", "Pending"]
     genders = ["Male", "Female"]
     woreda_ids_list = list(woreda_name_to_id.values())
     
@@ -276,7 +276,7 @@ def seed_data():
             random.choice(genders), random.choice(["1", "2-4", "5+"]), random.choice(woreda_ids_list),
             f"0{random.randint(1, 9)}", f"Village {random.randint(1, 20)}", random.choice(equipment_types),
             random.choice(equipment_types), random.choice(suppliers_names),
-            random.choices(b_statuses, weights=[70, 10, 10, 10])[0], "{}", created_at.strftime('%Y-%m-%d %H:%M:%S')
+            random.choices(b_statuses, weights=[80, 20])[0], "{}", created_at.strftime('%Y-%m-%d %H:%M:%S')
         )
         beneficiaries.append(b)
         
@@ -284,11 +284,11 @@ def seed_data():
         INSERT INTO beneficiaries (full_name, national_id, phone, gender, household_size, woreda_id, kebele, village, survey_type, equipment_type, supplier, status, details_json, created_at)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     ''', beneficiaries)
-
+ 
     # Seed Problems (Dynamic)
     problems = []
     p_categories = ["Hardware", "Logistics", "Data Issue", "Other"]
-    p_statuses = ["Open", "Pending", "Under Repair", "Resolved"]
+    p_statuses = ["Open", "Approved", "Seen", "Fixed"]
     p_urgencies = ["High", "Medium", "Low"]
     
     for i in range(1, 81):
@@ -304,10 +304,10 @@ def seed_data():
         INSERT INTO problems (title, category, kebele, woreda_id, equipment, serial_number, beneficiary_name, submitted_by, status, urgency, created_at)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     ''', problems)
-
+ 
     # Seed Demands (Dynamic)
     demands = []
-    d_statuses = ["Pending Woreda Review", "Assigned", "Rejected", "Pending Zone Review"]
+    d_statuses = ["Pending", "Approved", "Assigned", "Beneficiary"]
     for i in range(1, 101):
         d = (
             f"Applicant {i}", f"ET-DMD-{1000+i}", f"+251 911 {random.randint(100, 999)} {random.randint(100, 999)}",

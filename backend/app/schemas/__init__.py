@@ -105,7 +105,7 @@ class BeneficiaryCreate(BaseModel):
     equipment_type: str
     supplier: Optional[str] = None
     details_json: Optional[str] = None
-    status: Optional[str] = 'Pending Woreda'
+    status: Optional[str] = 'Pending'
     submitted_by: Optional[str] = 'System'
 
 class DemandCreate(BaseModel):
@@ -125,7 +125,7 @@ class DemandCreate(BaseModel):
     solar_panel_type: str
     watt_level: str
     details_json: Optional[str] = None
-    status: Optional[str] = 'Pending Woreda Review'
+    status: Optional[str] = 'Pending'
     submitted_by: Optional[str] = 'System'
 
 class ProblemCreate(BaseModel):
@@ -139,7 +139,7 @@ class ProblemCreate(BaseModel):
     urgency: str
     beneficiary_name: str
     submitted_by: str
-    status: Optional[str] = 'Pending Woreda'
+    status: Optional[str] = 'Open'
     details_json: Optional[str] = None
     occurred_date: Optional[datetime] = None
     supplier: Optional[str] = None

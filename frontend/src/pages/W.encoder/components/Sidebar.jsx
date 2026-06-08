@@ -50,13 +50,11 @@ export default function Sidebar({ activeMenu, setActiveMenu, selectedScope, isCo
             key={i}
             onClick={() => setActiveMenu(item.name)}
             title={isCollapsed ? item.name : ''}
-            className={`flex items-center gap-3 py-3 rounded-xl text-sm font-medium transition-all ${
-              isCollapsed ? 'justify-center px-0' : 'px-4'
-            } ${
-              activeMenu === item.name 
-                ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" 
+            className={`flex items-center gap-3 py-3 rounded-xl text-sm font-medium transition-all ${isCollapsed ? 'justify-center px-0' : 'px-4'
+              } ${activeMenu === item.name
+                ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-            }`}
+              }`}
           >
             <item.icon className="w-5 h-5 shrink-0" />
             {!isCollapsed && item.name}
@@ -65,21 +63,21 @@ export default function Sidebar({ activeMenu, setActiveMenu, selectedScope, isCo
       </nav>
 
       <div className="p-4 border-t border-slate-100 flex flex-col gap-2">
-         <button 
-           onClick={() => setIsCollapsed(!isCollapsed)}
-           className={`flex items-center gap-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors ${isCollapsed ? 'justify-center px-0' : 'px-4'}`}
-         >
-            {isCollapsed ? <ChevronRight className="w-5 h-5 shrink-0" /> : <ChevronLeft className="w-5 h-5 shrink-0" />}
-            {!isCollapsed && "Collapse"}
-         </button>
-         <button 
-           onClick={handleSignOut}
-           title={isCollapsed ? "Sign Out" : ""}
-           className={`flex items-center gap-3 py-2 text-sm font-medium text-slate-500 hover:text-red-500 transition-colors ${isCollapsed ? 'justify-center px-0' : 'px-4'}`}
-         >
-            <LogOut className="w-5 h-5 shrink-0" />
-            {!isCollapsed && "Sign Out"}
-         </button>
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className={`flex items-center gap-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors ${isCollapsed ? 'justify-center px-0' : 'px-4'}`}
+        >
+          {isCollapsed ? <ChevronRight className="w-5 h-5 shrink-0" /> : <ChevronLeft className="w-5 h-5 shrink-0" />}
+          {!isCollapsed && "Collapse"}
+        </button>
+        <button
+          onClick={handleSignOut}
+          title={isCollapsed ? "Sign Out" : ""}
+          className={`flex items-center gap-3 py-2 text-sm font-medium text-slate-500 hover:text-red-500 transition-colors ${isCollapsed ? 'justify-center px-0' : 'px-4'}`}
+        >
+          <LogOut className="w-5 h-5 shrink-0" />
+          {!isCollapsed && "Sign Out"}
+        </button>
       </div>
     </aside>
   );

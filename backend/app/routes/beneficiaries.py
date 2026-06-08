@@ -137,6 +137,8 @@ def update_beneficiary_status(id: int, status_update: schemas.BeneficiaryStatusU
     if not beneficiary:
         raise HTTPException(status_code=404, detail="Beneficiary not found")
     beneficiary.status = status_update.status
+    if getattr(status_update, 'details_json', None):
+        beneficiary.details_json = status_update.details_json
     db.commit()
 
     log_activity(

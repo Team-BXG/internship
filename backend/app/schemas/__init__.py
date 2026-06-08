@@ -151,10 +151,12 @@ class ProblemFixedUpdate(BaseModel):
 class BeneficiaryStatusUpdate(BaseModel):
     status: str
     submitted_by: Optional[str] = 'System'
+    details_json: Optional[str] = None
 
 class ProblemStatusUpdate(BaseModel):
     status: str
     submitted_by: Optional[str] = 'System'
+    details_json: Optional[str] = None
 
 class DemandAssignSupplier(BaseModel):
     supplier_id: int

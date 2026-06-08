@@ -113,6 +113,8 @@ def update_demand_status(id: int, status_update: schemas.BeneficiaryStatusUpdate
     if not demand:
         raise HTTPException(status_code=404, detail="Demand not found")
     demand.status = status_update.status
+    if getattr(status_update, 'details_json', None):
+        demand.details_json = status_update.details_json
     db.commit()
 
     log_activity(

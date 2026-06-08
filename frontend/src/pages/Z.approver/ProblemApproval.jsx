@@ -48,8 +48,8 @@ const ProblemApproval = ({ selectedZone }) => {
                       (p.zone && p.zone.toLowerCase().includes(selectedZone.toLowerCase())) || 
                       (p.zone_name && p.zone_name.toLowerCase().includes(selectedZone.toLowerCase())) ||
                       selectedZone.toLowerCase().includes(String(p.zone || '').toLowerCase());
-    const matchStatus = statusFilter === 'All Status' ? true : p.status === statusFilter;
-    return matchSearch && matchZone && matchStatus;
+    const matchStatus = statusFilter === 'All Status' ? p.status === 'Approved' : p.status === statusFilter;
+    return matchSearch && matchZone && matchStatus && p.status === 'Approved';
   });
 
   const uniqueStatuses = [...new Set(problems.map(p => p.status).filter(Boolean))];
@@ -64,14 +64,12 @@ const ProblemApproval = ({ selectedZone }) => {
   const getStatusColor = (status) => {
     if (status === 'Open' || status === 'Pending') return 'text-red-700 bg-red-50 border-red-200';
     if (status === 'Under Repair') return 'text-amber-700 bg-amber-50 border-amber-200';
-    if (status === 'Acknowledged') return 'text-blue-700 bg-blue-50 border-blue-200';
+    if (status === 'Acknowledged' || status === 'Approved') return 'text-blue-700 bg-blue-50 border-blue-200';
     if (status === 'Resolved') return 'text-emerald-700 bg-emerald-50 border-emerald-200';
     return 'text-slate-600 bg-slate-50 border-slate-200';
   };
 
-  const actionConfig = [
-    { label: 'Acknowledge Problem', className: 'bg-blue-500 hover:bg-blue-600 text-white', onClick: (p) => handleStatusUpdate(p, 'Acknowledged') }
-  ];
+  const actionConfig = [];
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { 
-  CheckCircle2, XCircle, AlertTriangle, Clock, User, MapPin, Zap, 
+import {
+  CheckCircle2, XCircle, AlertTriangle, Clock, User, MapPin, Zap,
   MessageSquare, Send, Search, Filter, ChevronDown, Eye, Download
 } from 'lucide-react';
 import Papa from 'papaparse';
@@ -42,7 +42,7 @@ const ReviewDemands = ({ selectedZone }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Approved' })
       });
-      
+
       if (res.ok) {
         toast.success("Demand fully approved");
         fetchDemands();
@@ -63,12 +63,12 @@ const ReviewDemands = ({ selectedZone }) => {
       const res = await fetch(`http://localhost:8000/api/demands/${selectedDemand.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           status: 'Correction Needed',
           details_json: JSON.stringify({ adjustment_comments: adjustmentComment })
         })
       });
-      
+
       if (res.ok) {
         toast.error("Adjustment request sent to encoder");
         setShowAdjustModal(false);
@@ -104,8 +104,8 @@ const ReviewDemands = ({ selectedZone }) => {
 
   const filteredDemands = demands.filter(demand =>
     (demand.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    demand.national_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    demand.village?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      demand.national_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      demand.village?.toLowerCase().includes(searchTerm.toLowerCase())) &&
     (statusFilter === '' || demand.status === statusFilter)
   );
 
@@ -156,7 +156,7 @@ const ReviewDemands = ({ selectedZone }) => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
+
         <div className="relative">
           <Filter className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
           <select
@@ -172,8 +172,8 @@ const ReviewDemands = ({ selectedZone }) => {
           </select>
           <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-slate-400 pointer-events-none" />
         </div>
-        
-        <button 
+
+        <button
           onClick={exportCSV}
           className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors font-medium text-sm whitespace-nowrap"
         >
@@ -196,7 +196,7 @@ const ReviewDemands = ({ selectedZone }) => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
@@ -210,7 +210,7 @@ const ReviewDemands = ({ selectedZone }) => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-red-50 border border-red-200 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
@@ -224,7 +224,7 @@ const ReviewDemands = ({ selectedZone }) => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -243,7 +243,7 @@ const ReviewDemands = ({ selectedZone }) => {
         <div className="p-4 border-b border-slate-100">
           <h4 className="font-semibold text-slate-800">Demand Requests</h4>
         </div>
-        
+
         {loading ? (
           <div className="p-8 text-center text-slate-500">Loading demands...</div>
         ) : filteredDemands.length === 0 ? (
@@ -272,13 +272,13 @@ const ReviewDemands = ({ selectedZone }) => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-3">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(demand.status)}`}>
                       {getStatusIcon(demand.status)}
                       {demand.status}
                     </span>
-                    
+
                     <button
                       onClick={() => {
                         setSelectedDemand(demand);
@@ -289,7 +289,7 @@ const ReviewDemands = ({ selectedZone }) => {
                     >
                       <Eye className="w-4 h-4" />
                     </button>
-                    
+
                     {demand.status === 'Pending Zone Review' && (
                       <>
                         <button
@@ -299,7 +299,7 @@ const ReviewDemands = ({ selectedZone }) => {
                           <CheckCircle2 className="w-4 h-4" />
                           Approve
                         </button>
-                        
+
                         <button
                           onClick={() => {
                             setSelectedDemand(demand);
@@ -333,7 +333,7 @@ const ReviewDemands = ({ selectedZone }) => {
                 <XCircle className="w-5 h-5 text-slate-500" />
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -356,7 +356,7 @@ const ReviewDemands = ({ selectedZone }) => {
                   </span>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-slate-500 block mb-1">Zone</label>
@@ -375,7 +375,7 @@ const ReviewDemands = ({ selectedZone }) => {
                   <p className="font-semibold text-slate-800">{selectedDemand.village}</p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs text-slate-500 block mb-1">Solar Panel Type</label>
@@ -386,7 +386,7 @@ const ReviewDemands = ({ selectedZone }) => {
                   <p className="font-semibold text-slate-800">{selectedDemand.watt_level}</p>
                 </div>
               </div>
-              
+
               <div>
                 <label className="text-xs text-slate-500 block mb-1">Submitted Date</label>
                 <p className="font-semibold text-slate-800">
@@ -411,7 +411,7 @@ const ReviewDemands = ({ selectedZone }) => {
                 <XCircle className="w-5 h-5 text-slate-500" />
               </button>
             </div>
-            
+
             <div className="mb-4">
               <p className="text-sm text-slate-600 mb-2">
                 Request adjustment for: <span className="font-semibold">{selectedDemand.full_name}</span>
@@ -420,7 +420,7 @@ const ReviewDemands = ({ selectedZone }) => {
                 Please specify what needs to be adjusted in the demand request.
               </p>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-semibold text-slate-700 block mb-2">
@@ -434,7 +434,7 @@ const ReviewDemands = ({ selectedZone }) => {
                   onChange={(e) => setAdjustmentComment(e.target.value)}
                 />
               </div>
-              
+
               <div className="flex gap-3">
                 <button
                   onClick={handleRequestAdjustment}

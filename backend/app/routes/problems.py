@@ -100,6 +100,8 @@ def update_problem_status(id: int, status_update: schemas.ProblemStatusUpdate, d
     if not problem:
         raise HTTPException(status_code=404, detail="Problem not found")
     problem.status = status_update.status
+    if getattr(status_update, 'details_json', None):
+        problem.details_json = status_update.details_json
     db.commit()
 
     log_activity(

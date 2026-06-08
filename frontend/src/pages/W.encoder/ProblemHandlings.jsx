@@ -59,6 +59,7 @@ const ProblemHandlings = ({ selectedScope }) => {
   const getStatusStyle = (status) => {
     if (status === 'Seen') return 'text-blue-600 bg-blue-50 border-blue-200';
     if (status === 'Pending Woreda') return 'text-red-600 bg-red-50 border-red-200';
+    if (status === 'Correction Needed') return 'text-rose-600 bg-rose-50 border-rose-200';
     if (status === 'Under Repair') return 'text-orange-600 bg-orange-50 border-orange-200';
     if (status === 'Fixed') return 'text-emerald-600 bg-emerald-50 border-emerald-200';
     return 'text-slate-600 bg-slate-50 border-slate-200';

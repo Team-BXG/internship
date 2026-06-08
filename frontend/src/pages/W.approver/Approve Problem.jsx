@@ -7,6 +7,9 @@ const ApproveProblem = ({ selectedScope }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [activeProblem, setActiveProblem] = useState(null);
+  const [showAdjustModal, setShowAdjustModal] = useState(false);
+  const [adjustmentComment, setAdjustmentComment] = useState('');
+  const [problemToAdjust, setProblemToAdjust] = useState(null);
 
   useEffect(() => {
     fetchProblems();
@@ -29,10 +32,16 @@ const ApproveProblem = ({ selectedScope }) => {
       const res = await fetch(`http://localhost:8000/api/problems/${problem.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ 
+          status: newStatus,
+          ...(adjustmentComment && { details_json: JSON.stringify({ adjustment_comments: adjustmentComment }) })
+        })
       });
       if (res.ok) {
         setActiveProblem(null);
+        setShowAdjustModal(false);
+        setAdjustmentComment('');
+        setProblemToAdjust(null);
         fetchProblems();
       }
     } catch (e) {
@@ -67,7 +76,8 @@ const ApproveProblem = ({ selectedScope }) => {
   };
 
   const actionConfig = [
-    { label: 'Approve Problem', className: 'bg-blue-500 hover:bg-blue-600 text-white', onClick: (p) => handleStatusUpdate(p, 'Approved') }
+    { label: 'Approve Problem', className: 'bg-emerald-500 hover:bg-emerald-600 text-white', onClick: (p) => handleStatusUpdate(p, 'Approved') },
+    { label: 'Return for Correction', className: 'bg-amber-500 hover:bg-amber-600 text-white', onClick: (p) => { setProblemToAdjust(p); setShowAdjustModal(true); } }
   ];
 
   return (
@@ -166,12 +176,58 @@ const ApproveProblem = ({ selectedScope }) => {
         </div>
       </div>
 
-      {activeProblem && (
+      {activeProblem && !showAdjustModal && (
         <ProblemDetailsModal 
           problem={activeProblem} 
           onClose={() => setActiveProblem(null)} 
           actionConfig={actionConfig} 
         />
+      )}
+
+      {showAdjustModal && problemToAdjust && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-xl font-bold text-slate-800">Request Adjustment</h4>
+              <button
+                onClick={() => { setShowAdjustModal(false); setProblemToAdjust(null); }}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <div className="w-5 h-5 flex items-center justify-center text-slate-500 font-bold text-xl leading-none">&times;</div>
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm text-slate-600 mb-2">
+                Request adjustment for: <span className="font-semibold">{problemToAdjust.equipment} ({problemToAdjust.beneficiary_name})</span>
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-semibold text-slate-700 block mb-2">
+                  Adjustment Comments *
+                </label>
+                <textarea
+                  className="w-full p-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  rows={4}
+                  placeholder="Describe what needs to be adjusted..."
+                  value={adjustmentComment}
+                  onChange={(e) => setAdjustmentComment(e.target.value)}
+                />
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleStatusUpdate(problemToAdjust, 'Correction Needed')}
+                  className="flex-1 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  Send Request
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

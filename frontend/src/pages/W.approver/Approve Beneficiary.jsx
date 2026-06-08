@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 const ApproveBeneficiary = ({ selectedScope }) => {
   const [beneficiaries, setBeneficiaries] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('Pending');
+  const [statusFilter, setStatusFilter] = useState('All Status');
   const [activeBeneficiary, setActiveBeneficiary] = useState(null);
   const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [adjustmentComment, setAdjustmentComment] = useState('');

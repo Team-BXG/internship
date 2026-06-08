@@ -16,6 +16,7 @@ import WoredaEncoderDashboard from './pages/W.encoder/Dashboard';
 import WoredaApproverDashboard from './pages/W.approver/Dashboard';
 import ZoneExpertDashboard from './pages/Z.expert/Dashboard';
 import ZoneApproverDashboard from './pages/Z.approver/Dashboard';
+import DarkModeToggle from './components/DarkModeToggle';
 
 function HeadExpertApp() {
   const [data, setData] = useState(null);
@@ -98,6 +99,18 @@ import Login from './pages/Auth/Login';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const userStr = localStorage.getItem('user');
+
+  useEffect(() => {
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user && user.role) {
+          document.title = user.role;
+        }
+      } catch (e) {}
+    }
+  }, [userStr]);
+
   if (!userStr) return <Navigate to="/login" replace />;
   try {
     const user = JSON.parse(userStr);
@@ -114,6 +127,7 @@ function App() {
   return (
     <Router>
       <Toaster position="top-right" />
+      <DarkModeToggle />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/wencoder/*" element={

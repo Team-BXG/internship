@@ -8,16 +8,27 @@ router = APIRouter(prefix="/api/beneficiaries", tags=["beneficiaries"])
 
 @router.get("")
 def get_beneficiaries(status: str = None, supplier: str = None, db: Session = Depends(get_db)):
-    query = db.query(models.Beneficiary)
+    query = db.query(models.Beneficiary).filter(models.Beneficiary.status != 'Assigned')
     if status:
         query = query.filter(models.Beneficiary.status == status)
     if supplier:
-        query = query.filter(models.Beneficiary.supplier == supplier)
+        if supplier.isdigit():
+            supplier_row = db.query(models.Supplier).filter(models.Supplier.id == int(supplier)).first()
+            if supplier_row:
+                query = query.filter(models.Beneficiary.supplier == supplier_row.name)
+            else:
+                query = query.filter(models.Beneficiary.supplier == supplier)
+        else:
+            query = query.filter(models.Beneficiary.supplier == supplier)
     beneficiaries = query.order_by(models.Beneficiary.created_at.desc()).all()
     
     # Get all active problems (not Fixed or Resolved)
     active_problems = db.query(models.Problem).filter(models.Problem.status.notin_(["Fixed", "Resolved"])).all()
     problem_map = {p.beneficiary_name: p.urgency for p in active_problems if p.beneficiary_name}
+    
+    # Fetch all suppliers for mapping IDs to names if stored as IDs
+    suppliers = db.query(models.Supplier).all()
+    supplier_map = {str(s.id): s.name for s in suppliers}
     
     results = []
     for b in beneficiaries:
@@ -39,7 +50,7 @@ def get_beneficiaries(status: str = None, supplier: str = None, db: Session = De
             "village": b.village,
             "survey_type": b.survey_type,
             "equipment_type": b.equipment_type,
-            "supplier": b.supplier,
+            "supplier": supplier_map.get(b.supplier, b.supplier),
             "status": b.status,
             "details_json": b.details_json,
             "created_at": b.created_at.isoformat() if b.created_at else None,
@@ -55,6 +66,12 @@ def create_beneficiary(b: schemas.BeneficiaryCreate, db: Session = Depends(get_d
         if woreda_row:
             woreda_id = woreda_row.id
 
+    supplier_name = b.supplier
+    if b.supplier and b.supplier.isdigit():
+        supplier_row = db.query(models.Supplier).filter(models.Supplier.id == int(b.supplier)).first()
+        if supplier_row:
+            supplier_name = supplier_row.name
+
     db_beneficiary = models.Beneficiary(
         full_name=b.full_name,
         national_id=b.national_id,
@@ -66,7 +83,7 @@ def create_beneficiary(b: schemas.BeneficiaryCreate, db: Session = Depends(get_d
         village=b.village,
         survey_type=b.survey_type,
         equipment_type=b.equipment_type,
-        supplier=b.supplier,
+        supplier=supplier_name,
         details_json=b.details_json,
         status=b.status
     )

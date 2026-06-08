@@ -7,10 +7,12 @@ from app.routes.activity_logs import log_activity
 router = APIRouter(prefix="/api/demands", tags=["demands"])
 
 @router.get("")
-def get_demands(status: str = None, zone: str = None, woreda: str = None, db: Session = Depends(get_db)):
+def get_demands(status: str = None, zone: str = None, woreda: str = None, supplier_id: int = None, db: Session = Depends(get_db)):
     query = db.query(models.Demand)
     if status:
         query = query.filter(models.Demand.status == status)
+    if supplier_id is not None:
+        query = query.filter(models.Demand.assigned_supplier_id == supplier_id)
     if woreda:
         query = query.join(models.Woreda).filter(models.Woreda.name == woreda)
     elif zone:
@@ -114,24 +116,6 @@ def assign_demand_supplier(id: int, supplier_update: schemas.DemandAssignSupplie
 
     supplier = db.query(models.Supplier).filter(models.Supplier.id == supplier_update.supplier_id).first()
     supplier_name = supplier.name if supplier else f"Supplier {supplier_update.supplier_id}"
-
-    # Auto-create beneficiary record for the assigned demand
-    new_beneficiary = models.Beneficiary(
-        full_name=demand.full_name,
-        national_id=demand.national_id,
-        phone=demand.phone,
-        gender=demand.gender,
-        household_size=demand.household_size,
-        woreda_id=demand.woreda_id,
-        kebele=demand.kebele,
-        village=demand.village,
-        survey_type='Demand Request',
-        equipment_type=demand.solar_panel_type,
-        supplier=supplier_name,
-        status='Assigned',
-        details_json=demand.details_json
-    )
-    db.add(new_beneficiary)
 
     db.commit()
 

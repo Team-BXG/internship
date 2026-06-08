@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogIn, User, Lock, ShieldAlert, KeyRound, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -8,6 +8,10 @@ import heroBg from '../../assets/hero_uploaded.jpg';
 import logo from '../../assets/logo.png';
 
 export default function Login() {
+  useEffect(() => {
+    document.title = 'SEDMS - Login';
+  }, []);
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);

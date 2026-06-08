@@ -46,6 +46,7 @@ const AgentRegistration = ({ selectedZone }) => {
           const matched = data.find(z => z.name.toLowerCase().includes(selectedZone.toLowerCase()) || selectedZone.toLowerCase().includes(z.name.toLowerCase()));
           if (matched) {
             setFormData(prev => ({ ...prev, zone_id: matched.id }));
+            setZoneFilter(String(matched.id));
           }
         }
       })
@@ -94,13 +95,6 @@ const AgentRegistration = ({ selectedZone }) => {
     const matchesSearch = a.name.toLowerCase().includes(term) || (a.phone || '').includes(term);
     const matchesZone = zoneFilter ? a.zone_id === Number(zoneFilter) : true;
     const matchesStatus = statusFilter ? a.status === statusFilter : true;
-    
-    if (selectedZone) {
-      const zoneName = String(a.zone_name || '');
-      const isMatch = zoneName.toLowerCase().includes(selectedZone.toLowerCase()) || 
-                      selectedZone.toLowerCase().includes(zoneName.toLowerCase());
-      return matchesSearch && matchesStatus && isMatch;
-    }
     return matchesSearch && matchesZone && matchesStatus;
   });
 
@@ -238,16 +232,14 @@ const AgentRegistration = ({ selectedZone }) => {
             />
           </div>
           <div className="flex items-center gap-3">
-            {!selectedZone && (
-              <select 
-                className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium text-slate-700"
-                value={zoneFilter}
-                onChange={(e) => setZoneFilter(e.target.value)}
-              >
-                <option value="">All Zones</option>
-                {zonesList.map(z => <option key={z.id} value={z.id}>{z.name}</option>)}
-              </select>
-            )}
+            <select 
+              className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium text-slate-700"
+              value={zoneFilter}
+              onChange={(e) => setZoneFilter(e.target.value)}
+            >
+              <option value="">All Zones</option>
+              {zonesList.map(z => <option key={z.id} value={z.id}>{z.name}</option>)}
+            </select>
             <select 
               className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium text-slate-700"
               value={statusFilter}

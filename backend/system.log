@@ -139,3 +139,11 @@
 2026-06-07 19:25:38,459 - sedms_app - INFO - Logtail Better Stack Integration Activated!
 2026-06-07 19:48:08,960 - sedms_app - INFO - Logtail Better Stack Integration Activated!
 2026-06-07 19:48:19,223 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-08 12:06:18,473 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-08 12:10:58,263 - sedms_app - INFO - {"action": "Supplier Created", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "Created supplier Bahir Dar University with license 798", "status": "SUCCESS", "timestamp": "2026-06-08T09:10:58.263408"}
+2026-06-08 12:11:28,550 - sedms_app - INFO - {"action": "Supplier Created", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "Created supplier Bahir Dar University with license 798", "status": "SUCCESS", "timestamp": "2026-06-08T09:11:28.550910"}
+2026-06-08 14:34:23,945 - sedms_app - INFO - {"action": "Supplier Created", "user": "superadmin", "role": "Super Admin", "woreda": "N/A", "zone": "N/A", "details": "Created supplier helen solutions with license 23", "status": "SUCCESS", "timestamp": "2026-06-08T11:34:23.945939"}
+2026-06-08 14:52:02,749 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-08 14:52:04,312 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-08 15:12:29,766 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-08 15:12:46,733 - sedms_app - INFO - Logtail Better Stack Integration Activated!

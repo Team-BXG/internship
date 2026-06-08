@@ -9,12 +9,14 @@ import Problems from './pages/Problems';
 import Login from './pages/Login';
 import ChangePassword from './pages/ChangePassword';
 import Profile from './pages/Profile';
+import DarkModeToggle from './components/DarkModeToggle';
 
 function App() {
   const [supplier, setSupplier] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    document.title = 'Supplier Portal';
     const saved = localStorage.getItem('supplier_user');
     if (saved) {
       setSupplier(JSON.parse(saved));
@@ -38,6 +40,7 @@ function App() {
     return (
       <Router>
         <Toaster position="top-right" />
+        <DarkModeToggle />
         <Routes>
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
@@ -50,6 +53,7 @@ function App() {
     return (
       <Router>
         <Toaster position="top-right" />
+        <DarkModeToggle />
         <Routes>
           <Route path="/change-password" element={<ChangePassword user={supplier} onComplete={handlePasswordChanged} />} />
           <Route path="*" element={<Navigate to="/change-password" replace />} />
@@ -61,6 +65,7 @@ function App() {
   return (
     <Router>
       <Toaster position="top-right" />
+      <DarkModeToggle />
       <div className="flex bg-slate-50 min-h-screen font-sans">
         <Sidebar supplier={supplier} />
         <div className="flex-1 ml-64 flex flex-col min-h-screen">

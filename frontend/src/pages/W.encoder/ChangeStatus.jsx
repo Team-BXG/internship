@@ -5,6 +5,7 @@ import {
   RefreshCw, Eye, MessageSquare, Clock, User, Download
 } from 'lucide-react';
 import Papa from 'papaparse';
+import { validateName, validatePhone } from '../../utils/validation';
 const ChangeStatus = ({ selectedScope }) => {
   const [activeTab, setActiveTab] = useState('demands');
   const [submissions, setSubmissions] = useState([]);
@@ -31,7 +32,7 @@ const ChangeStatus = ({ selectedScope }) => {
         fetch(`http://localhost:8000/api/beneficiaries?zone=${selectedScope.zone}&woreda=${selectedScope.woreda}`),
         fetch(`http://localhost:8000/api/problems`)
       ]);
-      
+
       if (demandsRes.ok) {
         const dData = await demandsRes.json();
         setSubmissions(Array.isArray(dData) ? dData : []);
@@ -86,6 +87,15 @@ const ChangeStatus = ({ selectedScope }) => {
   const filteredSubmissions = getFilteredSubmissions();
 
   const handleSaveEdit = async () => {
+    if (editData.full_name) {
+      const nameError = validateName(editData.full_name);
+      if (nameError) return toast.error("Name: " + nameError);
+    }
+    if (editData.phone) {
+      const phoneError = validatePhone(editData.phone);
+      if (phoneError) return toast.error("Phone: " + phoneError);
+    }
+    
     try {
       let endpoint;
       if (selectedSubmission.submissionType === 'demand') {
@@ -334,8 +344,8 @@ const ChangeStatus = ({ selectedScope }) => {
 
                     {correctionStatuses.includes(submission.status) && (
                       <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                        <button 
-                          onClick={() => toggleComment(submission.id)} 
+                        <button
+                          onClick={() => toggleComment(submission.id)}
                           className="w-full flex items-center justify-between text-left focus:outline-none"
                         >
                           <p className="text-sm font-medium text-amber-800">Feedback/Adjustment Required:</p>

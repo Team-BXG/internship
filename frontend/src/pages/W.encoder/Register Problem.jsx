@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import { 
-  Plus, Search, AlertTriangle, AlertOctagon, 
+import {
+  Plus, Search, AlertTriangle, AlertOctagon,
   CheckCircle2, ArrowLeft, UploadCloud, Eye, Wrench, X, Download
 } from 'lucide-react';
 const MAIN_CAUSES = {
@@ -43,7 +43,7 @@ const RegisterProblem = ({ selectedScope }) => {
     const ben = beneficiaries.find(b => b.id.toString() === bId);
     if (ben) {
       let details = {};
-      try { details = ben.details_json ? JSON.parse(ben.details_json) : {}; } catch(e){}
+      try { details = ben.details_json ? JSON.parse(ben.details_json) : {}; } catch (e) { }
       setFormData(prev => ({
         ...prev,
         beneficiaryName: ben.full_name,
@@ -103,7 +103,7 @@ const RegisterProblem = ({ selectedScope }) => {
   useEffect(() => {
     fetchProblems();
     fetchBeneficiaries();
-    
+
     const draft = localStorage.getItem('draft_problem');
     if (draft) {
       setDraftExists(true);
@@ -168,8 +168,8 @@ const RegisterProblem = ({ selectedScope }) => {
 
   const filteredProblems = useMemo(() => {
     return problems.filter(p => {
-      const matchSearch = p.beneficiary.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          p.serialNo.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchSearch = p.beneficiary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.serialNo.toLowerCase().includes(searchQuery.toLowerCase());
       const matchStatus = statusFilter ? p.status === statusFilter : true;
       const matchScope = p.zone === selectedScope.zone && p.woreda === selectedScope.woreda;
       return matchSearch && matchStatus && matchScope;
@@ -235,7 +235,7 @@ const RegisterProblem = ({ selectedScope }) => {
     return (
       <div className="max-w-7xl mx-auto pb-12 animate-in fade-in slide-in-from-bottom-4 duration-300">
         <div className="flex items-center gap-4 mb-8">
-          <button 
+          <button
             onClick={() => setSelectedProblem(null)}
             className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-slate-500"
           >
@@ -310,27 +310,24 @@ const RegisterProblem = ({ selectedScope }) => {
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
           <h3 className="text-lg font-bold text-slate-800 mb-4">Update Status</h3>
           <div className="flex gap-4">
-            <button 
+            <button
               onClick={() => updateProblemStatus(selectedProblem.id, 'Open')}
-              className={`px-6 py-2.5 rounded-full font-bold transition-all text-sm ${
-                selectedProblem.status === 'Open' ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              className={`px-6 py-2.5 rounded-full font-bold transition-all text-sm ${selectedProblem.status === 'Open' ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
             >
               Open
             </button>
-            <button 
+            <button
               onClick={() => updateProblemStatus(selectedProblem.id, 'Under Repair')}
-              className={`px-6 py-2.5 rounded-full font-bold transition-all text-sm ${
-                selectedProblem.status === 'Under Repair' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              className={`px-6 py-2.5 rounded-full font-bold transition-all text-sm ${selectedProblem.status === 'Under Repair' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
             >
               Under Repair
             </button>
-            <button 
+            <button
               onClick={() => updateProblemStatus(selectedProblem.id, 'Resolved')}
-              className={`px-6 py-2.5 rounded-full font-bold transition-all text-sm ${
-                selectedProblem.status === 'Resolved' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              className={`px-6 py-2.5 rounded-full font-bold transition-all text-sm ${selectedProblem.status === 'Resolved' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
             >
               Resolved
             </button>
@@ -348,7 +345,7 @@ const RegisterProblem = ({ selectedScope }) => {
           <h3 className="text-2xl font-bold text-slate-800">Problem Register</h3>
           <p className="text-slate-500">Report and track equipment non-functionality issues</p>
         </div>
-        <button 
+        <button
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all"
         >
@@ -413,12 +410,12 @@ const RegisterProblem = ({ selectedScope }) => {
               </button>
             </div>
           </div>
-          
+
           <div className="p-6">
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2 col-span-2">
                 <label className="text-sm font-semibold text-slate-700">Search & Select Beneficiary *</label>
-                <select 
+                <select
                   className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50"
                   onChange={(e) => handleBeneficiarySelect(e.target.value)}
                   defaultValue=""
@@ -433,8 +430,8 @@ const RegisterProblem = ({ selectedScope }) => {
 
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">Beneficiary Name *</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="Full name of beneficiary"
                   className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-100"
                   value={formData.beneficiaryName}
@@ -444,8 +441,8 @@ const RegisterProblem = ({ selectedScope }) => {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">Equipment Serial Number *</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="e.g. SHS-NG-007"
                   className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={formData.serialNumber}
@@ -455,7 +452,7 @@ const RegisterProblem = ({ selectedScope }) => {
 
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">Equipment Type *</label>
-                <select 
+                <select
                   className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                   value={formData.equipmentType}
                   onChange={(e) => updateFormData('equipmentType', e.target.value)}
@@ -470,8 +467,8 @@ const RegisterProblem = ({ selectedScope }) => {
 
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">Assigned Supplier</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="Supplier auto-filled"
                   className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none bg-slate-100 text-slate-500"
                   value={formData.supplier || 'Not assigned'}
@@ -481,7 +478,7 @@ const RegisterProblem = ({ selectedScope }) => {
 
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">Problem Level *</label>
-                <select 
+                <select
                   className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                   value={formData.problemLevel}
                   onChange={(e) => updateFormData('problemLevel', e.target.value)}
@@ -496,7 +493,7 @@ const RegisterProblem = ({ selectedScope }) => {
 
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">Installation Date *</label>
-                <input 
+                <input
                   type="date"
                   className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-600"
                   value={formData.installationDate}
@@ -505,7 +502,7 @@ const RegisterProblem = ({ selectedScope }) => {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">Non-Functional Date *</label>
-                <input 
+                <input
                   type="date"
                   className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-600 bg-white"
                   value={formData.nonFunctionalDate}
@@ -515,7 +512,7 @@ const RegisterProblem = ({ selectedScope }) => {
 
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">Zone *</label>
-                <select 
+                <select
                   className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                   value={selectedScope.zone}
                   disabled
@@ -525,7 +522,7 @@ const RegisterProblem = ({ selectedScope }) => {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">Woreda *</label>
-                <select 
+                <select
                   className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                   value={selectedScope.woreda}
                   disabled
@@ -536,7 +533,7 @@ const RegisterProblem = ({ selectedScope }) => {
 
               <div className="col-span-2 space-y-2">
                 <label className="text-sm font-semibold text-slate-700">Main Cause *</label>
-                <select 
+                <select
                   className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                   value={formData.mainCause}
                   onChange={(e) => updateFormData('mainCause', e.target.value)}
@@ -552,11 +549,11 @@ const RegisterProblem = ({ selectedScope }) => {
               <div className="col-span-2 space-y-2 mt-2">
                 <label className="text-sm font-semibold text-slate-700">Upload Photo (Optional)</label>
                 <label className="w-full h-32 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:border-blue-400 hover:bg-slate-50 transition-colors cursor-pointer">
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    className="hidden" 
-                    onChange={(e) => updateFormData('photo', e.target.files[0])} 
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => updateFormData('photo', e.target.files[0])}
                   />
                   <UploadCloud className={`w-8 h-8 mb-2 ${formData.photo ? 'text-emerald-500' : ''}`} />
                   <span className="font-semibold">{formData.photo ? 'Photo Ready' : 'Click to upload equipment photo'}</span>
@@ -566,10 +563,10 @@ const RegisterProblem = ({ selectedScope }) => {
 
               {formData.problemLevel === 'Functional' && (
                 <div className="col-span-2 space-y-4 mt-8 p-6 border-t border-slate-200 bg-slate-50/50 rounded-b-xl">
-                   <h5 className="font-bold text-slate-800">Additional Survey Information</h5>
-                   <div className="space-y-2">
-                     <p className="text-sm text-slate-700">System is fully functional. No additional info needed.</p>
-                   </div>
+                  <h5 className="font-bold text-slate-800">Additional Survey Information</h5>
+                  <div className="space-y-2">
+                    <p className="text-sm text-slate-700">System is fully functional. No additional info needed.</p>
+                  </div>
                 </div>
               )}
 
@@ -578,24 +575,24 @@ const RegisterProblem = ({ selectedScope }) => {
                   <div className="col-span-2">
                     <h5 className="font-bold text-slate-800">Additional Survey Information</h5>
                   </div>
-                   
+
                   <div className="col-span-2 space-y-2">
                     <label className="text-sm font-semibold text-slate-700">Main cause of non-functionality or partial functionality*</label>
                     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 mt-2">
                       {!formData.equipmentType ? (
-                         <p className="text-sm text-slate-500 italic col-span-full">Select equipment type first to see causes.</p>
+                        <p className="text-sm text-slate-500 italic col-span-full">Select equipment type first to see causes.</p>
                       ) : (
-                         MAIN_CAUSES[formData.equipmentType]?.map(cause => (
+                        MAIN_CAUSES[formData.equipmentType]?.map(cause => (
                           <label key={cause} className="flex items-center gap-2 bg-white shadow-sm p-3 border border-slate-200 rounded-lg cursor-pointer hover:border-blue-400">
-                             <input 
-                               type="radio" 
-                               name="mainCause" 
-                               value={cause}
-                               checked={formData.mainCause === cause}
-                               onChange={(e) => updateFormData('mainCause', e.target.value)}
-                               className="text-blue-600 focus:ring-blue-500"
-                             />
-                             <span className="text-sm text-slate-700">{cause}</span>
+                            <input
+                              type="radio"
+                              name="mainCause"
+                              value={cause}
+                              checked={formData.mainCause === cause}
+                              onChange={(e) => updateFormData('mainCause', e.target.value)}
+                              className="text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-slate-700">{cause}</span>
                           </label>
                         ))
                       )}
@@ -604,7 +601,7 @@ const RegisterProblem = ({ selectedScope }) => {
 
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700">set non functionality date?</label>
-                    <input 
+                    <input
                       type="date"
                       className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-600 bg-white"
                       value={formData.nonFunctionalDate}
@@ -614,8 +611,8 @@ const RegisterProblem = ({ selectedScope }) => {
 
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700">Describe the functionality problem/s</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder="Brief description..."
                       className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                       value={formData.problemDescription}
@@ -626,11 +623,11 @@ const RegisterProblem = ({ selectedScope }) => {
                   <div className="col-span-2 space-y-2 mt-4">
                     <label className="text-sm font-semibold text-slate-700">Please take a picture illustrating the non-functionality or partial functionality</label>
                     <label className="w-full h-32 bg-white border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:border-blue-400 hover:bg-blue-50/20 transition-colors cursor-pointer">
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
-                        onChange={(e) => updateFormData('photo', e.target.files[0])} 
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => updateFormData('photo', e.target.files[0])}
                       />
                       <UploadCloud className={`w-8 h-8 mb-2 ${formData.photo ? 'text-emerald-500' : ''}`} />
                       <span className="font-semibold">{formData.photo ? 'Photo Ready' : 'Click to upload equipment photo'}</span>
@@ -640,21 +637,21 @@ const RegisterProblem = ({ selectedScope }) => {
                 </div>
               )}
             </div>
-            
+
             <div className="mt-8 flex gap-4">
-              <button 
+              <button
                 onClick={submitProblem}
                 className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold transition-colors shadow-lg shadow-emerald-500/20"
-               >
+              >
                 Submit Problem Report
               </button>
-              <button 
+              <button
                 onClick={saveDraft}
                 className="text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 px-6 py-3 rounded-xl font-bold transition-colors"
-               >
+              >
                 Save for Later
               </button>
-              <button 
+              <button
                 onClick={() => setShowForm(false)}
                 className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-6 py-3 rounded-xl font-bold transition-colors"
               >
@@ -669,15 +666,15 @@ const RegisterProblem = ({ selectedScope }) => {
         <div className="p-4 border-b border-slate-100 flex items-center justify-between gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Search problems by beneficiary or serial..."
               className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <select 
+          <select
             className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium text-slate-700"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -687,7 +684,7 @@ const RegisterProblem = ({ selectedScope }) => {
             <option value="Under Repair">Under Repair</option>
             <option value="Resolved">Resolved</option>
           </select>
-          
+
         </div>
 
         <div className="overflow-x-auto">
@@ -728,7 +725,7 @@ const RegisterProblem = ({ selectedScope }) => {
                   <td className="p-4 font-bold text-blue-600 text-xs">{prob.equipmentTypeLabel}</td>
                   <td className="p-4 whitespace-nowrap">
                     <span className={getProblemLevelStyle(prob.problemLevel)}>
-                      {prob.problemLevel.length > 20 ? prob.problemLevel.slice(0,20)+'...' : prob.problemLevel}
+                      {prob.problemLevel.length > 20 ? prob.problemLevel.slice(0, 20) + '...' : prob.problemLevel}
                     </span>
                   </td>
                   <td className="p-4">
@@ -742,7 +739,7 @@ const RegisterProblem = ({ selectedScope }) => {
                     </span>
                   </td>
                   <td className="p-4">
-                    <button 
+                    <button
                       onClick={() => setSelectedProblem(prob)}
                       className="p-2 hover:bg-slate-100 rounded-lg text-blue-500 transition-colors"
                       title="View Details"

@@ -33,7 +33,7 @@ const Problems = ({ supplier }) => {
             mainCause: p.category || details.mainCause || '-',
             location: `${p.woreda}, ${p.zone}`,
             reported: new Date(p.created_at || Date.now()).toISOString().split('T')[0],
-            status: p.status || 'Open'
+            status: p.status || 'Problem Open'
           };
         });
         setProblems(mapped);
@@ -69,9 +69,10 @@ const Problems = ({ supplier }) => {
 
   const getStatusStyle = (status) => {
     switch (status) {
-      case 'Open': return 'text-red-600 bg-red-50 border-red-200';
-      case 'Under Repair': return 'text-orange-600 bg-orange-50 border-orange-200';
-      case 'Seen': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
+      case 'Problem Open': return 'text-red-600 bg-red-50 border-red-200';
+      case 'Approve': return 'text-blue-600 bg-blue-50 border-blue-200';
+      case 'Seen': return 'text-orange-600 bg-orange-50 border-orange-200';
+      case 'Fixed': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
       default: return 'text-slate-600 bg-slate-50 border-slate-200';
     }
   };
@@ -120,13 +121,9 @@ const Problems = ({ supplier }) => {
             <div>
                <h5 className="font-semibold text-slate-800 mb-4">Update Action Status</h5>
                <div className="flex gap-4 items-end flex-wrap">
-                 <button onClick={() => handleStatusChange('Under Repair')} className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm transition-all border ${selectedProblem.status === 'Under Repair' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
-                   <Wrench className="w-4 h-4" /> Under Repair
-                 </button>
-                 
                  <div className="flex items-center gap-3 ml-auto">
-                   <button onClick={() => handleStatusChange('Seen')} className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm transition-all border self-end ${selectedProblem.status === 'Seen' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
-                     <CheckCircle2 className="w-4 h-4" /> Seen
+                   <button onClick={() => handleStatusChange('Seen')} className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm transition-all border self-end ${selectedProblem.status === 'Seen' ? 'bg-orange-50 text-orange-600 border-orange-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}>
+                     <CheckCircle2 className="w-4 h-4" /> Mark as Seen
                    </button>
                  </div>
                </div>
@@ -153,9 +150,10 @@ const Problems = ({ supplier }) => {
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="">All Statuses</option>
-            <option value="Open">Open</option>
-            <option value="Under Repair">Under Repair</option>
+            <option value="Problem Open">Problem Open</option>
+            <option value="Approve">Approve</option>
             <option value="Seen">Seen</option>
+            <option value="Fixed">Fixed</option>
           </select>
         </div>
 

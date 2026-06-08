@@ -15,8 +15,8 @@ const ProblemHandlings = ({ selectedScope }) => {
       const res = await fetch('http://localhost:8000/api/problems');
       if (res.ok) {
         const data = await res.json();
-        const filtered = data.filter(p => 
-          p.woreda === selectedScope.woreda && 
+        const filtered = data.filter(p =>
+          p.woreda === selectedScope.woreda &&
           p.zone === selectedScope.zone
         );
         setProblems(filtered);
@@ -105,8 +105,8 @@ const ProblemHandlings = ({ selectedScope }) => {
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <div className="relative max-w-md flex-1">
             <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Search by beneficiary or equipment..."
               className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               value={searchQuery}
@@ -114,7 +114,7 @@ const ProblemHandlings = ({ selectedScope }) => {
             />
           </div>
           <div className="flex gap-3">
-            <select 
+            <select
               className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium text-slate-700"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -122,14 +122,14 @@ const ProblemHandlings = ({ selectedScope }) => {
               <option value="All Status">All Status</option>
               {uniqueStatuses.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
-            <button 
+            <button
               onClick={exportToCSV}
               className="flex items-center gap-2 px-4 py-3 bg-white text-slate-700 rounded-xl hover:bg-slate-50 transition-colors font-semibold border border-slate-200"
             >
               <Download className="w-4 h-4" />
               CSV
             </button>
-            
+
           </div>
         </div>
 
@@ -161,7 +161,7 @@ const ProblemHandlings = ({ selectedScope }) => {
                   </td>
                   <td className="p-4 text-center">
                     {p.status !== 'Fixed' && (
-                      <button 
+                      <button
                         onClick={() => setActiveProblem(p)}
                         className="px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 font-bold rounded-lg transition-colors inline-flex items-center gap-2"
                       >
@@ -193,7 +193,7 @@ const ProblemHandlings = ({ selectedScope }) => {
                 <label className="text-sm font-semibold text-slate-700">Date Fixed *</label>
                 <div className="relative">
                   <Calendar className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input 
+                  <input
                     type="date"
                     className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     value={fixedDate}

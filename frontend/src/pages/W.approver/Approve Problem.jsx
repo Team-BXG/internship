@@ -32,7 +32,7 @@ const ApproveProblem = ({ selectedScope }) => {
       const res = await fetch(`http://localhost:8000/api/problems/${problem.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           status: newStatus,
           ...(adjustmentComment && { details_json: JSON.stringify({ adjustment_comments: adjustmentComment }) })
         })
@@ -51,7 +51,7 @@ const ApproveProblem = ({ selectedScope }) => {
 
   const filtered = problems.filter(p => {
     const term = searchTerm.toLowerCase();
-    const matchSearch = p.beneficiary_name?.toLowerCase().includes(term) || 
+    const matchSearch = p.beneficiary_name?.toLowerCase().includes(term) ||
       p.equipment?.toLowerCase().includes(term);
     const matchZone = p.zone === selectedScope.zone && p.woreda === selectedScope.woreda;
     const matchStatus = statusFilter === 'All Status' ? true : p.status === statusFilter;
@@ -103,39 +103,39 @@ const ApproveProblem = ({ selectedScope }) => {
         <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
           <div className="flex flex-col justify-between">
             <h2 className="text-3xl font-bold text-amber-500 mt-1">{stats.repair}</h2>
-             <p className="text-slate-500 font-medium text-sm mt-2">Under Repair</p>
+            <p className="text-slate-500 font-medium text-sm mt-2">Under Repair</p>
           </div>
         </div>
         <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
           <div className="flex flex-col justify-between">
-             <h2 className="text-3xl font-bold text-emerald-600 mt-1">{stats.resolved}</h2>
-             <p className="text-slate-500 font-medium text-sm mt-2">Resolved</p>
+            <h2 className="text-3xl font-bold text-emerald-600 mt-1">{stats.resolved}</h2>
+            <p className="text-slate-500 font-medium text-sm mt-2">Resolved</p>
           </div>
         </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between gap-4">
-           <div className="relative flex-1 max-w-xl">
-             <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-             <input 
-               type="text" 
-               placeholder="Search by equipment, beneficiary..."
-               className="w-full pl-12 pr-4 py-2.5 bg-white border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
-               value={searchTerm}
-               onChange={(e) => setSearchTerm(e.target.value)}
-             />
-           </div>
-           <div className="flex gap-3">
-             <select 
-               className="px-4 py-2.5 bg-white border border-slate-200 rounded-full text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20"
-               value={statusFilter}
-               onChange={(e) => setStatusFilter(e.target.value)}
-             >
-                <option value="All Status">All Status</option>
-                {uniqueStatuses.map(s => <option key={s} value={s}>{s}</option>)}
-             </select>
-           </div>
+          <div className="relative flex-1 max-w-xl">
+            <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search by equipment, beneficiary..."
+              className="w-full pl-12 pr-4 py-2.5 bg-white border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-3">
+            <select
+              className="px-4 py-2.5 bg-white border border-slate-200 rounded-full text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="All Status">All Status</option>
+              {uniqueStatuses.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -151,7 +151,7 @@ const ApproveProblem = ({ selectedScope }) => {
                 <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="p-4 pl-6 flex items-center gap-3">
                     <div className="p-2 bg-red-50 text-red-500 rounded-full">
-                       <AlertOctagon className="w-5 h-5" />
+                      <AlertOctagon className="w-5 h-5" />
                     </div>
                     <div>
                       <div className="font-bold text-slate-800">{p.beneficiary_name}</div>
@@ -160,13 +160,13 @@ const ApproveProblem = ({ selectedScope }) => {
                   </td>
                   <td className="p-4 text-right">
                     <div className="flex items-center justify-end gap-3">
-                       <span className="font-bold text-red-500 text-xs">{p.issue_type || 'Not Functional'}</span>
-                       <span className={`px-4 py-1.5 rounded-full text-xs font-bold border ${getStatusColor(p.status)}`}>
-                          {p.status}
-                       </span>
-                       <button onClick={() => setActiveProblem(p)} className="ml-2 p-2 text-slate-400 hover:text-blue-500 rounded-lg transition-colors" title="View Details Log">
-                          <Eye className="w-5 h-5" />
-                       </button>
+                      <span className="font-bold text-red-500 text-xs">{p.issue_type || 'Not Functional'}</span>
+                      <span className={`px-4 py-1.5 rounded-full text-xs font-bold border ${getStatusColor(p.status)}`}>
+                        {p.status}
+                      </span>
+                      <button onClick={() => setActiveProblem(p)} className="ml-2 p-2 text-slate-400 hover:text-blue-500 rounded-lg transition-colors" title="View Details Log">
+                        <Eye className="w-5 h-5" />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -177,10 +177,10 @@ const ApproveProblem = ({ selectedScope }) => {
       </div>
 
       {activeProblem && !showAdjustModal && (
-        <ProblemDetailsModal 
-          problem={activeProblem} 
-          onClose={() => setActiveProblem(null)} 
-          actionConfig={actionConfig} 
+        <ProblemDetailsModal
+          problem={activeProblem}
+          onClose={() => setActiveProblem(null)}
+          actionConfig={actionConfig}
         />
       )}
 
@@ -196,13 +196,13 @@ const ApproveProblem = ({ selectedScope }) => {
                 <div className="w-5 h-5 flex items-center justify-center text-slate-500 font-bold text-xl leading-none">&times;</div>
               </button>
             </div>
-            
+
             <div className="mb-4">
               <p className="text-sm text-slate-600 mb-2">
                 Request adjustment for: <span className="font-semibold">{problemToAdjust.equipment} ({problemToAdjust.beneficiary_name})</span>
               </p>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-semibold text-slate-700 block mb-2">
@@ -216,7 +216,7 @@ const ApproveProblem = ({ selectedScope }) => {
                   onChange={(e) => setAdjustmentComment(e.target.value)}
                 />
               </div>
-              
+
               <div className="flex gap-3">
                 <button
                   onClick={() => handleStatusUpdate(problemToAdjust, 'Correction Needed')}

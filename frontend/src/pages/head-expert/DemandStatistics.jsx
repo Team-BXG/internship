@@ -115,6 +115,7 @@ const DemandStatistics = () => {
     switch (status) {
       case 'Pending Woreda Review': return 'bg-amber-100 text-amber-800';
       case 'Assigned': return 'bg-emerald-100 text-emerald-800';
+      case 'Beneficiary': return 'bg-purple-100 text-purple-800';
       case 'Needs Adjustment': return 'bg-red-100 text-red-800';
       case 'Zone Approved': return 'bg-blue-100 text-blue-800';
       default: return 'bg-slate-100 text-slate-800';
@@ -246,7 +247,7 @@ const DemandStatistics = () => {
                     </span>
                   </td>
                   <td className="p-3 text-center">
-                    {demand.status !== 'Assigned' && (
+                    {!['Assigned', 'Beneficiary'].includes(demand.status) && (
                       <button 
                         onClick={() => setAssignModalData(demand)}
                         className="px-3 py-1.5 text-xs font-bold bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
@@ -254,9 +255,9 @@ const DemandStatistics = () => {
                         Assign Supplier
                       </button>
                     )}
-                    {demand.status === 'Assigned' && (
+                    {['Assigned', 'Beneficiary'].includes(demand.status) && (
                       <span className="text-xs font-bold text-emerald-600 flex items-center justify-center gap-1">
-                        <UserCheck className="w-4 h-4" /> Assigned
+                        <UserCheck className="w-4 h-4" /> {demand.status === 'Beneficiary' ? 'Registered' : 'Assigned'}
                       </span>
                     )}
                   </td>

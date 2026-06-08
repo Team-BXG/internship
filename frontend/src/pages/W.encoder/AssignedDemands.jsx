@@ -35,6 +35,7 @@ const AssignedDemands = ({ selectedScope }) => {
   const handleRegisterBeneficiary = (demand) => {
     // Auto-fill beneficiary data based on demand
     const autoFilledData = {
+      ...demand, // Take all info from previous record
       full_name: demand.full_name,
       national_id: demand.national_id,
       phone: demand.phone,
@@ -42,13 +43,11 @@ const AssignedDemands = ({ selectedScope }) => {
       woreda: demand.woreda,
       kebele: demand.kebele,
       village: demand.village,
-      // Auto-select survey type based on service type
       survey_type: demand.service_type === 'home_lantern' ? 'Home/Lantern' : 
                  demand.service_type === 'institution' ? 'Institution' : 'Off-Grid',
-      // Auto-select equipment type based on solar panel type
-      equipment_type: demand.solar_panel_type,
-      // Set supplier if available
-      supplier: demand.assigned_supplier_id || '',
+      equipment_type: demand.solar_panel_type || demand.equipment_type,
+      watt_level: demand.watt_level,
+      supplier: demand.assigned_supplier_id ? String(demand.assigned_supplier_id) : '',
       id: demand.id
     };
 
@@ -181,49 +180,49 @@ const AssignedDemands = ({ selectedScope }) => {
                   <div className="flex items-center gap-2 ml-4">
                     <button 
                       onClick={() => handleRegisterBeneficiary(demand)}
-                      className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm rounded-lg hover:bg-emerald-700 transition-colors"
+                      className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${showBeneficiaryModal && selectedDemand?.id === demand.id ? 'bg-slate-200 text-slate-700 hover:bg-slate-300' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
                     >
                       <CheckCircle2 className="w-4 h-4" />
-                      Register Beneficiary
+                      {showBeneficiaryModal && selectedDemand?.id === demand.id ? 'Close Registration' : 'Register Beneficiary'}
                     </button>
                   </div>
                 </div>
+
+                {/* Inline Beneficiary Registration Drop-In */}
+                {showBeneficiaryModal && selectedDemand?.id === demand.id && (
+                  <div className="mt-6 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
+                    <div className="bg-blue-50 border-b border-blue-100 p-4 flex items-center justify-between">
+                      <div>
+                        <h3 className="font-bold text-blue-900 flex items-center gap-2">
+                          <CheckCircle2 className="w-5 h-5" /> Registering Beneficiary from Demand
+                        </h3>
+                        <p className="text-sm text-blue-700">Information from the demand phase has been pre-filled.</p>
+                      </div>
+                      <button 
+                        onClick={() => { setShowBeneficiaryModal(false); setSelectedDemand(null); }}
+                        className="px-4 py-2 bg-white text-slate-600 rounded-lg shadow-sm hover:bg-slate-50 transition border border-slate-200"
+                      >
+                        Cancel Registration
+                      </button>
+                    </div>
+                    <div className="p-6">
+                      <RegisterBeneficiary 
+                        selectedScope={selectedScope} 
+                        initialData={beneficiaryData}
+                        onCompleted={() => {
+                          setShowBeneficiaryModal(false);
+                          setSelectedDemand(null);
+                          fetchAssignedDemands();
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}
         </div>
       </div>
-
-      {/* Beneficiary Registration Drop-In */}
-      {showBeneficiaryModal && selectedDemand && (
-        <div className="mt-8 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="bg-blue-50 border-b border-blue-100 p-4 flex items-center justify-between">
-            <div>
-              <h3 className="font-bold text-blue-900 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5" /> Registering Beneficiary from Demand
-              </h3>
-              <p className="text-sm text-blue-700">Information from the demand phase has been pre-filled.</p>
-            </div>
-            <button 
-              onClick={() => { setShowBeneficiaryModal(false); setSelectedDemand(null); }}
-              className="px-4 py-2 bg-white text-slate-600 rounded-lg shadow-sm hover:bg-slate-50 transition border border-slate-200"
-            >
-              Cancel Registration
-            </button>
-          </div>
-          <div className="p-6">
-            <RegisterBeneficiary 
-              selectedScope={selectedScope} 
-              initialData={beneficiaryData}
-              onCompleted={() => {
-                setShowBeneficiaryModal(false);
-                setSelectedDemand(null);
-                fetchAssignedDemands();
-              }}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 };

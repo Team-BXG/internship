@@ -5,6 +5,7 @@ import {
   Zap, MapPin, User, Phone, IdCard, AlertTriangle,
   UploadCloud
 } from 'lucide-react';
+import { validateName, validatePhone, validateNationalId } from '../../utils/validation';
 
 const STEPS = [
   { id: 1, label: 'Personal Info', icon: User },
@@ -67,9 +68,15 @@ const RegisterDemand = ({ selectedScope }) => {
   const nextStep = () => {
     const newErrors = {};
     if (currentStep === 1) {
-      if (!formData.fullName) newErrors.fullName = "Required";
-      if (!formData.nationalId) newErrors.nationalId = "Required";
-      if (!formData.phoneNumber) newErrors.phoneNumber = "Required";
+      const nameError = validateName(formData.fullName);
+      if (nameError) newErrors.fullName = nameError;
+      
+      const idError = validateNationalId(formData.nationalId);
+      if (idError) newErrors.nationalId = idError;
+      
+      const phoneError = validatePhone(formData.phoneNumber);
+      if (phoneError) newErrors.phoneNumber = phoneError;
+      
       if (!formData.gender) newErrors.gender = "Required";
       if (!formData.hasDisability) newErrors.hasDisability = "Required";
     } else if (currentStep === 2) {
@@ -174,7 +181,7 @@ const RegisterDemand = ({ selectedScope }) => {
         <div className="space-y-2">
           <div className="flex justify-between">
             <label className="text-sm font-semibold text-slate-700">Full Name *</label>
-            {errors.fullName && <span className="text-red-500 text-xs">Required</span>}
+            {errors.fullName && <span className="text-red-500 text-xs">{errors.fullName}</span>}
           </div>
           <input 
             type="text" 
@@ -188,7 +195,7 @@ const RegisterDemand = ({ selectedScope }) => {
         <div className="space-y-2">
           <div className="flex justify-between">
             <label className="text-sm font-semibold text-slate-700">National ID *</label>
-            {errors.nationalId && <span className="text-red-500 text-xs">Required</span>}
+            {errors.nationalId && <span className="text-red-500 text-xs">{errors.nationalId}</span>}
           </div>
           <input 
             type="text" 
@@ -202,7 +209,7 @@ const RegisterDemand = ({ selectedScope }) => {
         <div className="space-y-2">
           <div className="flex justify-between">
             <label className="text-sm font-semibold text-slate-700">Phone Number *</label>
-            {errors.phoneNumber && <span className="text-red-500 text-xs">Required</span>}
+            {errors.phoneNumber && <span className="text-red-500 text-xs">{errors.phoneNumber}</span>}
           </div>
           <input 
             type="text" 

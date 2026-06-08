@@ -23,9 +23,9 @@ def get_beneficiaries(status: str = None, supplier: str = None, zone: str = None
         else:
             query = query.filter(models.Beneficiary.supplier == supplier)
     if woreda:
-        query = query.join(models.Woreda).filter(models.Woreda.name == woreda)
+        query = query.outerjoin(models.Woreda).filter(models.Woreda.name == woreda)
     elif zone:
-        query = query.join(models.Woreda).join(models.Zone).filter(models.Zone.name == zone)
+        query = query.outerjoin(models.Woreda).outerjoin(models.Zone).filter(models.Zone.name == zone)
         
     beneficiaries = query.order_by(models.Beneficiary.created_at.desc()).all()
     

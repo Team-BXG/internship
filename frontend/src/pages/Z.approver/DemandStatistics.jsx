@@ -21,7 +21,7 @@ const DemandStatistics = ({ selectedZone }) => {
   const fetchStatistics = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:8000/api/demands/statistics?zone=${selectedZone}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/demands/statistics?zone=${selectedZone}`);
       if (res.ok) {
         const data = await res.json();
         setStatistics(data);

@@ -131,8 +131,8 @@ export default function Reports() {
   const columns = TAB_COLUMNS[activeTab] || [];
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/zones').then(r => r.json()).then(d => setZonesList(Array.isArray(d) ? d : [])).catch(console.error);
-    fetch('http://localhost:8000/api/woredas').then(r => r.json()).then(d => setWoredasList(Array.isArray(d) ? d : [])).catch(console.error);
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/zones').then(r => r.json()).then(d => setZonesList(Array.isArray(d) ? d : [])).catch(console.error);
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/woredas').then(r => r.json()).then(d => setWoredasList(Array.isArray(d) ? d : [])).catch(console.error);
   }, []);
 
   useEffect(() => {

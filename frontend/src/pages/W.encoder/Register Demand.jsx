@@ -121,7 +121,7 @@ const RegisterDemand = ({ selectedScope }) => {
         details_json: JSON.stringify(formData)
       };
 
-      const res = await fetch('http://localhost:8000/api/demands', {
+      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/demands', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

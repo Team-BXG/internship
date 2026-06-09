@@ -57,7 +57,7 @@ const RegisterProblem = ({ selectedScope }) => {
 
   const fetchBeneficiaries = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/beneficiaries?woreda=${selectedScope.woreda}&approved_only=true`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/beneficiaries?woreda=${selectedScope.woreda}&approved_only=true`);
       if (res.ok) {
         const data = await res.json();
         const woredaBens = data.filter(b => b.woreda === selectedScope.woreda);
@@ -70,7 +70,7 @@ const RegisterProblem = ({ selectedScope }) => {
 
   const fetchProblems = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/problems');
+      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/problems');
       if (res.ok) {
         const data = await res.json();
         const mapped = data.map(p => {
@@ -210,7 +210,7 @@ const RegisterProblem = ({ selectedScope }) => {
         details_json: JSON.stringify(dataToSave)
       };
 
-      const res = await fetch('http://localhost:8000/api/problems', {
+      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/problems', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

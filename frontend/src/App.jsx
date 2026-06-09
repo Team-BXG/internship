@@ -29,7 +29,7 @@ function HeadExpertApp() {
 
   useEffect(() => {
     if (activeMenu !== 'Dashboard') return;
-    let url = 'http://localhost:8000/api/dashboard?';
+    let url = (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/dashboard?';
     const params = new URLSearchParams();
     if (filterGender) params.set('gender', filterGender);
     if (filterEquipment) params.set('equipment_type', filterEquipment);

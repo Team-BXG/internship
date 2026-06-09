@@ -14,7 +14,7 @@ const Beneficiaries = ({ supplier }) => {
       setLoading(true);
       
       // Fetch beneficiaries
-      const benRes = await fetch(`http://localhost:8000/api/beneficiaries?supplier=${supplier.id}&approved_only=true`);
+      const benRes = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/beneficiaries?supplier=${supplier.id}&approved_only=true`);
       let benData = [];
       if (benRes.ok) {
         benData = await benRes.json();
@@ -22,7 +22,7 @@ const Beneficiaries = ({ supplier }) => {
       }
 
       // Fetch demands
-      const demRes = await fetch(`http://localhost:8000/api/demands?supplier_id=${supplier.id}&approved_only=true`);
+      const demRes = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/demands?supplier_id=${supplier.id}&approved_only=true`);
       if (demRes.ok) {
         const demData = await demRes.json();
         setDemands(demData);

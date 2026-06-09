@@ -13,7 +13,7 @@ export default function ContractorRegistration() {
 
   const fetchContractors = () => {
     setLoading(true);
-    fetch('http://localhost:8000/api/contractors')
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/contractors')
       .then(res => res.json())
       .then(data => {
         setContractors(data);

@@ -14,7 +14,7 @@ export default function Overview({ selectedZone }) {
 
   useEffect(() => {
      // Fetch woredas for this zone
-     fetch('http://localhost:8000/api/area-options')
+     fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/area-options')
        .then(res => res.json())
        .then(opts => {
           const zoneObj = opts.zones.find(z => z.name === selectedZone);
@@ -30,7 +30,7 @@ export default function Overview({ selectedZone }) {
   }, [selectedZone]);
 
   useEffect(() => {
-    let url = `http://localhost:8000/api/dashboard?zone=${encodeURIComponent(selectedZone)}`;
+    let url = `${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/dashboard?zone=${encodeURIComponent(selectedZone)}`;
     if (filterWoreda) url += `&woreda=${encodeURIComponent(filterWoreda)}`;
     if (filterGender) url += `&gender=${encodeURIComponent(filterGender)}`;
     if (filterEquipment) url += `&equipment_type=${encodeURIComponent(filterEquipment)}`;

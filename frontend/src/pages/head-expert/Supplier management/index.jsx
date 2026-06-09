@@ -11,7 +11,7 @@ export default function SupplierManagement() {
 
   const fetchSuppliers = () => {
     setLoading(true);
-    fetch('http://localhost:8000/api/suppliers')
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/suppliers')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

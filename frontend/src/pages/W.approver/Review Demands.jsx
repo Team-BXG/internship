@@ -23,7 +23,7 @@ const ReviewDemands = ({ selectedScope }) => {
   const fetchDemands = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:8000/api/demands?status=${statusFilter}&zone=${selectedScope.zone}&woreda=${selectedScope.woreda}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/demands?status=${statusFilter}&zone=${selectedScope.zone}&woreda=${selectedScope.woreda}`);
       if (res.ok) {
         const data = await res.json();
         setDemands(data);
@@ -37,7 +37,7 @@ const ReviewDemands = ({ selectedScope }) => {
 
   const handleApprove = async (demandId) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/demands/${demandId}/status`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/demands/${demandId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Approved' })
@@ -60,7 +60,7 @@ const ReviewDemands = ({ selectedScope }) => {
     }
 
     try {
-      const res = await fetch(`http://localhost:8000/api/demands/${selectedDemand.id}/status`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/demands/${selectedDemand.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

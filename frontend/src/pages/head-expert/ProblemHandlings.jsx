@@ -17,7 +17,7 @@ const ProblemHandlings = () => {
   const fetchProblems = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/api/problems?approved_only=true');
+      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/problems?approved_only=true');
       if (res.ok) {
         const data = await res.json();
         setProblems(data);

@@ -21,7 +21,7 @@ const AgentRegistration = ({ selectedZone }) => {
 
   const fetchAgents = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/agents');
+      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/agents');
       if (res.ok) setAgents(await res.json());
     } catch (e) {
       console.error('Failed to fetch agents', e);
@@ -30,7 +30,7 @@ const AgentRegistration = ({ selectedZone }) => {
 
   useEffect(() => {
     fetchAgents();
-    fetch('http://localhost:8000/api/zones')
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/zones')
       .then(res => res.json())
       .then(data => {
         setZonesList(data);
@@ -48,7 +48,7 @@ const AgentRegistration = ({ selectedZone }) => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:8000/api/agents', {
+      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/agents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, zone_id: parseInt(formData.zone_id, 10) })

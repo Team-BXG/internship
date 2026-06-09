@@ -28,9 +28,9 @@ const ChangeStatus = ({ selectedScope }) => {
     try {
       setLoading(true);
       const [demandsRes, benRes, probRes] = await Promise.all([
-        fetch(`http://localhost:8000/api/demands?zone=${selectedScope.zone}&woreda=${selectedScope.woreda}`),
-        fetch(`http://localhost:8000/api/beneficiaries?zone=${selectedScope.zone}&woreda=${selectedScope.woreda}`),
-        fetch(`http://localhost:8000/api/problems`)
+        fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/demands?zone=${selectedScope.zone}&woreda=${selectedScope.woreda}`),
+        fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/beneficiaries?zone=${selectedScope.zone}&woreda=${selectedScope.woreda}`),
+        fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/problems`)
       ]);
 
       if (demandsRes.ok) {
@@ -99,11 +99,11 @@ const ChangeStatus = ({ selectedScope }) => {
     try {
       let endpoint;
       if (selectedSubmission.submissionType === 'demand') {
-        endpoint = `http://localhost:8000/api/demands/${selectedSubmission.id}`;
+        endpoint = `${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/demands/${selectedSubmission.id}`;
       } else if (selectedSubmission.submissionType === 'beneficiary') {
-        endpoint = `http://localhost:8000/api/beneficiaries/${selectedSubmission.id}`;
+        endpoint = `${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/beneficiaries/${selectedSubmission.id}`;
       } else {
-        endpoint = `http://localhost:8000/api/problems/${selectedSubmission.id}`;
+        endpoint = `${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/problems/${selectedSubmission.id}`;
       }
 
       const response = await fetch(endpoint, {
@@ -130,11 +130,11 @@ const ChangeStatus = ({ selectedScope }) => {
     try {
       let endpoint;
       if (selectedSubmission.submissionType === 'demand') {
-        endpoint = `http://localhost:8000/api/demands/${selectedSubmission.id}/status`;
+        endpoint = `${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/demands/${selectedSubmission.id}/status`;
       } else if (selectedSubmission.submissionType === 'beneficiary') {
-        endpoint = `http://localhost:8000/api/beneficiaries/${selectedSubmission.id}/status`;
+        endpoint = `${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/beneficiaries/${selectedSubmission.id}/status`;
       } else {
-        endpoint = `http://localhost:8000/api/problems/${selectedSubmission.id}/status`;
+        endpoint = `${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/problems/${selectedSubmission.id}/status`;
       }
 
       const response = await fetch(endpoint, {

@@ -29,12 +29,12 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
   const [contractorsList, setContractorsList] = useState([]);
   
   useEffect(() => {
-    fetch('http://localhost:8000/api/suppliers')
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/suppliers')
       .then(res => res.json())
       .then(data => setSuppliersList(Array.isArray(data) ? data : []))
       .catch(console.error);
       
-    fetch('http://localhost:8000/api/agents')
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/agents')
       .then(res => res.json())
       .then(data => setAgentsList(Array.isArray(data) ? data : []))
       .catch(console.error);
@@ -115,7 +115,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
   useEffect(() => {
     if (!formData.surveyType || !['Institution', 'Off-Grid'].includes(formData.surveyType)) return;
     const serviceType = formData.surveyType === 'Institution' ? 'Institution' : 'Off-Grid';
-    fetch(`http://localhost:8000/api/contractors?service_type=${encodeURIComponent(serviceType)}`)
+    fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/contractors?service_type=${encodeURIComponent(serviceType)}`)
       .then(res => res.json())
       .then(data => setContractorsList(Array.isArray(data) ? data : []))
       .catch(console.error);
@@ -287,7 +287,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
               details_json: JSON.stringify(cleanForm)
             };
 
-            const res = await fetch('http://localhost:8000/api/beneficiaries', {
+            const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/beneficiaries', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(payload)
@@ -327,7 +327,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
         details_json: JSON.stringify(cleanFormData)
       };
 
-      const res = await fetch('http://localhost:8000/api/beneficiaries', {
+      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/beneficiaries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -338,7 +338,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
         // Use an additional endpoint to resolve the demand if this came from a demand
         if (initialData && initialData.id) {
           try {
-            await fetch(`http://localhost:8000/api/demands/${initialData.id}/status`, {
+            await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/demands/${initialData.id}/status`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ status: 'Beneficiary' })

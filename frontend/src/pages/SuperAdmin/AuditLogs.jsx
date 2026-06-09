@@ -7,7 +7,7 @@ export default function AuditLogs() {
   const [filterAction, setFilterAction] = useState('All');
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/activity_logs')
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/activity_logs')
       .then(res => res.json())
       .then(data => {
         setLogs(data);

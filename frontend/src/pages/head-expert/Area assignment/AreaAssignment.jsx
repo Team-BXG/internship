@@ -52,7 +52,7 @@ export default function AreaAssignment() {
 
   const fetchBeneficiaries = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/beneficiaries?approved_only=true');
+      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/beneficiaries?approved_only=true');
       const data = await res.json();
       const approvedOnly = (data || []).filter(b => b.status === 'Approved');
       setBeneficiaries(approvedOnly);

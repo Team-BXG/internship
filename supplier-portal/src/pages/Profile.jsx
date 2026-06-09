@@ -13,7 +13,7 @@ const Profile = ({ supplier }) => {
     }
     
     try {
-      const res = await fetch(`http://localhost:8000/api/auth/supplier/change-password`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/auth/supplier/change-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ supplier_id: supplier.id, current_password: passwords.current, new_password: passwords.new })

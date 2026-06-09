@@ -18,7 +18,7 @@ const DemandStatistics = () => {
 
   const fetchSuppliers = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/suppliers');
+      const response = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/suppliers');
       if (response.ok) {
         const data = await response.json();
         setSuppliers(Array.isArray(data) ? data : []);
@@ -32,7 +32,7 @@ const DemandStatistics = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('http://localhost:8000/api/demands/statistics');
+      const response = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/demands/statistics');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -83,7 +83,7 @@ const DemandStatistics = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/api/demands/${selectedDemand.id}/status`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/demands/${selectedDemand.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

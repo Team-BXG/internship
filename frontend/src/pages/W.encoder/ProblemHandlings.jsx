@@ -12,7 +12,7 @@ const ProblemHandlings = ({ selectedScope }) => {
 
   const fetchProblems = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/problems');
+      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/problems');
       if (res.ok) {
         const data = await res.json();
         const filtered = data.filter(p =>
@@ -37,7 +37,7 @@ const ProblemHandlings = ({ selectedScope }) => {
     }
 
     try {
-      const res = await fetch(`http://localhost:8000/api/problems/${activeProblem.id}/fix`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/problems/${activeProblem.id}/fix`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fixed_date: fixedDate, submitted_by: 'Woreda Encoder' })

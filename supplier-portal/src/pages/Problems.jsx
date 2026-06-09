@@ -16,7 +16,7 @@ const Problems = ({ supplier }) => {
   const fetchProblems = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:8000/api/problems?supplier=${supplier.id}&approved_only=true`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/problems?supplier=${supplier.id}&approved_only=true`);
       if (res.ok) {
         const data = await res.json();
         const filtered = (data || []).filter(p => ['Approved', 'Seen'].includes(p.status));
@@ -48,7 +48,7 @@ const Problems = ({ supplier }) => {
 
   const handleStatusChange = async (status) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/problems/${selectedProblem.id}/status`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/problems/${selectedProblem.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status, submitted_by: supplier?.name })

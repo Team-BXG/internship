@@ -5,7 +5,7 @@ export default function SupplierDetails({ supplierId, onBack }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/suppliers/${supplierId}`)
+    fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/suppliers/${supplierId}`)
       .then(res => res.json())
       .then(data => {
         setSupplier(data);

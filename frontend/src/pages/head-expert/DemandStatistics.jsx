@@ -31,8 +31,8 @@ const DemandStatistics = () => {
     try {
       setLoading(true);
       const [demandsRes, suppliersRes] = await Promise.all([
-        fetch('http://localhost:8000/api/demands?approved_only=true'),
-        fetch('http://localhost:8000/api/suppliers')
+        fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/demands?approved_only=true'),
+        fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/suppliers')
       ]);
       
       if (demandsRes.ok) {
@@ -55,7 +55,7 @@ const DemandStatistics = () => {
     if (!selectedSupplierId || !assignModalData) return;
     try {
       setAssigning(true);
-      const res = await fetch(`http://localhost:8000/api/demands/${assignModalData.id}/assign`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/demands/${assignModalData.id}/assign`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'

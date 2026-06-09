@@ -22,7 +22,7 @@ const ReviewDemands = ({ selectedZone }) => {
     try {
       setLoading(true);
       const statusParam = statusFilter ? `&status=${encodeURIComponent(statusFilter)}` : '';
-      const res = await fetch(`http://localhost:8000/api/demands?approved_only=true&zone=${encodeURIComponent(selectedZone)}${statusParam}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/demands?approved_only=true&zone=${encodeURIComponent(selectedZone)}${statusParam}`);
       if (res.ok) {
         const data = await res.json();
         setDemands(data);

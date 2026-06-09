@@ -24,7 +24,7 @@ export default function RegisterContractor({ onCancel, onSuccess }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     setSaving(true);
-    fetch('http://localhost:8000/api/contractors', {
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/contractors', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)

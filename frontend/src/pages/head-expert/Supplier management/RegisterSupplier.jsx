@@ -32,7 +32,7 @@ export default function RegisterSupplier({ onCancel, onSuccess }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     setSaving(true);
-    fetch('http://localhost:8000/api/suppliers', {
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/suppliers', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -52,7 +52,7 @@ export default function RegisterSupplier({ onCancel, onSuccess }) {
           address: formData.address || 'Not Provided',
           service_type: contractorServiceType
         };
-        return fetch('http://localhost:8000/api/contractors', {
+        return fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/contractors', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(contractorPayload)

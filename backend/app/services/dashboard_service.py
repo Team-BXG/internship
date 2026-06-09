@@ -142,7 +142,7 @@ def get_dashboard_data(db: Session, zone: str = None, woreda: str = None, gender
         eq_query = eq_query.filter(models.Beneficiary.details_json.like(f'%{guarantee}%'))
         
     eq_results = eq_query.group_by(models.Beneficiary.equipment_type).all()
-    equipment_type = [
+    equipment_type_data = [
         {"name": row.name or "Unknown", "value": row.value}
         for row in eq_results if row.value > 0
     ]
@@ -195,7 +195,7 @@ def get_dashboard_data(db: Session, zone: str = None, woreda: str = None, gender
     return schemas.DashboardDataResponse(
         stats=schemas.DashboardStatsResponse(**stats),
         distribution_trend=[schemas.ChartDataPoint(**item) for item in distribution_trend],
-        equipment_type=[schemas.EquipmentTypeData(**item) for item in equipment_type],
+        equipment_type=[schemas.EquipmentTypeData(**item) for item in equipment_type_data],
         beneficiaries_by_zone=[schemas.BeneficiariesByZone(**item) for item in beneficiaries_by_zone],
         supplier_performance=[schemas.SupplierPerformance(**item) for item in supplier_performance],
         functional_status=[schemas.FunctionalStatusData(**item) for item in functional_status],

@@ -14,7 +14,7 @@ const ProblemApproval = ({ selectedZone }) => {
 
   const fetchProblems = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/problems?approved_only=true&zone=${encodeURIComponent(selectedZone)}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/problems?approved_only=true&zone=${encodeURIComponent(selectedZone)}`);
       const data = await res.json();
       if (Array.isArray(data)) {
         setProblems(data.filter(p => ['Approved', 'Seen'].includes(p.status)));

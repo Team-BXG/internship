@@ -14,8 +14,8 @@ const Dashboard = ({ supplier }) => {
     const fetchStats = async () => {
       try {
         const [benRes, probRes] = await Promise.all([
-          fetch(`http://localhost:8000/api/beneficiaries?supplier=${supplier.id}&approved_only=true`),
-          fetch(`http://localhost:8000/api/problems?supplier=${supplier.id}&approved_only=true`)
+          fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/beneficiaries?supplier=${supplier.id}&approved_only=true`),
+          fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/problems?supplier=${supplier.id}&approved_only=true`)
         ]);
 
         if (benRes.ok && probRes.ok) {

@@ -34,7 +34,7 @@ export default function WoredaDashboard({ selectedScope }) {
   const [activeTab, setActiveTab] = useState('beneficiaries');
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/beneficiaries')
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/beneficiaries')
       .then(res => res.json())
       .then(data => {
         const woredaBens = data.filter(b => b.zone === selectedScope.zone && b.woreda === selectedScope.woreda);
@@ -47,7 +47,7 @@ export default function WoredaDashboard({ selectedScope }) {
       })
       .catch(console.error);
 
-    fetch('http://localhost:8000/api/demands')
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/demands')
       .then(res => res.json())
       .then(data => {
         const woredaDemands = data.filter(d => d.zone === selectedScope.zone && d.woreda === selectedScope.woreda);
@@ -62,7 +62,7 @@ export default function WoredaDashboard({ selectedScope }) {
       })
       .catch(console.error);
 
-    fetch('http://localhost:8000/api/problems')
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/problems')
       .then(res => res.json())
       .then(data => {
         const woredaProblems = data.filter(p => p.zone === selectedScope.zone && p.woreda === selectedScope.woreda);

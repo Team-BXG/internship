@@ -8,7 +8,7 @@ const ScopeSelector = ({ title, subtitle, requireWoreda = false, onConfirm }) =>
   const [woreda, setWoreda] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/zones")
+    fetch((import.meta.env.VITE_API_URL || "http://localhost:8000") + "/api/zones")
       .then(res => res.json())
       .then(data => setZoneList(Array.isArray(data) ? data : []))
       .catch(console.error);
@@ -21,7 +21,7 @@ const ScopeSelector = ({ title, subtitle, requireWoreda = false, onConfirm }) =>
     }
     const matchedZone = zoneList.find(z => z.name === zone);
     if (matchedZone) {
-      fetch(`http://localhost:8000/api/zones/${matchedZone.id}/woredas`)
+      fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/zones/${matchedZone.id}/woredas`)
         .then(res => res.json())
         .then(data => setWoredaList(Array.isArray(data) ? data : []))
         .catch(console.error);

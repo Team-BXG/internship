@@ -12,7 +12,7 @@ const Dashboard = () => {
 
   React.useEffect(() => {
     if (!selectedZone && user.zone_id) {
-      fetch('http://localhost:8000/api/zones')
+      fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/zones')
         .then(res => res.json())
         .then(zones => {
           const matched = zones.find(z => z.id === user.zone_id);

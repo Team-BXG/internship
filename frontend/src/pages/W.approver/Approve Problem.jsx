@@ -17,7 +17,7 @@ const ApproveProblem = ({ selectedScope }) => {
 
   const fetchProblems = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/problems`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/problems`);
       const data = await res.json();
       if (Array.isArray(data)) {
         setProblems(data);
@@ -29,7 +29,7 @@ const ApproveProblem = ({ selectedScope }) => {
 
   const handleStatusUpdate = async (problem, newStatus) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/problems/${problem.id}/status`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/problems/${problem.id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

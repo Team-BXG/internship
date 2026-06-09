@@ -1,0 +1,63 @@
+services:
+  # --------------------
+  # 1. Backend Service
+  # --------------------
+  - type: web
+    name: sedms-backend
+    env: python
+    buildCommand: "cd backend && pip install -r requirements.txt"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sedms-db
+          property: connectionString
+      - key: DB_HOST
+        value: "To be configured by Render"
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_USER
+        value: "sedms_user"
+      - key: DB_PASSWORD
+        generateValue: true
+      - key: DB_NAME
+        value: "sedms"
+      - key: LOGTAIL_SOURCE_TOKEN
+        value: "FJVftU4wHzJdYt5KnpMnaPpM"
+
+  # --------------------
+  # 2. Main Frontend
+  # --------------------
+  - type: web
+    name: sedms-frontend
+    env: static
+    buildCommand: "cd frontend && npm install && npm run build"
+    staticPublishPath: "./frontend/dist"
+    envVars:
+      - key: VITE_API_URL
+        value: "https://sedms-backend.onrender.com" # This will be your backend URL
+    routes:
+      - type: rewrite
+        source: "/*"
+        destination: "/index.html"
+
+  # --------------------
+  # 3. Supplier Portal
+  # --------------------
+  - type: web
+    name: sedms-supplier-portal
+    env: static
+    buildCommand: "cd supplier-portal && npm install && npm run build"
+    staticPublishPath: "./supplier-portal/dist"
+    envVars:
+      - key: VITE_API_URL
+        value: "https://sedms-backend.onrender.com" # This will be your backend URL
+    routes:
+      - type: rewrite
+        source: "/*"
+        destination: "/index.html"
+
+databases:
+  - name: sedms-db
+    databaseName: sedms
+    user: sedms_user

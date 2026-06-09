@@ -19,7 +19,7 @@ const AssignedDemands = ({ selectedScope }) => {
   const fetchAssignedDemands = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/api/demands?zone=${selectedScope.zone}&woreda=${selectedScope.woreda}&status=Assigned`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/demands?zone=${selectedScope.zone}&woreda=${selectedScope.woreda}&status=Assigned`);
       
       if (response.ok) {
         const data = await response.json();

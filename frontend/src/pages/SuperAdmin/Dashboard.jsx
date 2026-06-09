@@ -39,7 +39,7 @@ export default function SuperAdminDashboard() {
   
   const fetchData = () => {
     // Note: backend was updated to return { items: [], total: X }
-    fetch('http://localhost:8000/api/employees')
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/employees')
       .then(res => res.json())
       .then(data => {
         const emps = data.items || [];
@@ -57,12 +57,12 @@ export default function SuperAdminDashboard() {
         setLoading(false);
       });
 
-    fetch('http://localhost:8000/api/locations/zones')
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/locations/zones')
       .then(res => res.json())
       .then(data => setZones(data))
       .catch(err => console.error(err));
 
-    fetch('http://localhost:8000/api/locations/woredas')
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/locations/woredas')
       .then(res => res.json())
       .then(data => setWoredas(data))
       .catch(err => console.error(err));
@@ -80,7 +80,7 @@ export default function SuperAdminDashboard() {
   const handleAddEmployee = (e) => {
     e.preventDefault();
     const user = JSON.parse(localStorage.getItem('user'));
-    fetch('http://localhost:8000/api/employees/', {
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/employees/', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ export default function SuperAdminDashboard() {
   const handleEditEmployee = (e) => {
     e.preventDefault();
     const user = JSON.parse(localStorage.getItem('user'));
-    fetch(`http://localhost:8000/api/employees/${editEmployee.id}`, {
+    fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/employees/${editEmployee.id}`, {
       method: 'PATCH',
       headers: { 
         'Content-Type': 'application/json',
@@ -121,7 +121,7 @@ export default function SuperAdminDashboard() {
       if(res.ok) {
         // Now update status if needed
         if (editEmployee.status) {
-          return fetch(`http://localhost:8000/api/employees/${editEmployee.id}/status`, {
+          return fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/employees/${editEmployee.id}/status`, {
             method: 'PATCH',
             headers: { 
               'Content-Type': 'application/json',
@@ -146,7 +146,7 @@ export default function SuperAdminDashboard() {
   const handleResetPassword = (e) => {
     e.preventDefault();
     const user = JSON.parse(localStorage.getItem('user'));
-    fetch(`http://localhost:8000/api/employees/${selectedEmp.id}/reset-password`, {
+    fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/employees/${selectedEmp.id}/reset-password`, {
       method: 'PATCH',
       headers: { 
         'Content-Type': 'application/json',
@@ -175,7 +175,7 @@ export default function SuperAdminDashboard() {
     }
     const empId = localStorage.getItem('emp_id') || 1; // Fallback for dev
     const user = JSON.parse(localStorage.getItem('user'));
-    fetch(`http://localhost:8000/api/employees/${empId}/change-initial-password`, {
+    fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/employees/${empId}/change-initial-password`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -198,7 +198,7 @@ export default function SuperAdminDashboard() {
   const handleAddZone = (e) => {
     e.preventDefault();
     const user = JSON.parse(localStorage.getItem('user'));
-    fetch('http://localhost:8000/api/locations/zones', {
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/locations/zones', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -219,7 +219,7 @@ export default function SuperAdminDashboard() {
   const handleAddWoreda = (e) => {
     e.preventDefault();
     const user = JSON.parse(localStorage.getItem('user'));
-    fetch('http://localhost:8000/api/locations/woredas', {
+    fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/locations/woredas', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',

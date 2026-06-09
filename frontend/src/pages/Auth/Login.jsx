@@ -93,7 +93,7 @@ export default function Login() {
 
     setPwdLoading(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/employees/${tempUserData.id}/change-initial-password`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || "http://localhost:8000")}/api/employees/${tempUserData.id}/change-initial-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ new_password: newPassword })

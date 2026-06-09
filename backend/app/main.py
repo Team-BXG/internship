@@ -33,16 +33,21 @@ app = FastAPI(title="SEDMS Dashboard API")
 # 1️⃣ CORS setup so React frontend can fetch data
 origins = [
     "http://localhost:5173",  # React dev server URL
+    "*", # Allow all origins for Vercel deployment
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/")
+def read_root():
+    return {"message": "SEDMS Backend is running successfully on Render!"}
+
 
 # 2️⃣ Seed the database if tables don't exist
 try:

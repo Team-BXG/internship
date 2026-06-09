@@ -1,9 +1,6 @@
 import { Search, Plus, Eye, Wrench, ChevronDown } from 'lucide-react';
 
 export default function ContractorList({ contractors, onRegister, onViewDetails }) {
-  const institutionCount = contractors.filter(c => c.service_type === 'Institution').length;
-  const offGridCount = contractors.filter(c => c.service_type === 'Off-Grid').length;
-
   return (
     <div className="animate-in fade-in duration-300">
       <div className="flex justify-between items-end mb-6">
@@ -18,21 +15,6 @@ export default function ContractorList({ contractors, onRegister, onViewDetails 
           <Plus className="w-4 h-4" />
           Register Contractor
         </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white py-6 rounded-2xl border border-slate-100 flex flex-col items-center justify-center shadow-sm">
-          <span className="text-2xl font-black text-slate-800">{contractors.length}</span>
-          <span className="text-xs font-bold text-slate-400 mt-1">Total</span>
-        </div>
-        <div className="bg-white py-6 rounded-2xl border border-slate-100 flex flex-col items-center justify-center shadow-sm">
-          <span className="text-2xl font-black text-violet-600">{institutionCount}</span>
-          <span className="text-xs font-bold text-slate-400 mt-1">Institution</span>
-        </div>
-        <div className="bg-white py-6 rounded-2xl border border-slate-100 flex flex-col items-center justify-center shadow-sm">
-          <span className="text-2xl font-black text-orange-500">{offGridCount}</span>
-          <span className="text-xs font-bold text-slate-400 mt-1">Off-Grid</span>
-        </div>
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden p-6 pb-2">
@@ -62,7 +44,6 @@ export default function ContractorList({ contractors, onRegister, onViewDetails 
                 <th className="pb-4 pt-2">Contact Person</th>
                 <th className="pb-4 pt-2">Phone</th>
                 <th className="pb-4 pt-2">Registered</th>
-                <th className="pb-4 pt-2">Status</th>
                 <th className="pb-4 pt-2 text-center"></th>
               </tr>
             </thead>
@@ -93,11 +74,6 @@ export default function ContractorList({ contractors, onRegister, onViewDetails 
                   </td>
                   <td className="py-4">
                      <p className="text-[13px] font-medium text-slate-500">{contractor.registered_date}</p>
-                  </td>
-                  <td className="py-4">
-                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold border ${contractor.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
-                      {contractor.status}
-                    </span>
                   </td>
                   <td className="py-4 text-center">
                     <button 

@@ -183,3 +183,4 @@
 2026-06-09 12:00:51,322 - sedms_app - INFO - Logtail Better Stack Integration Activated!
 2026-06-09 12:32:05,979 - sedms_app - INFO - {"action": "Supplier Created", "user": "SouthGondarZA", "role": "Zone Approver", "woreda": "N/A", "zone": "N/A", "details": "Created supplier hefikjen,c with license 232424", "status": "SUCCESS", "timestamp": "2026-06-09T09:32:05.979421"}
 2026-06-09 12:33:20,725 - sedms_app - INFO - {"action": "Supplier Created", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "Created supplier beza solutions with license 349872", "status": "SUCCESS", "timestamp": "2026-06-09T09:33:20.725883"}
+2026-06-09 14:56:49,062 - sedms_app - INFO - Logtail Better Stack Integration Activated!

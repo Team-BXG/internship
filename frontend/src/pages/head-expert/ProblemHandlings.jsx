@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { Search, Filter, Download, AlertOctagon, CheckCircle2, MapPin } from 'lucide-react';
+import { Search, AlertOctagon, MapPin, Eye } from 'lucide-react';
+import ProblemDetailsModal from '../../components/ProblemDetailsModal';
+
 const ProblemHandlings = () => {
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProblem, setSelectedProblem] = useState(null);
   
   // Filters
   const [filterZone, setFilterZone] = useState('All');
@@ -140,12 +143,13 @@ const ProblemHandlings = () => {
                   <th className="p-4">LOCATION</th>
                   <th className="p-4">SUPPLIER</th>
                   <th className="p-4">STATUS</th>
+                  <th className="p-4 text-center"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="p-12 text-center text-slate-500">
+                    <td colSpan="6" className="p-12 text-center text-slate-500">
                       <AlertOctagon className="w-8 h-8 mx-auto text-slate-300 mb-3" />
                       <p className="text-base font-semibold text-slate-700">No problems found</p>
                       <p className="text-sm">Try adjusting your filters or search query.</p>
@@ -167,6 +171,11 @@ const ProblemHandlings = () => {
                         {p.status}
                       </span>
                     </td>
+                    <td className="p-4 text-center">
+                      <button onClick={() => setSelectedProblem(p)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg" title="View details">
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -174,6 +183,10 @@ const ProblemHandlings = () => {
           )}
         </div>
       </div>
+
+      {selectedProblem && (
+        <ProblemDetailsModal problem={selectedProblem} onClose={() => setSelectedProblem(null)} />
+      )}
     </div>
   );
 };

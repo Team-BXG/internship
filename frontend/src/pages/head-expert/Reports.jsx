@@ -1,22 +1,116 @@
-import React, { useState, useEffect } from 'react';
-import { FileText, Download, Search, Filter, Layers, CheckCircle2, ShieldAlert } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { FileText, Download, Search, Layers, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import Papa from 'papaparse';
 import toast from 'react-hot-toast';
+import { formatRegisteredDate } from '../../utils/detailViewHelpers';
+import BeneficiaryDetailsModal from '../../components/BeneficiaryDetailsModal';
+import DemandDetailsModal from '../../components/DemandDetailsModal';
+import ProblemDetailsModal from '../../components/ProblemDetailsModal';
+import AgentDetailsModal from '../../components/AgentDetailsModal';
+
+const PAGE_SIZE = 50;
 
 const TAB_CONFIGS = {
-  'Beneficiaries': { endpoint: '/api/beneficiaries', title: 'Beneficiary Reports', icon: <Layers className="w-5 h-5" /> },
-  'Demands': { endpoint: '/api/demands', title: 'Demand Reports', icon: <FileText className="w-5 h-5" /> },
-  'Suppliers': { endpoint: '/api/suppliers', title: 'Supplier Reports', icon: <Layers className="w-5 h-5" /> },
-  'Agents': { endpoint: '/api/agents', title: 'Agent Reports', icon: <Layers className="w-5 h-5" /> },
-  'Employees': { endpoint: '/api/employees', title: 'Employee Reports', icon: <Layers className="w-5 h-5" /> },
-  'Contractors': { endpoint: '/api/contractors', title: 'Contractor Reports', icon: <Layers className="w-5 h-5" /> },
+  Beneficiaries: { endpoint: '/api/beneficiaries?approved_only=true', icon: <Layers className="w-5 h-5" /> },
+  Demands: { endpoint: '/api/demands?approved_only=true', icon: <FileText className="w-5 h-5" /> },
+  Problems: { endpoint: '/api/problems?approved_only=true', icon: <FileText className="w-5 h-5" /> },
+  Suppliers: { endpoint: '/api/suppliers', icon: <Layers className="w-5 h-5" /> },
+  Agents: { endpoint: '/api/agents', icon: <Layers className="w-5 h-5" /> },
+  Employees: { endpoint: '/api/employees', icon: <Layers className="w-5 h-5" />, paginated: true },
+  Contractors: { endpoint: '/api/contractors', icon: <Layers className="w-5 h-5" /> },
 };
 
-const EXCLUDED_KEYS = [
-  'details_json', 'password', 'hashed_password', 'id', 
-  'woreda_id', 'zone_id', 'created_at', 'last_activity', 
-  'requires_password_change', 'assigned_supplier_id'
-];
+const TAB_COLUMNS = {
+  Beneficiaries: [
+    { key: 'full_name', label: 'Full Name' },
+    { key: 'national_id', label: 'National ID' },
+    { key: 'phone', label: 'Phone' },
+    { key: 'gender', label: 'Gender' },
+    { key: 'household_size', label: 'Household Size' },
+    { key: 'zone_name', label: 'Zone', alt: 'zone' },
+    { key: 'woreda_name', label: 'Woreda', alt: 'woreda' },
+    { key: 'kebele', label: 'Kebele' },
+    { key: 'village', label: 'Village' },
+    { key: 'survey_type', label: 'Survey Type' },
+    { key: 'equipment_type', label: 'Equipment Type' },
+    { key: 'supplier', label: 'Supplier' },
+    { key: 'created_at', label: 'Registered Date', format: (r) => formatRegisteredDate(r.created_at) },
+  ],
+  Demands: [
+    { key: 'full_name', label: 'Full Name' },
+    { key: 'national_id', label: 'National ID' },
+    { key: 'phone', label: 'Phone' },
+    { key: 'gender', label: 'Gender' },
+    { key: 'has_disability', label: 'Disability' },
+    { key: 'zone_name', label: 'Zone', alt: 'zone' },
+    { key: 'woreda_name', label: 'Woreda', alt: 'woreda' },
+    { key: 'kebele', label: 'Kebele' },
+    { key: 'village', label: 'Village' },
+    { key: 'service_type', label: 'Service Type' },
+    { key: 'household_size', label: 'Household Size' },
+    { key: 'elderly_count', label: 'Elderly Count' },
+    { key: 'solar_panel_type', label: 'Solar Panel Type' },
+    { key: 'watt_level', label: 'Watt Level' },
+    { key: 'created_at', label: 'Registered Date', format: (r) => formatRegisteredDate(r.created_at) },
+  ],
+  Problems: [
+    { key: 'beneficiary_name', label: 'Beneficiary' },
+    { key: 'equipment', label: 'Equipment' },
+    { key: 'title', label: 'Problem Level' },
+    { key: 'category', label: 'Main Cause' },
+    { key: 'zone_name', label: 'Zone', alt: 'zone' },
+    { key: 'woreda_name', label: 'Woreda', alt: 'woreda' },
+    { key: 'kebele', label: 'Kebele' },
+    { key: 'supplier', label: 'Supplier' },
+    { key: 'status', label: 'Status' },
+    { key: 'submitted_by', label: 'Submitted By' },
+    { key: 'created_at', label: 'Registered Date', format: (r) => formatRegisteredDate(r.created_at) },
+  ],
+  Suppliers: [
+    { key: 'name', label: 'Company Name' },
+    { key: 'license_number', label: 'License Number' },
+    { key: 'service_type', label: 'Service Type' },
+    { key: 'contact_person', label: 'Contact Person' },
+    { key: 'contact_phone', label: 'Phone' },
+    { key: 'email', label: 'Email' },
+    { key: 'address', label: 'Address' },
+  ],
+  Agents: [
+    { key: 'name', label: 'Name' },
+    { key: 'national_id', label: 'National ID' },
+    { key: 'phone', label: 'Phone' },
+    { key: 'email', label: 'Email' },
+    { key: 'zone_name', label: 'Zone' },
+    { key: 'created_at', label: 'Registered Date', format: (r) => formatRegisteredDate(r.created_at) },
+  ],
+  Employees: [
+    { key: 'username', label: 'Username' },
+    { key: 'role', label: 'Role' },
+    { key: 'email', label: 'Email' },
+    { key: 'created_at', label: 'Registered Date', format: (r) => formatRegisteredDate(r.created_at) },
+  ],
+  Contractors: [
+    { key: 'name', label: 'Company Name' },
+    { key: 'service_type', label: 'Service Type' },
+    { key: 'contact_person', label: 'Contact Person' },
+    { key: 'contact_phone', label: 'Phone' },
+    { key: 'address', label: 'Address' },
+    { key: 'registered_date', label: 'Registered Date', format: (r) => formatRegisteredDate(r.registered_date) },
+  ],
+};
+
+function getCellValue(row, col) {
+  if (col.format) return col.format(row);
+  return row[col.key] ?? (col.alt ? row[col.alt] : '') ?? '';
+}
+
+function hasZoneWoredaFilters(tab) {
+  return ['Beneficiaries', 'Demands', 'Problems', 'Agents'].includes(tab);
+}
+
+function hasGenderDisabilityFilters(tab) {
+  return ['Beneficiaries', 'Demands'].includes(tab);
+}
 
 export default function Reports() {
   const [activeTab, setActiveTab] = useState('Beneficiaries');
@@ -24,197 +118,151 @@ export default function Reports() {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  
+  const [genderFilter, setGenderFilter] = useState('All');
+  const [disabilityFilter, setDisabilityFilter] = useState('All');
   const [zonesList, setZonesList] = useState([]);
   const [woredasList, setWoredasList] = useState([]);
   const [zoneFilter, setZoneFilter] = useState('All');
   const [woredaFilter, setWoredaFilter] = useState('All');
+  const [employeePage, setEmployeePage] = useState(0);
+  const [employeeTotal, setEmployeeTotal] = useState(0);
+  const [viewRecord, setViewRecord] = useState(null);
+
+  const columns = TAB_COLUMNS[activeTab] || [];
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/zones')
-      .then(res => res.json())
-      .then(data => setZonesList(Array.isArray(data) ? data : []))
-      .catch(console.error);
-
-    fetch('http://localhost:8000/api/woredas')
-      .then(res => res.json())
-      .then(data => setWoredasList(Array.isArray(data) ? data : []))
-      .catch(console.error);
+    fetch('http://localhost:8000/api/zones').then(r => r.json()).then(d => setZonesList(Array.isArray(d) ? d : [])).catch(console.error);
+    fetch('http://localhost:8000/api/woredas').then(r => r.json()).then(d => setWoredasList(Array.isArray(d) ? d : [])).catch(console.error);
   }, []);
 
   useEffect(() => {
     fetchData();
-  }, [activeTab]);
+  }, [activeTab, employeePage]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const endpoint = TAB_CONFIGS[activeTab].endpoint;
-      let url = `http://localhost:8000${endpoint}`;
-      if (['Beneficiaries', 'Demands'].includes(activeTab)) {
-        url += endpoint.includes('?') ? '&approved_only=true' : '?approved_only=true';
+      const cfg = TAB_CONFIGS[activeTab];
+      let url = `http://localhost:8000${cfg.endpoint}`;
+      if (cfg.paginated) {
+        url += `${url.includes('?') ? '&' : '?'}skip=${employeePage * PAGE_SIZE}&limit=${PAGE_SIZE}`;
       }
       const res = await fetch(url);
-      if (res.ok) {
-        const result = await res.json();
-        if (Array.isArray(result)) {
-          setData(result);
-        } else if (result && Array.isArray(result.items)) {
-          setData(result.items);
-        } else {
-          setData([]);
-        }
+      if (!res.ok) throw new Error('Failed');
+      const result = await res.json();
+      if (Array.isArray(result)) {
+        setData(result);
+        setEmployeeTotal(result.length);
+      } else if (result?.items) {
+        setData(result.items);
+        setEmployeeTotal(result.total || result.items.length);
       } else {
-        toast.error("Failed to load data");
+        setData([]);
+        setEmployeeTotal(0);
       }
     } catch (e) {
       console.error(e);
-      toast.error("Error fetching data");
+      toast.error('Error fetching data');
+      setData([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const getFilteredData = () => {
+  const filteredData = useMemo(() => {
     return data.filter(item => {
-      // General search logic across string values
-      const matchesSearch = Object.keys(item)
-        .filter(k => !EXCLUDED_KEYS.includes(k))
-        .some(k => String(item[k]).toLowerCase().includes(searchTerm.toLowerCase()));
-        
-      // Status filter
-      const matchesStatus = statusFilter === 'All' || (item.status === statusFilter);
-      
-      // Zone filter
-      let matchesZone = true;
-      if (zoneFilter && zoneFilter !== 'All') {
-        const itemZone = item.zone || item.zone_name || '';
-        matchesZone = itemZone.toLowerCase().includes(zoneFilter.toLowerCase()) || 
-                      zoneFilter.toLowerCase().includes(itemZone.toLowerCase());
-      }
-      
-      // Woreda filter
-      let matchesWoreda = true;
-      if (woredaFilter && woredaFilter !== 'All') {
-        const itemWoreda = item.woreda || item.woreda_name || '';
-        matchesWoreda = itemWoreda.toLowerCase().includes(woredaFilter.toLowerCase()) || 
-                        woredaFilter.toLowerCase().includes(itemWoreda.toLowerCase());
-      }
-      
-      return matchesSearch && matchesStatus && matchesZone && matchesWoreda;
-    });
-  };
-
-  const filteredData = getFilteredData();
-
-  const getUniqueStatuses = () => {
-    const statuses = [...new Set(data.map(item => item.status).filter(Boolean))];
-    return statuses;
-  };
-
-  ;
-
-  const exportCSV = () => {
-    if (filteredData.length === 0) {
-      toast.error("No data to export");
-      return;
-    }
-
-    try {
-      // Clean data (remove details_json, passwords, etc)
-      const cleanData = filteredData.map(item => {
-        const clean = {};
-        Object.keys(item).forEach(k => {
-          if (!EXCLUDED_KEYS.includes(k)) {
-            clean[k] = item[k];
-          }
-        });
-        return clean;
+      const cols = TAB_COLUMNS[activeTab] || [];
+      const matchesSearch = !searchTerm || cols.some(col => {
+        const val = getCellValue(item, col);
+        return String(val).toLowerCase().includes(searchTerm.toLowerCase());
       });
 
-      const csv = Papa.unparse(cleanData);
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `${activeTab}_Report_${new Date().toISOString().split('T')[0]}.csv`;
-      link.click();
-      toast.success("CSV exported successfully!");
-    } catch (error) {
-      console.error(error);
-      toast.error("Error exporting CSV");
-    }
+      const matchesStatus = activeTab !== 'Problems' || statusFilter === 'All' || item.status === statusFilter;
+
+      let matchesZone = true;
+      if (hasZoneWoredaFilters(activeTab) && zoneFilter !== 'All') {
+        const z = item.zone || item.zone_name || '';
+        matchesZone = z.toLowerCase().includes(zoneFilter.toLowerCase());
+      }
+
+      let matchesWoreda = true;
+      if (hasZoneWoredaFilters(activeTab) && woredaFilter !== 'All') {
+        const w = item.woreda || item.woreda_name || '';
+        matchesWoreda = w.toLowerCase().includes(woredaFilter.toLowerCase());
+      }
+
+      let matchesGender = true;
+      if (hasGenderDisabilityFilters(activeTab) && genderFilter !== 'All') {
+        matchesGender = item.gender === genderFilter;
+      }
+
+      let matchesDisability = true;
+      if (hasGenderDisabilityFilters(activeTab) && disabilityFilter !== 'All') {
+        const d = item.has_disability ?? item.hasDisability;
+        const normalized = d === true || d === 'Yes' || d === 'yes' ? 'Yes' : 'No';
+        matchesDisability = disabilityFilter === normalized;
+      }
+
+      return matchesSearch && matchesStatus && matchesZone && matchesWoreda && matchesGender && matchesDisability;
+    });
+  }, [data, activeTab, searchTerm, statusFilter, zoneFilter, woredaFilter, genderFilter, disabilityFilter]);
+
+  const uniqueStatuses = useMemo(() => {
+    if (activeTab !== 'Problems') return [];
+    return [...new Set(data.map(i => i.status).filter(Boolean))];
+  }, [data, activeTab]);
+
+  const exportCSV = () => {
+    if (!filteredData.length) return toast.error('No data to export');
+    const rows = filteredData.map(item => {
+      const row = {};
+      columns.forEach(col => { row[col.label] = getCellValue(item, col); });
+      return row;
+    });
+    const csv = Papa.unparse(rows);
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    link.download = `${activeTab}_Report_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    toast.success('CSV exported');
   };
 
-  const renderTableHeaders = () => {
-    if (filteredData.length === 0) return <tr><th className="p-4">No data available</th></tr>;
-    const keys = Object.keys(filteredData[0]).filter(k => !EXCLUDED_KEYS.includes(k));
-    return (
-      <tr>
-        {keys.map(k => (
-          <th key={k} className="p-4 border-b border-slate-100 font-bold uppercase tracking-wider text-[11px] text-slate-500 bg-slate-50">
-            {k.replace(/_/g, ' ')}
-          </th>
-        ))}
-      </tr>
-    );
+  const resetFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('All');
+    setGenderFilter('All');
+    setDisabilityFilter('All');
+    setZoneFilter('All');
+    setWoredaFilter('All');
+    setEmployeePage(0);
   };
 
-  const renderTableBody = () => {
-    if (filteredData.length === 0) return (
-      <tr><td colSpan="12" className="p-8 text-center text-slate-500">No records found matching your criteria.</td></tr>
-    );
-    const keys = Object.keys(filteredData[0]).filter(k => !EXCLUDED_KEYS.includes(k));
-    return filteredData.map((item, i) => (
-      <tr key={item.id || i} className="hover:bg-slate-50/50 transition-colors border-b border-slate-50">
-        {keys.map(k => (
-          <td key={k} className="p-4 text-sm text-slate-700 whitespace-nowrap">
-            {k === 'status' ? (
-              <span className={`px-2 py-1 rounded-full text-xs font-bold border ${
-                item[k]?.includes('Pending') ? 'bg-amber-50 text-amber-600 border-amber-200' :
-                item[k]?.includes('Reject') || item[k]?.includes('Correction') ? 'bg-rose-50 text-rose-600 border-rose-200' :
-                'bg-emerald-50 text-emerald-600 border-emerald-200'
-              }`}>
-                {item[k]}
-              </span>
-            ) : String(item[k] ?? '').substring(0, 30) + (String(item[k] ?? '').length > 30 ? '...' : '')}
-          </td>
-        ))}
-      </tr>
-    ));
+  const switchTab = (tab) => {
+    setActiveTab(tab);
+    resetFilters();
+    setViewRecord(null);
   };
+
+  const employeePages = Math.max(1, Math.ceil(employeeTotal / PAGE_SIZE));
+  const viewableTabs = ['Beneficiaries', 'Demands', 'Problems', 'Agents'];
 
   return (
     <div className="max-w-7xl mx-auto w-full flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-6">
-        <div>
-          <h1 className="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-2">
-            <FileText className="text-blue-600 stroke-[2.5] w-8 h-8" />
-            System Reports
-          </h1>
-          <p className="text-slate-500 text-sm mt-1 font-medium">
-            Generate and export comprehensive reports across all SEDMS entities.
-          </p>
-        </div>
+      <div className="border-b border-slate-100 pb-6">
+        <h1 className="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+          <FileText className="text-blue-600 stroke-[2.5] w-8 h-8" />
+          System Reports
+        </h1>
+        <p className="text-slate-500 text-sm mt-1 font-medium">Generate and export reports across SEDMS entities.</p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide">
+      <div className="flex overflow-x-auto gap-2 pb-2">
         {Object.keys(TAB_CONFIGS).map(tab => (
           <button
             key={tab}
-            onClick={() => { 
-              setActiveTab(tab); 
-              setStatusFilter('All'); 
-              setSearchTerm(''); 
-              setZoneFilter('All');
-              setWoredaFilter('All');
-            }}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all whitespace-nowrap border ${
-              activeTab === tab 
-                ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20' 
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+            onClick={() => switchTab(tab)}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm whitespace-nowrap border transition-all ${
+              activeTab === tab ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
             }`}
           >
             {TAB_CONFIGS[tab].icon}
@@ -223,108 +271,116 @@ export default function Reports() {
         ))}
       </div>
 
-      {/* Main Content Area */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[500px]">
-        
-        {/* Toolbar */}
-        <div className="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">
-          <div className="flex items-center gap-3 flex-wrap flex-1 min-w-[300px]">
-            <div className="relative flex-1 max-w-sm min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input 
-                type="text" 
-                placeholder={`Search ${activeTab.toLowerCase()}...`}
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
-              />
-            </div>
-            
-            {getUniqueStatuses().length > 0 && (
-              <div className="relative">
-                <select
-                  value={statusFilter}
-                  onChange={e => setStatusFilter(e.target.value)}
-                  className="pl-4 pr-8 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm font-medium text-slate-700 appearance-none"
-                >
-                  <option value="All">All Statuses</option>
-                  {getUniqueStatuses().map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-                <Filter className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-              </div>
-            )}
-
-            {/* Zone Filter */}
-            <select
-              value={zoneFilter}
-              onChange={e => {
-                setZoneFilter(e.target.value);
-                setWoredaFilter('All');
-              }}
-              className="px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm font-medium text-slate-700"
-            >
-              <option value="All">All Zones</option>
-              {zonesList.map(z => <option key={z.id} value={z.name}>{z.name}</option>)}
-            </select>
-
-            {/* Woreda Filter */}
-            <select
-              value={woredaFilter}
-              onChange={e => setWoredaFilter(e.target.value)}
-              className="px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm font-medium text-slate-700 disabled:bg-slate-100 disabled:text-slate-400"
-              disabled={zoneFilter === 'All'}
-            >
-              <option value="All">All Woredas</option>
-              {woredasList
-                .filter(w => {
-                  if (zoneFilter === 'All') return true;
-                  const zObj = zonesList.find(z => z.name === zoneFilter);
-                  return zObj ? w.zone_id === zObj.id : true;
-                })
-                .map(w => <option key={w.id} value={w.name}>{w.name}</option>)
-              }
-            </select>
+        <div className="p-5 border-b border-slate-100 flex flex-wrap items-center gap-3 bg-slate-50/50">
+          <div className="relative flex-1 min-w-[200px] max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder={`Search ${activeTab.toLowerCase()}...`}
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
+            />
           </div>
 
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={exportCSV}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors font-bold text-sm"
-            >
-              <Download className="w-4 h-4" /> CSV
-            </button>
-            
-          </div>
+          {activeTab === 'Problems' && uniqueStatuses.length > 0 && (
+            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="px-4 py-2 border border-slate-200 rounded-xl bg-white text-sm font-medium text-slate-700">
+              <option value="All">All Statuses</option>
+              {uniqueStatuses.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          )}
+
+          {hasGenderDisabilityFilters(activeTab) && (
+            <>
+              <select value={genderFilter} onChange={e => setGenderFilter(e.target.value)} className="px-4 py-2 border border-slate-200 rounded-xl bg-white text-sm font-medium text-slate-700">
+                <option value="All">All Genders</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+              <select value={disabilityFilter} onChange={e => setDisabilityFilter(e.target.value)} className="px-4 py-2 border border-slate-200 rounded-xl bg-white text-sm font-medium text-slate-700">
+                <option value="All">All Disability</option>
+                <option value="Yes">Has Disability</option>
+                <option value="No">No Disability</option>
+              </select>
+            </>
+          )}
+
+          {hasZoneWoredaFilters(activeTab) && (
+            <>
+              <select value={zoneFilter} onChange={e => { setZoneFilter(e.target.value); setWoredaFilter('All'); }} className="px-4 py-2 border border-slate-200 rounded-xl bg-white text-sm font-medium text-slate-700">
+                <option value="All">All Zones</option>
+                {zonesList.map(z => <option key={z.id} value={z.name}>{z.name}</option>)}
+              </select>
+              <select value={woredaFilter} onChange={e => setWoredaFilter(e.target.value)} disabled={zoneFilter === 'All'} className="px-4 py-2 border border-slate-200 rounded-xl bg-white text-sm font-medium text-slate-700 disabled:bg-slate-100">
+                <option value="All">All Woredas</option>
+                {woredasList.filter(w => zoneFilter === 'All' || zonesList.find(z => z.name === zoneFilter)?.id === w.zone_id).map(w => <option key={w.id} value={w.name}>{w.name}</option>)}
+              </select>
+            </>
+          )}
+
+          <button onClick={exportCSV} className="ml-auto flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 font-bold text-sm">
+            <Download className="w-4 h-4" /> CSV
+          </button>
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto flex-1">
           <table className="w-full text-left">
             <thead>
-              {renderTableHeaders()}
+              <tr>
+                {columns.map(col => (
+                  <th key={col.key} className="p-4 border-b border-slate-100 font-bold uppercase tracking-wider text-[11px] text-slate-500 bg-slate-50 whitespace-nowrap">{col.label}</th>
+                ))}
+                {viewableTabs.includes(activeTab) && <th className="p-4 border-b border-slate-100 bg-slate-50 w-16"></th>}
+              </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan="12" className="p-12 text-center text-slate-400 font-bold">
-                    <div className="flex flex-col items-center justify-center gap-3">
-                      <div className="w-8 h-8 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin"></div>
-                      Loading data...
-                    </div>
-                  </td>
+                <tr><td colSpan={columns.length + 1} className="p-12 text-center text-slate-400">Loading...</td></tr>
+              ) : filteredData.length === 0 ? (
+                <tr><td colSpan={columns.length + 1} className="p-12 text-center text-slate-500">No records found.</td></tr>
+              ) : filteredData.map((item, i) => (
+                <tr key={item.id || i} className="hover:bg-slate-50/50 border-b border-slate-50">
+                  {columns.map(col => (
+                    <td key={col.key} className="p-4 text-sm text-slate-700 whitespace-nowrap max-w-[200px] truncate">
+                      {col.key === 'status' ? (
+                        <span className="px-2 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700">{getCellValue(item, col)}</span>
+                      ) : String(getCellValue(item, col) || '-')}
+                    </td>
+                  ))}
+                  {viewableTabs.includes(activeTab) && (
+                    <td className="p-4 text-center">
+                      <button onClick={() => setViewRecord(item)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg" title="View details">
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </td>
+                  )}
                 </tr>
-              ) : renderTableBody()}
+              ))}
             </tbody>
           </table>
         </div>
-        
-        {/* Footer */}
+
         <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between text-xs font-bold text-slate-500">
-          <span>Showing {filteredData.length} records</span>
-          <span>{activeTab} Module</span>
+          <span>Showing {filteredData.length} of {activeTab === 'Employees' ? employeeTotal : data.length} records</span>
+          {activeTab === 'Employees' && (
+            <div className="flex items-center gap-2">
+              <button disabled={employeePage === 0} onClick={() => setEmployeePage(p => p - 1)} className="p-1.5 rounded border border-slate-200 disabled:opacity-40 hover:bg-white">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span>Page {employeePage + 1} of {employeePages}</span>
+              <button disabled={employeePage >= employeePages - 1} onClick={() => setEmployeePage(p => p + 1)} className="p-1.5 rounded border border-slate-200 disabled:opacity-40 hover:bg-white">
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
+      {viewRecord && activeTab === 'Beneficiaries' && <BeneficiaryDetailsModal beneficiary={viewRecord} onClose={() => setViewRecord(null)} />}
+      {viewRecord && activeTab === 'Demands' && <DemandDetailsModal demand={viewRecord} onClose={() => setViewRecord(null)} />}
+      {viewRecord && activeTab === 'Problems' && <ProblemDetailsModal problem={viewRecord} onClose={() => setViewRecord(null)} />}
+      {viewRecord && activeTab === 'Agents' && <AgentDetailsModal agent={viewRecord} onClose={() => setViewRecord(null)} />}
     </div>
   );
 }

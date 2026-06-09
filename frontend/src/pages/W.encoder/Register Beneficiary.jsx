@@ -198,6 +198,9 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
       if (['Institution', 'Off-Grid'].includes(formData.surveyType) && !formData.selectedContractor) {
         newErrors.selectedContractor = "Required";
       }
+      if (['Institution', 'Off-Grid'].includes(formData.surveyType) && !formData.assignedSupplier) {
+        newErrors.assignedSupplier = "Required";
+      }
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -279,7 +282,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
               village: form.village,
               survey_type: form.surveyType,
               equipment_type: form.equipmentType,
-              supplier: form.assignedSupplier || form.selectedContractor,
+              supplier: form.assignedSupplier,
               status: 'Pending',
               details_json: JSON.stringify(cleanForm)
             };
@@ -319,7 +322,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
         village: formData.village,
         survey_type: formData.surveyType,
         equipment_type: formData.equipmentType,
-        supplier: formData.assignedSupplier || formData.selectedContractor,
+        supplier: formData.assignedSupplier,
         status: 'Pending',
         details_json: JSON.stringify(cleanFormData)
       };
@@ -905,24 +908,40 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
           </>
         )}
 
-        {/* Contractor selection for Institution & Off-Grid */}
+        {/* Supplier & Contractor for Institution & Off-Grid */}
         {['Institution', 'Off-Grid'].includes(formData.surveyType) && (
-          <div className="col-span-2 space-y-2">
-            <div className="flex justify-between">
-              <label className="text-sm font-semibold text-slate-700">Select Contractor *</label>
-              {errors.selectedContractor && <span className="text-red-500 text-xs">Required</span>}
+          <>
+            <div className="col-span-2 space-y-2">
+              <div className="flex justify-between">
+                <label className="text-sm font-semibold text-slate-700">Assigned Supplier *</label>
+                {errors.assignedSupplier && <span className="text-red-500 text-xs">Required</span>}
+              </div>
+              <select
+                className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                value={formData.assignedSupplier}
+                onChange={(e) => updateFormData('assignedSupplier', e.target.value)}
+              >
+                <option value="">Select Supplier</option>
+                {suppliersList.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
             </div>
-            <select
-              className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-              value={formData.selectedContractor}
-              onChange={(e) => updateFormData('selectedContractor', e.target.value)}
-            >
-              <option value="">Select Contractor</option>
-              {contractorsList.map(c => (
-                <option key={c.id} value={c.name}>{c.name} ({c.service_type})</option>
-              ))}
-            </select>
-          </div>
+            <div className="col-span-2 space-y-2">
+              <div className="flex justify-between">
+                <label className="text-sm font-semibold text-slate-700">Select Contractor *</label>
+                {errors.selectedContractor && <span className="text-red-500 text-xs">Required</span>}
+              </div>
+              <select
+                className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                value={formData.selectedContractor}
+                onChange={(e) => updateFormData('selectedContractor', e.target.value)}
+              >
+                <option value="">Select Contractor</option>
+                {contractorsList.map(c => (
+                  <option key={c.id} value={c.name}>{c.name} ({c.service_type})</option>
+                ))}
+              </select>
+            </div>
+          </>
         )}
 
         {/* Off-Grid Project Details */}
@@ -1157,9 +1176,15 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
             <span className="font-bold text-blue-900">{formData.serialNumber || '-'}</span>
           </div>
            <div>
-            <span className="text-xs text-blue-500 block mb-1">{['Institution', 'Off-Grid'].includes(formData.surveyType) ? 'Contractor' : 'Supplier'}</span>
-            <span className="font-bold text-blue-900">{formData.selectedContractor || formData.assignedSupplier || '-'}</span>
+            <span className="text-xs text-blue-500 block mb-1">Supplier</span>
+            <span className="font-bold text-blue-900">{suppliersList.find(s => String(s.id) === String(formData.assignedSupplier))?.name || '-'}</span>
           </div>
+          {['Institution', 'Off-Grid'].includes(formData.surveyType) && (
+          <div>
+            <span className="text-xs text-blue-500 block mb-1">Contractor</span>
+            <span className="font-bold text-blue-900">{formData.selectedContractor || '-'}</span>
+          </div>
+          )}
            <div>
             <span className="text-xs text-blue-500 block mb-1">Guarantee</span>
             <span className="font-bold text-blue-900">{formData.guarantee || '-'}</span>

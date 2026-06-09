@@ -53,7 +53,7 @@ const createClusterIcon = (count, worstLevel) => {
   if (worstLevel?.includes('Not functional')) {
     colorClass = 'bg-rose-500 border-rose-200 text-white animate-pulse hover:bg-rose-600';
   } else if (worstLevel?.includes('Abandoned')) {
-    colorClass = 'bg-slate-500 border-slate-300 text-white hover:bg-slate-600';
+    colorClass = 'bg-orange-500 border-orange-200 text-white hover:bg-orange-600';
   } else if (worstLevel?.includes('Partially')) {
     colorClass = 'bg-amber-500 border-amber-200 text-white hover:bg-amber-600';
   }
@@ -188,9 +188,9 @@ export default function AmharaMap({ beneficiaries, onSelectBeneficiary }) {
                 <span>{b.full_name}</span>
                 {(b.problem_level || b.problem_urgency) && (b.problem_level || b.problem_urgency) !== 'Functional' && (
                   <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-white ${
-                    (b.problem_level || '').includes('Not functional') ? 'bg-rose-500' :
-                    (b.problem_level || '').includes('Abandoned') ? 'bg-slate-500' :
-                    (b.problem_level || '').includes('Partially') ? 'bg-amber-500' : 'bg-yellow-500'
+                    (b.problem_level || b.problem_urgency || '').includes('Not functional') ? 'bg-rose-500' :
+                    (b.problem_level || b.problem_urgency || '').includes('Abandoned') ? 'bg-orange-500' :
+                    (b.problem_level || b.problem_urgency || '').includes('Partially') ? 'bg-amber-500' : 'bg-yellow-500'
                   }`}>
                     {(b.problem_level || b.problem_urgency).slice(0, 12)}...
                   </span>

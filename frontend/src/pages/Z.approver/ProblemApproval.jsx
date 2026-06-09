@@ -17,7 +17,7 @@ const ProblemApproval = ({ selectedZone }) => {
       const res = await fetch(`http://localhost:8000/api/problems?approved_only=true&zone=${encodeURIComponent(selectedZone)}`);
       const data = await res.json();
       if (Array.isArray(data)) {
-        setProblems(data);
+        setProblems(data.filter(p => ['Approved', 'Seen'].includes(p.status)));
       }
     } catch (e) {
       console.error(e);

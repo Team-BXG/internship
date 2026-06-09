@@ -18,7 +18,7 @@ const Beneficiaries = ({ supplier }) => {
       let benData = [];
       if (benRes.ok) {
         benData = await benRes.json();
-        setBeneficiaries(benData);
+        setBeneficiaries((benData || []).filter(b => b.status === 'Approved'));
       }
 
       // Fetch demands

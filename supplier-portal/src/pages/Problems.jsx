@@ -19,7 +19,7 @@ const Problems = ({ supplier }) => {
       const res = await fetch(`http://localhost:8000/api/problems?supplier=${supplier.id}&approved_only=true`);
       if (res.ok) {
         const data = await res.json();
-        const filtered = data;
+        const filtered = (data || []).filter(p => ['Approved', 'Seen'].includes(p.status));
         
         const mapped = filtered.map(p => {
           const details = p.details_json ? JSON.parse(p.details_json) : {};

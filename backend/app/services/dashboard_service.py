@@ -52,8 +52,8 @@ def get_dashboard_data(db: Session, zone: str = None, woreda: str = None, gender
     units_distributed = total_beneficiaries
     
     # Calculate trends
-    curr_ben = b_query.filter(models.Beneficiary.created_at >= thirty_days_ago).count()
-    prev_ben = b_query.filter(models.Beneficiary.created_at >= sixty_days_ago, models.Beneficiary.created_at < thirty_days_ago).count()
+    curr_ben = b_query.filter(models.Beneficiary.status == "Approved", models.Beneficiary.created_at >= thirty_days_ago).count()
+    prev_ben = b_query.filter(models.Beneficiary.status == "Approved", models.Beneficiary.created_at >= sixty_days_ago, models.Beneficiary.created_at < thirty_days_ago).count()
     beneficiaries_trend = calc_trend(curr_ben, prev_ben)
     
     curr_pend = b_query.filter(models.Beneficiary.status == "Pending", models.Beneficiary.created_at >= thirty_days_ago).count()
@@ -90,7 +90,8 @@ def get_dashboard_data(db: Session, zone: str = None, woreda: str = None, gender
     ben_trend_query = db.query(
         models.Zone.name.label('month'), # Reusing 'month' alias for schema compatibility
         func.count(models.Beneficiary.id).label('count')
-    ).select_from(models.Beneficiary).join(models.Woreda, models.Beneficiary.woreda_id == models.Woreda.id).join(models.Zone, models.Woreda.zone_id == models.Zone.id)
+    ).select_from(models.Beneficiary).join(models.Woreda, models.Beneficiary.woreda_id == models.Woreda.id).join(models.Zone, models.Woreda.zone_id == models.Zone.id)\
+    .filter(models.Beneficiary.status == "Approved")
     
     # Demands Trend (Units Distributed)
     dem_trend_query = db.query(
@@ -126,7 +127,7 @@ def get_dashboard_data(db: Session, zone: str = None, woreda: str = None, gender
     eq_query = db.query(
         models.Beneficiary.equipment_type.label('name'),
         func.count(models.Beneficiary.id).label('value')
-    )
+    ).filter(models.Beneficiary.status == "Approved")
     if zone or woreda:
         eq_query = eq_query.join(models.Woreda)
         if zone:
@@ -150,7 +151,8 @@ def get_dashboard_data(db: Session, zone: str = None, woreda: str = None, gender
     bz_query = db.query(
         models.Zone.name.label('zone'),
         func.count(models.Beneficiary.id).label('beneficiaries')
-    ).select_from(models.Beneficiary).join(models.Woreda).join(models.Zone, models.Woreda.zone_id == models.Zone.id)
+    ).select_from(models.Beneficiary).join(models.Woreda).join(models.Zone, models.Woreda.zone_id == models.Zone.id)\
+    .filter(models.Beneficiary.status == "Approved")
     
     if zone:
         bz_query = bz_query.filter(models.Zone.name == zone)

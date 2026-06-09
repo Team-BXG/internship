@@ -30,8 +30,10 @@ def get_beneficiaries(status: str = None, supplier: str = None, zone: str = None
         
     beneficiaries = query.order_by(models.Beneficiary.created_at.desc()).all()
     
-    # Active problems for map/status (not Fixed)
-    active_problems = db.query(models.Problem).filter(models.Problem.status.notin_(["Fixed"])).all()
+    # Only woreda-approved active problems affect map/status (excludes Open / pending review)
+    active_problems = db.query(models.Problem).filter(
+        models.Problem.status.in_(["Approved", "Seen"])
+    ).all()
     problem_map = {p.beneficiary_name: p.title for p in active_problems if p.beneficiary_name}
     
     # Fetch all suppliers for mapping IDs to names if stored as IDs

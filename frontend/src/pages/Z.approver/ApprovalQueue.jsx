@@ -22,7 +22,7 @@ const BeneficiaryView = ({ selectedZone }) => {
       const res = await fetch(`http://localhost:8000/api/beneficiaries?approved_only=true&zone=${encodeURIComponent(selectedZone)}`);
       if (res.ok) {
         const data = await res.json();
-        setBeneficiaries(data);
+        setBeneficiaries((data || []).filter(b => b.status === 'Approved'));
       }
     } catch (e) {
       console.error(e);

@@ -11,7 +11,8 @@ router = APIRouter(prefix="/api/problems", tags=["problems"])
 def get_problems(status: str = None, supplier: str = None, zone: str = None, woreda: str = None, approved_only: bool = False, db: Session = Depends(get_db)):
     query = db.query(models.Problem)
     if approved_only:
-        query = query.filter(models.Problem.status.in_(["Approved", "Seen", "Fixed"]))
+        # Only woreda-approved problems; excludes Open / pending review
+        query = query.filter(models.Problem.status.in_(["Approved", "Seen"]))
     if status:
         query = query.filter(models.Problem.status == status)
     if supplier:

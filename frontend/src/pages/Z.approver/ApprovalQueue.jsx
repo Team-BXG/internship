@@ -14,12 +14,12 @@ const BeneficiaryView = ({ selectedZone }) => {
   useEffect(() => {
     fetchBeneficiaries();
     fetchWoredas();
-  }, []);
+  }, [selectedZone]);
 
   const fetchBeneficiaries = async () => {
     try {
       // Fetch all beneficiaries for the zone
-      const res = await fetch(`http://localhost:8000/api/beneficiaries`);
+      const res = await fetch(`http://localhost:8000/api/beneficiaries?approved_only=true&zone=${encodeURIComponent(selectedZone)}`);
       if (res.ok) {
         const data = await res.json();
         setBeneficiaries(data);
@@ -49,22 +49,6 @@ const BeneficiaryView = ({ selectedZone }) => {
             setWoredas(data); // Fallback
           }
         }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleStatusUpdate = async (beneficiary, newStatus) => {
-    try {
-      const res = await fetch(`http://localhost:8000/api/beneficiaries/${beneficiary.id}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
-      if (res.ok) {
-        setActiveBeneficiary(null);
-        fetchBeneficiaries();
       }
     } catch (e) {
       console.error(e);
@@ -111,10 +95,7 @@ const BeneficiaryView = ({ selectedZone }) => {
     return 'text-slate-600 bg-slate-50 border-slate-200';
   };
 
-  const actionConfig = [
-    { label: 'Approve Zone', className: 'bg-emerald-500 hover:bg-emerald-600 text-white', onClick: (b) => handleStatusUpdate(b, 'Approved') },
-    { label: 'Return for Correction', className: 'bg-amber-500 hover:bg-amber-600 text-white', onClick: (b) => handleStatusUpdate(b, 'Correction Needed') }
-  ];
+  const actionConfig = [];
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto">

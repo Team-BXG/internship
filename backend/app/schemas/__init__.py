@@ -223,3 +223,4 @@ class DashboardDataResponse(BaseModel):
     supplier_performance: List[SupplierPerformance]
     functional_status: List[FunctionalStatusData]
     recent_activity: List[ActivityLogResponse]
+    equipment_options: List[str] = []

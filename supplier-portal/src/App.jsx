@@ -7,7 +7,6 @@ import Dashboard from './pages/Dashboard';
 import Beneficiaries from './pages/Beneficiaries';
 import Problems from './pages/Problems';
 import Login from './pages/Login';
-import ChangePassword from './pages/ChangePassword';
 import Profile from './pages/Profile';
 import DarkModeToggle from './components/DarkModeToggle';
 
@@ -28,12 +27,6 @@ function App() {
     setSupplier(data);
   };
 
-  const handlePasswordChanged = () => {
-    const updated = { ...supplier, requires_password_change: false };
-    setSupplier(updated);
-    localStorage.setItem('supplier_user', JSON.stringify(updated));
-  };
-
   if (loading) return null;
 
   if (!supplier) {
@@ -44,19 +37,6 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </Router>
-    );
-  }
-
-  if (supplier.requires_password_change) {
-    return (
-      <Router>
-        <Toaster position="top-right" />
-        <DarkModeToggle />
-        <Routes>
-          <Route path="/change-password" element={<ChangePassword user={supplier} onComplete={handlePasswordChanged} />} />
-          <Route path="*" element={<Navigate to="/change-password" replace />} />
         </Routes>
       </Router>
     );

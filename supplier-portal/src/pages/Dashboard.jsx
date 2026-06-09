@@ -14,8 +14,8 @@ const Dashboard = ({ supplier }) => {
     const fetchStats = async () => {
       try {
         const [benRes, probRes] = await Promise.all([
-          fetch(`http://localhost:8000/api/beneficiaries?supplier=${supplier.id}`),
-          fetch(`http://localhost:8000/api/problems?supplier=${supplier.id}`)
+          fetch(`http://localhost:8000/api/beneficiaries?supplier=${supplier.id}&approved_only=true`),
+          fetch(`http://localhost:8000/api/problems?supplier=${supplier.id}&approved_only=true`)
         ]);
 
         if (benRes.ok && probRes.ok) {
@@ -24,8 +24,8 @@ const Dashboard = ({ supplier }) => {
           
             setStats({
               totalBeneficiaries: beneficiaries.length,
-              openProblems: problems.filter(p => p.status === 'Open').length,
-              resolvedProblems: problems.filter(p => p.status === 'Seen' || p.status === 'Resolved').length
+              openProblems: problems.filter(p => p.status === 'Approved').length,
+              resolvedProblems: problems.filter(p => p.status === 'Seen').length
             });
         }
       } catch (e) {
@@ -55,7 +55,7 @@ const Dashboard = ({ supplier }) => {
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-slate-500 mb-1">Open Equipment Issues</p>
+            <p className="text-sm font-medium text-slate-500 mb-1">Approved Equipment Issues</p>
             <h3 className="text-3xl font-bold text-red-600">{stats.openProblems}</h3>
           </div>
           <div className="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center text-red-600">

@@ -272,7 +272,7 @@ def seed_data():
     for i in range(1, 201):
         created_at = now - datetime.timedelta(days=random.randint(1, 240))
         b = (
-            f"Beneficiary {i}", f"ET-BEN-{1000+i}", f"+251 920 {random.randint(100, 999)} {random.randint(100, 999)}",
+            f"Beneficiary {i}", f"{random.randint(100000000000, 999999999999)}", f"+2519{random.randint(10000000, 99999999)}",
             random.choice(genders), random.choice(["1", "2-4", "5+"]), random.choice(woreda_ids_list),
             f"0{random.randint(1, 9)}", f"Village {random.randint(1, 20)}", random.choice(equipment_types),
             random.choice(equipment_types), random.choice(suppliers_names),
@@ -287,16 +287,22 @@ def seed_data():
  
     # Seed Problems (Dynamic)
     problems = []
-    p_categories = ["Hardware", "Logistics", "Data Issue", "Other"]
+    p_categories = ["Solar Panels", "Battery", "Charge Control", "Cable", "Invertor"]
     p_statuses = ["Open", "Approved", "Seen", "Fixed"]
-    p_urgencies = ["High", "Medium", "Low"]
+    p_levels = [
+        "Functional",
+        "Partially functional but in need of repair",
+        "Not functional",
+        "Abandoned or no longer exists",
+    ]
     
     for i in range(1, 81):
         created_at = now - datetime.timedelta(days=random.randint(1, 240))
+        level = random.choice(p_levels)
         p = (
-            f"Issue {i}", random.choice(p_categories), f"0{random.randint(1, 9)}", random.choice(woreda_ids_list),
+            level, random.choice(p_categories), f"0{random.randint(1, 9)}", random.choice(woreda_ids_list),
             random.choice(equipment_types), f"SN-{1000+i}", f"Beneficiary {random.randint(1, 200)}", "Encoder_X",
-            random.choice(p_statuses), random.choice(p_urgencies), created_at.strftime('%Y-%m-%d %H:%M:%S')
+            random.choice(p_statuses), "Medium", created_at.strftime('%Y-%m-%d %H:%M:%S')
         )
         problems.append(p)
         
@@ -310,7 +316,7 @@ def seed_data():
     d_statuses = ["Pending", "Approved", "Assigned", "Beneficiary"]
     for i in range(1, 101):
         d = (
-            f"Applicant {i}", f"ET-DMD-{1000+i}", f"+251 911 {random.randint(100, 999)} {random.randint(100, 999)}",
+            f"Applicant {i}", f"{random.randint(100000000000, 999999999999)}", f"+2519{random.randint(10000000, 99999999)}",
             random.choice(woreda_ids_list), f"0{random.randint(1, 9)}", f"Village {random.randint(1, 20)}",
             random.choice(genders), random.choice(["yes", "no"]), "home_lantern",
             random.choice(["1", "2", "3", "4+"]), random.choice(["Yes", "No"]),

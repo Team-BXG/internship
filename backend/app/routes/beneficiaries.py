@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import schemas, models
 from app.routes.activity_logs import log_activity
+from app.validators import validate_beneficiary_payload
 
 router = APIRouter(prefix="/api/beneficiaries", tags=["beneficiaries"])
 
@@ -10,8 +11,8 @@ router = APIRouter(prefix="/api/beneficiaries", tags=["beneficiaries"])
 def get_beneficiaries(status: str = None, supplier: str = None, zone: str = None, woreda: str = None, approved_only: bool = False, db: Session = Depends(get_db)):
     query = db.query(models.Beneficiary).filter(models.Beneficiary.status != 'Assigned')
     if approved_only:
-        query = query.filter(models.Beneficiary.status == 'Approved')
-    elif status:
+        query = query.filter(models.Beneficiary.status.in_(['Approved']))
+    if status:
         query = query.filter(models.Beneficiary.status == status)
     if supplier:
         if supplier.isdigit():
@@ -29,9 +30,9 @@ def get_beneficiaries(status: str = None, supplier: str = None, zone: str = None
         
     beneficiaries = query.order_by(models.Beneficiary.created_at.desc()).all()
     
-    # Get all active problems (not Fixed or Resolved)
-    active_problems = db.query(models.Problem).filter(models.Problem.status.notin_(["Fixed", "Resolved"])).all()
-    problem_map = {p.beneficiary_name: p.urgency for p in active_problems if p.beneficiary_name}
+    # Active problems for map/status (not Fixed)
+    active_problems = db.query(models.Problem).filter(models.Problem.status.notin_(["Fixed"])).all()
+    problem_map = {p.beneficiary_name: p.title for p in active_problems if p.beneficiary_name}
     
     # Fetch all suppliers for mapping IDs to names if stored as IDs
     suppliers = db.query(models.Supplier).all()
@@ -61,7 +62,8 @@ def get_beneficiaries(status: str = None, supplier: str = None, zone: str = None
             "status": b.status,
             "details_json": b.details_json,
             "created_at": b.created_at.isoformat() if b.created_at else None,
-            "problem_urgency": problem_map.get(b.full_name, None)
+            "problem_urgency": problem_map.get(b.full_name, None),
+            "problem_level": problem_map.get(b.full_name, None)
         })
     return results
 
@@ -88,6 +90,7 @@ def update_beneficiary(id: int, payload: dict, db: Session = Depends(get_db)):
 
 @router.post("")
 def create_beneficiary(b: schemas.BeneficiaryCreate, db: Session = Depends(get_db)):
+    validate_beneficiary_payload(b)
     woreda_id = b.woreda_id
     if not woreda_id and b.woreda:
         woreda_row = db.query(models.Woreda).filter(models.Woreda.name == b.woreda).first()

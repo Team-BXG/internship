@@ -5,6 +5,7 @@ from typing import List
 from app.database import get_db
 from app import schemas, models
 from app.services.audit_logger import AuditLogger
+from app.validators import validate_supplier_payload
 
 router = APIRouter(prefix="/api/suppliers", tags=["suppliers"])
 
@@ -44,6 +45,7 @@ def create_supplier(
     x_user_name: str = Header("Unknown User"),
     x_user_role: str = Header("Unknown Role")
 ):
+    validate_supplier_payload(supplier)
     db_supplier = models.Supplier(
         name=supplier.name,
         contact_person=supplier.contact_person,

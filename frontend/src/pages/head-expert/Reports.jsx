@@ -50,7 +50,11 @@ export default function Reports() {
     setLoading(true);
     try {
       const endpoint = TAB_CONFIGS[activeTab].endpoint;
-      const res = await fetch(`http://localhost:8000${endpoint}`);
+      let url = `http://localhost:8000${endpoint}`;
+      if (['Beneficiaries', 'Demands'].includes(activeTab)) {
+        url += endpoint.includes('?') ? '&approved_only=true' : '?approved_only=true';
+      }
+      const res = await fetch(url);
       if (res.ok) {
         const result = await res.json();
         if (Array.isArray(result)) {

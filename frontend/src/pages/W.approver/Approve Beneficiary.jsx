@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Eye, Filter, Download } from 'lucide-react';
+import { Search, Eye, Filter, Download, CheckCircle2, AlertTriangle } from 'lucide-react';
 import BeneficiaryDetailsModal from '../../components/BeneficiaryDetailsModal';
 import Papa from 'papaparse';
 import { XCircle, Send } from 'lucide-react';
@@ -83,15 +83,18 @@ const ApproveBeneficiary = ({ selectedScope }) => {
 
   const getStatusColor = (status) => {
     if (status === 'Approved') return 'text-emerald-700 bg-emerald-50 border-emerald-200';
-    if (status === 'Pending' || status === 'Pending Woreda' || status === 'Pending Zone') return 'text-orange-700 bg-orange-50 border-orange-200';
+    if (status === 'Pending') return 'text-orange-700 bg-orange-50 border-orange-200';
     if (status === 'Correction Needed' || status === 'Rejected') return 'text-red-700 bg-red-50 border-red-200';
     return 'text-slate-600 bg-slate-50 border-slate-200';
   };
 
-  const actionConfig = [
-    { label: 'Approve Submission', className: 'bg-emerald-500 hover:bg-emerald-600 text-white', onClick: (b) => handleStatusUpdate(b, 'Approved') },
-    { label: 'Return for Correction', className: 'bg-amber-500 hover:bg-amber-600 text-white', onClick: (b) => { setActiveBeneficiary(b); setShowAdjustModal(true); } }
-  ];
+  const getActionConfig = (beneficiary) => {
+    if (beneficiary?.status !== 'Pending') return [];
+    return [
+      { label: 'Approve Submission', className: 'bg-emerald-500 hover:bg-emerald-600 text-white', onClick: (b) => handleStatusUpdate(b, 'Approved') },
+      { label: 'Return for Correction', className: 'bg-amber-500 hover:bg-amber-600 text-white', keepOpen: true, onClick: (b) => { setActiveBeneficiary(b); setShowAdjustModal(true); } }
+    ];
+  };
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto">
@@ -170,14 +173,22 @@ const ApproveBeneficiary = ({ selectedScope }) => {
                   <td className="p-4 text-slate-600 max-w-[150px] truncate">{b.supplier || 'Unassigned'}</td>
                   <td className="p-4">
                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusColor(b.status)}`}>
-                        {b.status === 'Pending Woreda' ? 'Pending' : b.status}
+                        {b.status}
                      </span>
                   </td>
                   <td className="p-4 text-slate-500">{new Date(b.created_at).toISOString().split('T')[0]}</td>
                   <td className="p-4 text-center">
-                     <button onClick={() => setActiveBeneficiary(b)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors inline-block" title="View Details Log">
-                        <Eye className="w-5 h-5" />
-                     </button>
+                     <div className="flex items-center justify-center gap-2">
+                       <button onClick={() => setActiveBeneficiary(b)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors" title="View Details">
+                          <Eye className="w-5 h-5" />
+                       </button>
+                       {b.status === 'Pending' && (
+                         <>
+                           <button onClick={() => handleStatusUpdate(b, 'Approved')} className="px-2 py-1 bg-emerald-500 text-white rounded-lg text-xs font-bold hover:bg-emerald-600">Approve</button>
+                           <button onClick={() => { setActiveBeneficiary(b); setShowAdjustModal(true); }} className="px-2 py-1 bg-amber-500 text-white rounded-lg text-xs font-bold hover:bg-amber-600">Correction</button>
+                         </>
+                       )}
+                     </div>
                   </td>
                 </tr>
               ))}
@@ -194,7 +205,7 @@ const ApproveBeneficiary = ({ selectedScope }) => {
         <BeneficiaryDetailsModal 
           beneficiary={activeBeneficiary} 
           onClose={() => setActiveBeneficiary(null)} 
-          actionConfig={actionConfig} 
+          actionConfig={getActionConfig(activeBeneficiary)} 
         />
       )}
 

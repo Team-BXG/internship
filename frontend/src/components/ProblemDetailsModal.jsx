@@ -67,10 +67,12 @@ const ProblemDetailsModal = ({ problem, onClose, actionConfig }) => {
         <div className="p-6 border-t border-slate-100 bg-slate-50">
            <h4 className="font-bold text-slate-700 mb-4 text-sm uppercase tracking-wider">Available Actions</h4>
            <div className="flex gap-3">
-              {actionConfig.map((action, i) => (
+              {actionConfig.length === 0 ? (
+                <p className="text-sm text-slate-500">No review actions available for this status.</p>
+              ) : actionConfig.map((action, i) => (
                 <button 
                   key={i} 
-                  onClick={() => { action.onClick(problem); onClose(); }} 
+                  onClick={() => { action.onClick(problem); if (action.keepOpen !== true) onClose(); }} 
                   className={`px-6 py-2.5 rounded-lg font-bold text-sm shadow-sm transition-all active:scale-95 ${action.className}`}
                 >
                   {action.label}

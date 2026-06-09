@@ -57,7 +57,7 @@ const RegisterProblem = ({ selectedScope }) => {
 
   const fetchBeneficiaries = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/beneficiaries?woreda=${selectedScope.woreda}`);
+      const res = await fetch(`http://localhost:8000/api/beneficiaries?woreda=${selectedScope.woreda}&approved_only=true`);
       if (res.ok) {
         const data = await res.json();
         const woredaBens = data.filter(b => b.woreda === selectedScope.woreda);
@@ -152,9 +152,11 @@ const RegisterProblem = ({ selectedScope }) => {
 
   const getStatusStyle = (status) => {
     switch (status) {
-      case 'Open': return 'text-red-600 bg-red-50 border-red-200';
-      case 'Under Repair': return 'text-orange-600 bg-orange-50 border-orange-200';
-      case 'Resolved': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
+      case 'Open': return 'text-amber-600 bg-amber-50 border-amber-200';
+      case 'Approved': return 'text-blue-600 bg-blue-50 border-blue-200';
+      case 'Seen': return 'text-purple-600 bg-purple-50 border-purple-200';
+      case 'Fixed': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
+      case 'Correction Needed': return 'text-rose-600 bg-rose-50 border-rose-200';
       default: return 'text-slate-600 bg-slate-50 border-slate-200';
     }
   };
@@ -180,8 +182,8 @@ const RegisterProblem = ({ selectedScope }) => {
 
   const stats = {
     open: filteredProblems.filter(p => p.status === 'Open').length,
-    repair: filteredProblems.filter(p => p.status === 'Under Repair').length,
-    resolved: filteredProblems.filter(p => p.status === 'Resolved').length
+    seen: filteredProblems.filter(p => p.status === 'Seen').length,
+    fixed: filteredProblems.filter(p => p.status === 'Fixed').length
   };
 
   const updateProblemStatus = (id, newStatus) => {
@@ -366,22 +368,22 @@ const RegisterProblem = ({ selectedScope }) => {
             </div>
           </div>
         </div>
-        <div className="bg-yellow-50 border border-yellow-100 p-6 rounded-2xl flex flex-col justify-center">
+        <div className="bg-purple-50 border border-purple-100 p-6 rounded-2xl flex flex-col justify-center">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-3xl font-bold text-yellow-600">{stats.repair}</h2>
-              <p className="text-yellow-800 font-medium mt-1">Under Repair</p>
+              <h2 className="text-3xl font-bold text-purple-600">{stats.seen}</h2>
+              <p className="text-purple-800 font-medium mt-1">Seen</p>
             </div>
-            <div className="p-3 bg-yellow-100 rounded-xl">
-              <Wrench className="w-6 h-6 text-yellow-600" />
+            <div className="p-3 bg-purple-100 rounded-xl">
+              <Wrench className="w-6 h-6 text-purple-600" />
             </div>
           </div>
         </div>
         <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-2xl flex flex-col justify-center">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-3xl font-bold text-emerald-600">{stats.resolved}</h2>
-              <p className="text-emerald-800 font-medium mt-1">Resolved</p>
+              <h2 className="text-3xl font-bold text-emerald-600">{stats.fixed}</h2>
+              <p className="text-emerald-800 font-medium mt-1">Fixed</p>
             </div>
             <div className="p-3 bg-emerald-100 rounded-xl">
               <CheckCircle2 className="w-6 h-6 text-emerald-600" />

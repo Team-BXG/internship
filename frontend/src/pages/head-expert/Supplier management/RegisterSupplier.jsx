@@ -1,6 +1,7 @@
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 import { X, Check } from 'lucide-react';
+import { sanitizeText, sanitizeNationalId } from '../../../utils/formHelpers';
 
 export default function RegisterSupplier({ onCancel, onSuccess }) {
   const [formData, setFormData] = useState({
@@ -22,7 +23,10 @@ export default function RegisterSupplier({ onCancel, onSuccess }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    let sanitized = value;
+    if (['name', 'contact_person', 'address'].includes(name)) sanitized = sanitizeText(value, name === 'address' ? 60 : 30);
+    if (name === 'license_number') sanitized = sanitizeNationalId(value);
+    setFormData(prev => ({ ...prev, [name]: sanitized }));
   };
 
   const handleSubmit = (e) => {

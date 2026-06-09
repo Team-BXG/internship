@@ -56,8 +56,8 @@ const Sidebar = ({ selectedZone, isCollapsed, setIsCollapsed }) => {
             <NavLink to="/zoneA/queue" title={isCollapsed ? "Beneficiary View" : ""} className={({isActive}) => `flex items-center gap-3 py-3 rounded-xl transition-all font-medium text-sm text-left ${isCollapsed ? 'justify-center px-0' : 'px-4'} ${isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 border border-transparent'}`}>
               <CheckSquare className="w-5 h-5 shrink-0" /> {!isCollapsed && "Beneficiary View"}
             </NavLink>
-            <NavLink to="/zoneA/problems" title={isCollapsed ? "Problem Approval" : ""} className={({isActive}) => `flex items-center gap-3 py-3 rounded-xl transition-all font-medium text-sm text-left ${isCollapsed ? 'justify-center px-0' : 'px-4'} ${isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 border border-transparent'}`}>
-              <AlertTriangle className="w-5 h-5 shrink-0" /> {!isCollapsed && "Problem Approval"}
+            <NavLink to="/zoneA/problems" title={isCollapsed ? "Problem Review" : ""} className={({isActive}) => `flex items-center gap-3 py-3 rounded-xl transition-all font-medium text-sm text-left ${isCollapsed ? 'justify-center px-0' : 'px-4'} ${isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 border border-transparent'}`}>
+              <AlertTriangle className="w-5 h-5 shrink-0" /> {!isCollapsed && "Problem Review"}
             </NavLink>
           </nav>
         </div>

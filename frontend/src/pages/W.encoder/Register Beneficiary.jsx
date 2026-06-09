@@ -6,7 +6,8 @@ import {
   UploadCloud, AlertTriangle,
   ClipboardList
 } from 'lucide-react';
-import { validateName, validatePhone, validateNationalId } from '../../utils/validation';
+import { validateName, validatePhone, validateNationalId, validateTextField } from '../../utils/validation';
+import { sanitizeText, sanitizeNationalId, sanitizeNumber } from '../../utils/formHelpers';
 
 const STEPS = [
   { id: 1, label: 'Survey Type', icon: ClipboardList },
@@ -25,6 +26,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
   const [currentFormIndex, setCurrentFormIndex] = useState(0);
   const [suppliersList, setSuppliersList] = useState([]);
   const [agentsList, setAgentsList] = useState([]);
+  const [contractorsList, setContractorsList] = useState([]);
   
   useEffect(() => {
     fetch('http://localhost:8000/api/suppliers')
@@ -37,7 +39,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
       .then(data => setAgentsList(Array.isArray(data) ? data : []))
       .catch(console.error);
   }, []);
-  
+
   const INITIAL_FORM_STATE = {
     surveyType: initialData?.survey_type || '',
     zone: initialData?.zone || selectedScope.zone,
@@ -67,6 +69,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
     equipmentType: initialData?.equipment_type || 'Home Solar System',
     serialNumber: '',
     assignedSupplier: initialData?.supplier || '',
+    selectedContractor: '',
     unitPrice: '',
     guarantee: '',
     guaranteePeriod: '',
@@ -108,6 +111,15 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
 
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [draftExists, setDraftExists] = useState(false);
+
+  useEffect(() => {
+    if (!formData.surveyType || !['Institution', 'Off-Grid'].includes(formData.surveyType)) return;
+    const serviceType = formData.surveyType === 'Institution' ? 'Institution' : 'Off-Grid';
+    fetch(`http://localhost:8000/api/contractors?service_type=${encodeURIComponent(serviceType)}`)
+      .then(res => res.json())
+      .then(data => setContractorsList(Array.isArray(data) ? data : []))
+      .catch(console.error);
+  }, [formData.surveyType]);
 
   useEffect(() => {
     const draft = localStorage.getItem('draft_beneficiary');
@@ -182,6 +194,9 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
     } else if (currentStep === 4) {
       if (formData.surveyType === 'Home/Lantern') {
         if (!formData.equipmentType) newErrors.equipmentType = "Required";
+      }
+      if (['Institution', 'Off-Grid'].includes(formData.surveyType) && !formData.selectedContractor) {
+        newErrors.selectedContractor = "Required";
       }
     }
 
@@ -264,7 +279,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
               village: form.village,
               survey_type: form.surveyType,
               equipment_type: form.equipmentType,
-              supplier: form.assignedSupplier,
+              supplier: form.assignedSupplier || form.selectedContractor,
               status: 'Pending',
               details_json: JSON.stringify(cleanForm)
             };
@@ -304,7 +319,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
         village: formData.village,
         survey_type: formData.surveyType,
         equipment_type: formData.equipmentType,
-        supplier: formData.assignedSupplier,
+        supplier: formData.assignedSupplier || formData.selectedContractor,
         status: 'Pending',
         details_json: JSON.stringify(cleanFormData)
       };
@@ -344,6 +359,10 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setErrors(prev => ({ ...prev, [field]: undefined }));
   };
+
+  const updateTextField = (field, value, maxLen = 30) => updateFormData(field, sanitizeText(value, maxLen));
+  const updateNationalIdField = (field, value) => updateFormData(field, sanitizeNationalId(value));
+  const updateNumberField = (field, value) => updateFormData(field, sanitizeNumber(value));
 
   const toggleDevice = (device) => {
     setFormData(prev => {
@@ -474,7 +493,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
             placeholder="Kebele number or name"
             className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={formData.kebele}
-            onChange={(e) => updateFormData('kebele', e.target.value)}
+            onChange={(e) => updateTextField('kebele', e.target.value)}
           />
         </div>
         <div className="space-y-2">
@@ -484,7 +503,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
             placeholder="Village name"
             className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={formData.village}
-            onChange={(e) => updateFormData('village', e.target.value)}
+            onChange={(e) => updateTextField('village', e.target.value)}
           />
         </div>
         <div className="space-y-2">
@@ -529,7 +548,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
                   placeholder="e.g. Dabat Primary School"
                   className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={formData.institutionName}
-                  onChange={(e) => updateFormData('institutionName', e.target.value)}
+                  onChange={(e) => updateTextField('institutionName', e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -616,7 +635,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
               placeholder="e.g. Abebe Bikila"
               className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={formData.fullName}
-              onChange={(e) => updateFormData('fullName', e.target.value)}
+              onChange={(e) => updateTextField('fullName', e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -626,7 +645,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
               placeholder="ET-XX-000-0000"
               className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={formData.nationalId}
-              onChange={(e) => updateFormData('nationalId', e.target.value)}
+              onChange={(e) => updateNationalIdField('nationalId', e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -886,6 +905,26 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
           </>
         )}
 
+        {/* Contractor selection for Institution & Off-Grid */}
+        {['Institution', 'Off-Grid'].includes(formData.surveyType) && (
+          <div className="col-span-2 space-y-2">
+            <div className="flex justify-between">
+              <label className="text-sm font-semibold text-slate-700">Select Contractor *</label>
+              {errors.selectedContractor && <span className="text-red-500 text-xs">Required</span>}
+            </div>
+            <select
+              className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              value={formData.selectedContractor}
+              onChange={(e) => updateFormData('selectedContractor', e.target.value)}
+            >
+              <option value="">Select Contractor</option>
+              {contractorsList.map(c => (
+                <option key={c.id} value={c.name}>{c.name} ({c.service_type})</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Off-Grid Project Details */}
         {formData.surveyType === 'Off-Grid' && (
           <div className="col-span-2 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -1118,8 +1157,8 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
             <span className="font-bold text-blue-900">{formData.serialNumber || '-'}</span>
           </div>
            <div>
-            <span className="text-xs text-blue-500 block mb-1">Supplier</span>
-            <span className="font-bold text-blue-900">{formData.assignedSupplier || '-'}</span>
+            <span className="text-xs text-blue-500 block mb-1">{['Institution', 'Off-Grid'].includes(formData.surveyType) ? 'Contractor' : 'Supplier'}</span>
+            <span className="font-bold text-blue-900">{formData.selectedContractor || formData.assignedSupplier || '-'}</span>
           </div>
            <div>
             <span className="text-xs text-blue-500 block mb-1">Guarantee</span>

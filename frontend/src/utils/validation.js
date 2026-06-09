@@ -20,8 +20,21 @@ export const validateEmail = (email) => {
 
 export const validateNationalId = (id) => {
   if (!id) return "National ID is required";
-  if (id.length < 4) return "National ID must be at least 4 characters";
-  // Assuming alphanumeric hyphen format
-  if (!/^[a-zA-Z0-9\-]+$/.test(id)) return "National ID can only contain letters, numbers, and hyphens";
+  if (!/^\d{12}$/.test(id)) return "National ID must be exactly 12 digits";
+  return null;
+};
+
+export const validateTextField = (value, label, maxLen = 30) => {
+  if (!value || !String(value).trim()) return `${label} is required`;
+  if (String(value).length > maxLen) return `${label} must be at most ${maxLen} characters`;
+  if (!/^[a-zA-Z\s\-]+$/.test(value)) return `${label} can only contain letters, spaces, and hyphens`;
+  return null;
+};
+
+export const validateNonNegativeNumber = (value, label, required = false) => {
+  if (!value && !required) return null;
+  if (!value) return `${label} is required`;
+  if (!/^\d+$/.test(String(value))) return `${label} must be a non-negative number`;
+  if (parseInt(value, 10) < 0) return `${label} cannot be negative`;
   return null;
 };

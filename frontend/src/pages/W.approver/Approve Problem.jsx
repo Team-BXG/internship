@@ -62,23 +62,28 @@ const ApproveProblem = ({ selectedScope }) => {
 
   const stats = {
     total: filtered.length,
-    open: filtered.filter(p => p.status === 'Open' || p.status === 'Pending').length,
-    repair: filtered.filter(p => p.status === 'Under Repair').length,
-    resolved: filtered.filter(p => p.status === 'Resolved').length
+    open: filtered.filter(p => p.status === 'Open').length,
+    approved: filtered.filter(p => p.status === 'Approved').length,
+    seen: filtered.filter(p => p.status === 'Seen').length,
+    fixed: filtered.filter(p => p.status === 'Fixed').length
   };
 
   const getStatusColor = (status) => {
-    if (status === 'Open' || status === 'Pending') return 'text-red-700 bg-red-50 border-red-200';
-    if (status === 'Under Repair') return 'text-amber-700 bg-amber-50 border-amber-200';
-    if (status === 'Acknowledged') return 'text-blue-700 bg-blue-50 border-blue-200';
-    if (status === 'Resolved') return 'text-emerald-700 bg-emerald-50 border-emerald-200';
+    if (status === 'Open') return 'text-amber-700 bg-amber-50 border-amber-200';
+    if (status === 'Approved') return 'text-blue-700 bg-blue-50 border-blue-200';
+    if (status === 'Seen') return 'text-purple-700 bg-purple-50 border-purple-200';
+    if (status === 'Fixed') return 'text-emerald-700 bg-emerald-50 border-emerald-200';
+    if (status === 'Correction Needed') return 'text-red-700 bg-red-50 border-red-200';
     return 'text-slate-600 bg-slate-50 border-slate-200';
   };
 
-  const actionConfig = [
-    { label: 'Approve Problem', className: 'bg-emerald-500 hover:bg-emerald-600 text-white', onClick: (p) => handleStatusUpdate(p, 'Approved') },
-    { label: 'Return for Correction', className: 'bg-amber-500 hover:bg-amber-600 text-white', onClick: (p) => { setProblemToAdjust(p); setShowAdjustModal(true); } }
-  ];
+  const getActionConfig = (problem) => {
+    if (problem?.status !== 'Open') return [];
+    return [
+      { label: 'Approve Problem', className: 'bg-emerald-500 hover:bg-emerald-600 text-white', onClick: (p) => handleStatusUpdate(p, 'Approved') },
+      { label: 'Return for Correction', className: 'bg-amber-500 hover:bg-amber-600 text-white', keepOpen: true, onClick: (p) => { setProblemToAdjust(p); setShowAdjustModal(true); } }
+    ];
+  };
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto">
@@ -87,7 +92,7 @@ const ApproveProblem = ({ selectedScope }) => {
         <p className="text-slate-500 mt-1">Equipment non-functionality in {selectedScope.zone} / {selectedScope.woreda}</p>
       </div>
 
-      <div className="grid grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-8">
         <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
           <div className="flex flex-col justify-between">
             <h2 className="text-3xl font-bold text-slate-800 mt-1">{stats.total}</h2>
@@ -102,14 +107,20 @@ const ApproveProblem = ({ selectedScope }) => {
         </div>
         <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
           <div className="flex flex-col justify-between">
-            <h2 className="text-3xl font-bold text-amber-500 mt-1">{stats.repair}</h2>
-            <p className="text-slate-500 font-medium text-sm mt-2">Under Repair</p>
+            <h2 className="text-3xl font-bold text-blue-600 mt-1">{stats.approved}</h2>
+            <p className="text-slate-500 font-medium text-sm mt-2">Approved</p>
           </div>
         </div>
         <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
           <div className="flex flex-col justify-between">
-            <h2 className="text-3xl font-bold text-emerald-600 mt-1">{stats.resolved}</h2>
-            <p className="text-slate-500 font-medium text-sm mt-2">Resolved</p>
+            <h2 className="text-3xl font-bold text-purple-600 mt-1">{stats.seen}</h2>
+            <p className="text-slate-500 font-medium text-sm mt-2">Seen</p>
+          </div>
+        </div>
+        <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+          <div className="flex flex-col justify-between">
+            <h2 className="text-3xl font-bold text-emerald-600 mt-1">{stats.fixed}</h2>
+            <p className="text-slate-500 font-medium text-sm mt-2">Fixed</p>
           </div>
         </div>
       </div>
@@ -164,9 +175,15 @@ const ApproveProblem = ({ selectedScope }) => {
                       <span className={`px-4 py-1.5 rounded-full text-xs font-bold border ${getStatusColor(p.status)}`}>
                         {p.status}
                       </span>
-                      <button onClick={() => setActiveProblem(p)} className="ml-2 p-2 text-slate-400 hover:text-blue-500 rounded-lg transition-colors" title="View Details Log">
+                      <button onClick={() => setActiveProblem(p)} className="ml-2 p-2 text-slate-400 hover:text-blue-500 rounded-lg transition-colors" title="View Details">
                         <Eye className="w-5 h-5" />
                       </button>
+                      {p.status === 'Open' && (
+                        <>
+                          <button onClick={() => handleStatusUpdate(p, 'Approved')} className="px-2 py-1 bg-emerald-500 text-white rounded-lg text-xs font-bold hover:bg-emerald-600">Approve</button>
+                          <button onClick={() => { setProblemToAdjust(p); setShowAdjustModal(true); }} className="px-2 py-1 bg-amber-500 text-white rounded-lg text-xs font-bold hover:bg-amber-600">Correction</button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -180,7 +197,7 @@ const ApproveProblem = ({ selectedScope }) => {
         <ProblemDetailsModal
           problem={activeProblem}
           onClose={() => setActiveProblem(null)}
-          actionConfig={actionConfig}
+          actionConfig={getActionConfig(activeProblem)}
         />
       )}
 

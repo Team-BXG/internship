@@ -24,7 +24,7 @@ export default function ZoneDashboard({ selectedZone }) {
     };
 
     // Fetch Beneficiaries
-    fetch('http://localhost:8000/api/beneficiaries')
+    fetch('http://localhost:8000/api/beneficiaries?approved_only=true')
       .then(res => res.json())
       .then(data => {
         const zoneBens = data.filter(b => matchesZoneStr(b.zone) || matchesZoneStr(b.zone_name));
@@ -34,7 +34,7 @@ export default function ZoneDashboard({ selectedZone }) {
       .catch(console.error);
 
     // Fetch Demands
-    fetch('http://localhost:8000/api/demands')
+    fetch('http://localhost:8000/api/demands?approved_only=true')
       .then(res => res.json())
       .then(data => {
         const zoneDemands = data.filter(d => matchesZoneStr(d.zone) || matchesZoneStr(d.zone_name));
@@ -43,7 +43,7 @@ export default function ZoneDashboard({ selectedZone }) {
       .catch(console.error);
 
     // Fetch Problems
-    fetch('http://localhost:8000/api/problems')
+    fetch('http://localhost:8000/api/problems?approved_only=true')
       .then(res => res.json())
       .then(data => {
         const zoneProblems = data.filter(p => matchesZoneStr(p.zone) || matchesZoneStr(p.zone_name));

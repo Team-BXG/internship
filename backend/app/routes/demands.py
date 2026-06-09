@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import schemas, models
 from app.routes.activity_logs import log_activity
+from app.validators import validate_demand_payload
 
 router = APIRouter(prefix="/api/demands", tags=["demands"])
 
@@ -11,7 +12,7 @@ def get_demands(status: str = None, zone: str = None, woreda: str = None, suppli
     query = db.query(models.Demand)
     if approved_only:
         query = query.filter(models.Demand.status.in_(["Approved", "Assigned", "Beneficiary"]))
-    elif status:
+    if status:
         query = query.filter(models.Demand.status == status)
     if supplier_id is not None:
         query = query.filter(models.Demand.assigned_supplier_id == supplier_id)
@@ -68,6 +69,7 @@ def update_demand(id: int, payload: dict, db: Session = Depends(get_db)):
 
 @router.post("")
 def create_demand(d: schemas.DemandCreate, db: Session = Depends(get_db)):
+    validate_demand_payload(d)
     woreda_id = d.woreda_id
     if not woreda_id and d.woreda:
         woreda_row = db.query(models.Woreda).filter(models.Woreda.name == d.woreda).first()
@@ -149,7 +151,7 @@ def assign_demand_supplier(id: int, supplier_update: schemas.DemandAssignSupplie
     return {"message": "Supplier assigned successfully"}
 
 @router.get("/statistics")
-def get_demand_statistics(zone: str = None, db: Session = Depends(get_db)):
+def get_demand_statistics(zone: str = None, approved_only: bool = True, db: Session = Depends(get_db)):
     from sqlalchemy import func
     query = db.query(
         models.Zone.name.label('zone_name'),
@@ -160,6 +162,9 @@ def get_demand_statistics(zone: str = None, db: Session = Depends(get_db)):
         func.count(models.Demand.id).label('count')
     ).join(models.Woreda, models.Demand.woreda_id == models.Woreda.id)\
      .join(models.Zone, models.Woreda.zone_id == models.Zone.id)
+
+    if approved_only:
+        query = query.filter(models.Demand.status.in_(["Approved", "Assigned", "Beneficiary"]))
 
     if zone:
         query = query.filter(models.Zone.name == zone)

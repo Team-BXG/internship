@@ -70,8 +70,8 @@ const ChangeStatus = ({ selectedScope }) => {
     ...problems.map(p => ({ ...p, submissionType: 'problem', full_name: p.beneficiary_name }))
   ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-  const approvedStatuses = ['Approved', 'Assigned', 'Approved for Zone Review', 'Zone Approved', 'Pending Zone', 'Assigned to Supplier'];
-  const correctionStatuses = ['Correction Needed', 'Needs Adjustment', 'Adjustment Needed', 'Rejected'];
+  const approvedStatuses = ['Approved', 'Assigned', 'Beneficiary', 'Seen', 'Fixed'];
+  const correctionStatuses = ['Correction Needed', 'Rejected'];
 
   const getFilteredSubmissions = () => {
     let filtered = allSubmissions;

@@ -4,7 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import Sidebar from './pages/head-expert/Dashboard/components/Sidebar';
 import Header from './pages/head-expert/Dashboard/components/Header';
 import DashboardCards from './pages/head-expert/Dashboard/DashboardCards';
-import { DistributionTrendChart, EquipmentTypeChart, BeneficiariesBarChart, SupplierPerformanceChart, FunctionalStatusChart } from './pages/head-expert/Dashboard/Charts';
+import { DistributionTrendChart, EquipmentTypeChart, FunctionalStatusChart } from './pages/head-expert/Dashboard/Charts';
 import ActivityLog from './pages/head-expert/Dashboard/ActivityLog';
 import AreaAssignment from './pages/head-expert/Area assignment/AreaAssignment';
 import SupplierManagement from './pages/head-expert/Supplier management';
@@ -23,9 +23,21 @@ function HeadExpertApp() {
   const [loading, setLoading] = useState(true);
   const [activeMenu, setActiveMenu] = useState("Dashboard");
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [filterGender, setFilterGender] = useState('');
+  const [filterEquipment, setFilterEquipment] = useState('');
+  const [filterGuarantee, setFilterGuarantee] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/dashboard')
+    if (activeMenu !== 'Dashboard') return;
+    let url = 'http://localhost:8000/api/dashboard?';
+    const params = new URLSearchParams();
+    if (filterGender) params.set('gender', filterGender);
+    if (filterEquipment) params.set('equipment_type', filterEquipment);
+    if (filterGuarantee) params.set('guarantee', filterGuarantee);
+    url += params.toString();
+
+    setLoading(true);
+    fetch(url)
       .then(res => res.json())
       .then(data => {
         setData(data);
@@ -35,7 +47,7 @@ function HeadExpertApp() {
         console.error("Error fetching dashboard data:", err);
         setLoading(false);
       });
-  }, []);
+  }, [activeMenu, filterGender, filterEquipment, filterGuarantee]);
 
   return (
     <div className="flex bg-slate-100 min-h-screen">
@@ -57,7 +69,16 @@ function HeadExpertApp() {
               <div className="flex h-full items-center justify-center font-bold text-slate-400">Loading Dashboard...</div>
             ) : data ? (
               <div className="max-w-7xl mx-auto">
-                <DashboardCards stats={data.stats} />
+                <DashboardCards
+                  stats={data.stats}
+                  filterGender={filterGender}
+                  setFilterGender={setFilterGender}
+                  filterEquipment={filterEquipment}
+                  setFilterEquipment={setFilterEquipment}
+                  filterGuarantee={filterGuarantee}
+                  setFilterGuarantee={setFilterGuarantee}
+                  equipmentOptions={data.equipment_options || []}
+                />
 
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
                   <div className="xl:col-span-2">
@@ -69,7 +90,6 @@ function HeadExpertApp() {
                 </div>
 
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-                  <SupplierPerformanceChart data={data.supplier_performance} />
                   <FunctionalStatusChart data={data.functional_status} />
                 </div>
 

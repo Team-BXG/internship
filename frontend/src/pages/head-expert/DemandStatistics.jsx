@@ -31,7 +31,7 @@ const DemandStatistics = () => {
     try {
       setLoading(true);
       const [demandsRes, suppliersRes] = await Promise.all([
-        fetch('http://localhost:8000/api/demands'),
+        fetch('http://localhost:8000/api/demands?approved_only=true'),
         fetch('http://localhost:8000/api/suppliers')
       ]);
       

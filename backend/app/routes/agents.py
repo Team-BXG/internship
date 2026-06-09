@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
 from app import schemas, models
+from app.validators import validate_agent_payload
 
 router = APIRouter(prefix="/api/agents", tags=["agents"])
 
@@ -18,6 +19,7 @@ def get_agents(db: Session = Depends(get_db)):
 
 @router.post("", response_model=schemas.AgentResponse)
 def create_agent(agent: schemas.AgentCreate, db: Session = Depends(get_db)):
+    validate_agent_payload(agent)
     db_agent = models.Agent(
         name=agent.name,
         email=agent.email,

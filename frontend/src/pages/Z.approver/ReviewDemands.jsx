@@ -10,10 +10,8 @@ const ReviewDemands = ({ selectedZone }) => {
   const [demands, setDemands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDemand, setSelectedDemand] = useState(null);
-  const [showAdjustModal, setShowAdjustModal] = useState(false);
-  const [adjustmentComment, setAdjustmentComment] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('Pending Zone Review');
+  const [statusFilter, setStatusFilter] = useState('Approved');
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
@@ -23,7 +21,8 @@ const ReviewDemands = ({ selectedZone }) => {
   const fetchDemands = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:8000/api/demands?status=${statusFilter}&zone=${selectedZone}`);
+      const statusParam = statusFilter ? `&status=${encodeURIComponent(statusFilter)}` : '';
+      const res = await fetch(`http://localhost:8000/api/demands?approved_only=true&zone=${encodeURIComponent(selectedZone)}${statusParam}`);
       if (res.ok) {
         const data = await res.json();
         setDemands(data);
@@ -32,53 +31,6 @@ const ReviewDemands = ({ selectedZone }) => {
       console.error('Error fetching demands:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleApprove = async (demandId) => {
-    try {
-      const res = await fetch(`http://localhost:8000/api/demands/${demandId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Approved' })
-      });
-
-      if (res.ok) {
-        toast.success("Demand fully approved");
-        fetchDemands();
-      }
-    } catch (error) {
-      console.error('Error approving demand:', error);
-      toast.error("Error approving demand");
-    }
-  };
-
-  const handleRequestAdjustment = async () => {
-    if (!adjustmentComment.trim()) {
-      toast.error("Please provide adjustment comments");
-      return;
-    }
-
-    try {
-      const res = await fetch(`http://localhost:8000/api/demands/${selectedDemand.id}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: 'Correction Needed',
-          details_json: JSON.stringify({ adjustment_comments: adjustmentComment })
-        })
-      });
-
-      if (res.ok) {
-        toast.error("Adjustment request sent to encoder");
-        setShowAdjustModal(false);
-        setAdjustmentComment('');
-        setSelectedDemand(null);
-        fetchDemands();
-      }
-    } catch (error) {
-      console.error('Error requesting adjustment:', error);
-      toast.error("Error requesting adjustment");
     }
   };
 
@@ -140,7 +92,7 @@ const ReviewDemands = ({ selectedZone }) => {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-2xl font-bold text-slate-800">Review Demands</h3>
-          <p className="text-slate-500">Review and approve solar equipment demand requests</p>
+          <p className="text-slate-500">View woreda-approved solar equipment demand requests</p>
         </div>
       </div>
 
@@ -164,10 +116,9 @@ const ReviewDemands = ({ selectedZone }) => {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="Pending Zone Review">Pending Review</option>
             <option value="Approved">Approved</option>
-            <option value="Correction Needed">Correction Needed</option>
             <option value="Assigned">Assigned</option>
+            <option value="Beneficiary">Beneficiary</option>
             <option value="">All Status</option>
           </select>
           <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -190,9 +141,9 @@ const ReviewDemands = ({ selectedZone }) => {
             </div>
             <div>
               <p className="text-2xl font-bold text-amber-900">
-                {demands.filter(d => d.status === 'Pending Zone Review').length}
+                {demands.filter(d => d.status === 'Approved').length}
               </p>
-              <p className="text-xs text-amber-600">Pending Review</p>
+              <p className="text-xs text-amber-600">Approved</p>
             </div>
           </div>
         </div>
@@ -204,9 +155,9 @@ const ReviewDemands = ({ selectedZone }) => {
             </div>
             <div>
               <p className="text-2xl font-bold text-emerald-900">
-                {demands.filter(d => d.status === 'Approved').length}
+                {demands.filter(d => d.status === 'Assigned').length}
               </p>
-              <p className="text-xs text-emerald-600">Approved</p>
+              <p className="text-xs text-emerald-600">Assigned</p>
             </div>
           </div>
         </div>
@@ -218,9 +169,9 @@ const ReviewDemands = ({ selectedZone }) => {
             </div>
             <div>
               <p className="text-2xl font-bold text-red-900">
-                {demands.filter(d => d.status === 'Correction Needed').length}
+                {demands.filter(d => d.status === 'Beneficiary').length}
               </p>
-              <p className="text-xs text-red-600">Correction Needed</p>
+              <p className="text-xs text-red-600">Beneficiary Registered</p>
             </div>
           </div>
         </div>
@@ -290,28 +241,6 @@ const ReviewDemands = ({ selectedZone }) => {
                       <Eye className="w-4 h-4" />
                     </button>
 
-                    {demand.status === 'Pending Zone Review' && (
-                      <>
-                        <button
-                          onClick={() => handleApprove(demand.id)}
-                          className="px-3 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors flex items-center gap-2"
-                        >
-                          <CheckCircle2 className="w-4 h-4" />
-                          Approve
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            setSelectedDemand(demand);
-                            setShowAdjustModal(true);
-                          }}
-                          className="px-3 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors flex items-center gap-2"
-                        >
-                          <AlertTriangle className="w-4 h-4" />
-                          Request Adjustment
-                        </button>
-                      </>
-                    )}
                   </div>
                 </div>
               </div>
@@ -398,66 +327,6 @@ const ReviewDemands = ({ selectedZone }) => {
         </div>
       )}
 
-      {/* Adjustment Modal */}
-      {showAdjustModal && selectedDemand && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-lg w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-xl font-bold text-slate-800">Request Adjustment</h4>
-              <button
-                onClick={() => setShowAdjustModal(false)}
-                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-              >
-                <XCircle className="w-5 h-5 text-slate-500" />
-              </button>
-            </div>
-
-            <div className="mb-4">
-              <p className="text-sm text-slate-600 mb-2">
-                Request adjustment for: <span className="font-semibold">{selectedDemand.full_name}</span>
-              </p>
-              <p className="text-sm text-slate-500">
-                Please specify what needs to be adjusted in the demand request.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-semibold text-slate-700 block mb-2">
-                  Adjustment Comments *
-                </label>
-                <textarea
-                  className="w-full p-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                  rows={4}
-                  placeholder="Describe what needs to be adjusted..."
-                  value={adjustmentComment}
-                  onChange={(e) => setAdjustmentComment(e.target.value)}
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={handleRequestAdjustment}
-                  className="flex-1 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Send className="w-4 h-4" />
-                  Send Adjustment Request
-                </button>
-                <button
-                  onClick={() => {
-                    setShowAdjustModal(false);
-                    setAdjustmentComment('');
-                    setSelectedDemand(null);
-                  }}
-                  className="flex-1 px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

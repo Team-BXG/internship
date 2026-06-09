@@ -1,6 +1,7 @@
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import { sanitizeText } from '../../../utils/formHelpers';
 
 export default function RegisterContractor({ onCancel, onSuccess }) {
   const [formData, setFormData] = useState({
@@ -14,7 +15,10 @@ export default function RegisterContractor({ onCancel, onSuccess }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const sanitized = ['name', 'contact_person', 'address'].includes(name)
+      ? sanitizeText(value, name === 'address' ? 60 : 30)
+      : value;
+    setFormData(prev => ({ ...prev, [name]: sanitized }));
   };
 
   const handleSubmit = (e) => {

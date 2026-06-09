@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import schemas, models
 from app.routes.activity_logs import log_activity
+from app.validators import validate_problem_payload
 
 router = APIRouter(prefix="/api/problems", tags=["problems"])
 
@@ -11,10 +12,17 @@ def get_problems(status: str = None, supplier: str = None, zone: str = None, wor
     query = db.query(models.Problem)
     if approved_only:
         query = query.filter(models.Problem.status.in_(["Approved", "Seen", "Fixed"]))
-    elif status:
+    if status:
         query = query.filter(models.Problem.status == status)
     if supplier:
-        query = query.filter(models.Problem.supplier == supplier)
+        if str(supplier).isdigit():
+            supplier_row = db.query(models.Supplier).filter(models.Supplier.id == int(supplier)).first()
+            if supplier_row:
+                query = query.filter(models.Problem.supplier == supplier_row.name)
+            else:
+                query = query.filter(models.Problem.supplier == supplier)
+        else:
+            query = query.filter(models.Problem.supplier == supplier)
     if woreda:
         query = query.join(models.Woreda).filter(models.Woreda.name == woreda)
     elif zone:
@@ -51,6 +59,7 @@ def get_problems(status: str = None, supplier: str = None, zone: str = None, wor
 
 @router.post("")
 def create_problem(p: schemas.ProblemCreate, db: Session = Depends(get_db)):
+    validate_problem_payload(p)
     # Auto-lookup supplier from beneficiary if not provided
     supplier_name = p.supplier
     if not supplier_name:

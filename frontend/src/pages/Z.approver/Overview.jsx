@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Truck, Wrench, Users, Zap, MapPin, Clock, CheckCircle, AlertCircle } from "lucide-react";
-import { DistributionTrendChart, EquipmentTypeChart, BeneficiariesBarChart, SupplierPerformanceChart, FunctionalStatusChart } from '../head-expert/Dashboard/Charts';
+import { DistributionTrendChart, EquipmentTypeChart, FunctionalStatusChart } from '../head-expert/Dashboard/Charts';
 
 export default function Overview({ selectedZone }) {
   const [data, setData] = useState(null);
@@ -9,6 +9,8 @@ export default function Overview({ selectedZone }) {
   
   const [filterWoreda, setFilterWoreda] = useState("");
   const [filterGender, setFilterGender] = useState("");
+  const [filterEquipment, setFilterEquipment] = useState("");
+  const [filterGuarantee, setFilterGuarantee] = useState("");
 
   useEffect(() => {
      // Fetch woredas for this zone
@@ -31,6 +33,8 @@ export default function Overview({ selectedZone }) {
     let url = `http://localhost:8000/api/dashboard?zone=${encodeURIComponent(selectedZone)}`;
     if (filterWoreda) url += `&woreda=${encodeURIComponent(filterWoreda)}`;
     if (filterGender) url += `&gender=${encodeURIComponent(filterGender)}`;
+    if (filterEquipment) url += `&equipment_type=${encodeURIComponent(filterEquipment)}`;
+    if (filterGuarantee) url += `&guarantee=${encodeURIComponent(filterGuarantee)}`;
 
     setLoading(true);
     fetch(url)
@@ -43,7 +47,7 @@ export default function Overview({ selectedZone }) {
         console.error(err);
         setLoading(false);
       });
-  }, [selectedZone, filterWoreda, filterGender]);
+  }, [selectedZone, filterWoreda, filterGender, filterEquipment, filterGuarantee]);
 
   if (loading) return <div className="flex h-full items-center justify-center font-bold text-slate-400">Loading Dashboard...</div>;
   if (!data || data.error) return <div className="flex h-full items-center justify-center font-bold text-red-500">Error loading data.</div>;
@@ -81,6 +85,17 @@ export default function Overview({ selectedZone }) {
             <option value="Male">Male</option>
             <option value="Female">Female</option>
           </select>
+
+          <select value={filterEquipment} onChange={e => setFilterEquipment(e.target.value)} className="bg-white border border-slate-200 text-slate-600 text-xs font-semibold rounded-[12px] px-3 py-2 outline-none hover:border-blue-300 hover:text-blue-600 focus:ring-4 focus:ring-blue-500/10 transition-all cursor-pointer shadow-sm">
+            <option value="">All Equipment Types</option>
+            {(data?.equipment_options || []).map(eq => <option key={eq} value={eq}>{eq}</option>)}
+          </select>
+
+          <select value={filterGuarantee} onChange={e => setFilterGuarantee(e.target.value)} className="bg-white border border-slate-200 text-slate-600 text-xs font-semibold rounded-[12px] px-3 py-2 outline-none hover:border-blue-300 hover:text-blue-600 focus:ring-4 focus:ring-blue-500/10 transition-all cursor-pointer shadow-sm">
+            <option value="">All Guarantee</option>
+            <option value="Guarantee">Guarantee</option>
+            <option value="No Guarantee">No Guarantee</option>
+          </select>
         </div>
       </div>
 
@@ -116,9 +131,7 @@ export default function Overview({ selectedZone }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
-        <BeneficiariesBarChart data={data.beneficiaries_by_zone} />
-        <SupplierPerformanceChart data={data.supplier_performance} />
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
         <FunctionalStatusChart data={data.functional_status} />
       </div>
     </div>

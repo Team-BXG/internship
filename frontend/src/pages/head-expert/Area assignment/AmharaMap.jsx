@@ -39,23 +39,23 @@ const redIcon = new L.Icon({
   shadowUrl, iconSize, iconAnchor, popupAnchor, shadowSize
 });
 
-function getMarkerIcon(problemUrgency) {
-  if (!problemUrgency) return greenIcon;
-  const urgency = problemUrgency.toLowerCase();
-  if (urgency === 'high' || urgency === 'critical') return redIcon;
-  if (urgency === 'medium') return orangeIcon;
-  return yellowIcon;
+function getMarkerIcon(problemLevel) {
+  if (!problemLevel || problemLevel === 'Functional') return greenIcon;
+  if (problemLevel.includes('Partially')) return yellowIcon;
+  if (problemLevel.includes('Not functional')) return redIcon;
+  if (problemLevel.includes('Abandoned')) return orangeIcon;
+  return greenIcon;
 }
 
 // Custom DivIcon for cluster/representative badges (zoomed out mode)
-const createClusterIcon = (count, highestUrgency) => {
+const createClusterIcon = (count, worstLevel) => {
   let colorClass = 'bg-emerald-500 border-emerald-200 text-white hover:bg-emerald-600';
-  if (highestUrgency === 'High' || highestUrgency === 'Critical') {
+  if (worstLevel?.includes('Not functional')) {
     colorClass = 'bg-rose-500 border-rose-200 text-white animate-pulse hover:bg-rose-600';
-  } else if (highestUrgency === 'Medium') {
+  } else if (worstLevel?.includes('Abandoned')) {
+    colorClass = 'bg-slate-500 border-slate-300 text-white hover:bg-slate-600';
+  } else if (worstLevel?.includes('Partially')) {
     colorClass = 'bg-amber-500 border-amber-200 text-white hover:bg-amber-600';
-  } else if (highestUrgency === 'Low') {
-    colorClass = 'bg-yellow-400 border-yellow-200 text-slate-800 hover:bg-yellow-500';
   }
 
   return L.divIcon({
@@ -112,18 +112,21 @@ export default function AmharaMap({ beneficiaries, onSelectBeneficiary }) {
     return Object.values(groups).map((group, idx) => {
       const count = group.items.length;
       
-      // Determine highest urgency problem in this woreda group
-      let highestUrgency = null;
+      let worstLevel = 'Functional';
+      const rank = (level) => {
+        if (!level || level === 'Functional') return 0;
+        if (level.includes('Partially')) return 1;
+        if (level.includes('Abandoned')) return 2;
+        if (level.includes('Not functional')) return 3;
+        return 0;
+      };
       group.items.forEach(item => {
-        if (!item.problem_urgency) return;
-        const urg = item.problem_urgency;
-        if (urg === 'High' || urg === 'Critical') highestUrgency = 'High';
-        else if (urg === 'Medium' && highestUrgency !== 'High') highestUrgency = 'Medium';
-        else if (urg === 'Low' && !highestUrgency) highestUrgency = 'Low';
+        const level = item.problem_level || item.problem_urgency || 'Functional';
+        if (rank(level) > rank(worstLevel)) worstLevel = level;
       });
 
       const position = [group.latitude, group.longitude];
-      const clusterIcon = createClusterIcon(count, highestUrgency);
+      const clusterIcon = createClusterIcon(count, worstLevel);
 
       return (
         <Marker 
@@ -164,7 +167,7 @@ export default function AmharaMap({ beneficiaries, onSelectBeneficiary }) {
       // Apply microscopic stable offset so overlapping coordinates spread out beautifully
       const [latOffset, lngOffset] = getStableOffset(b.id || index + 1);
       const position = [b.latitude + latOffset, b.longitude + lngOffset];
-      const icon = getMarkerIcon(b.problem_urgency);
+      const icon = getMarkerIcon(b.problem_level || b.problem_urgency);
 
       return (
         <Marker 
@@ -183,12 +186,13 @@ export default function AmharaMap({ beneficiaries, onSelectBeneficiary }) {
             <div className="text-xs min-w-[160px]">
               <strong className="block text-slate-800 text-[13px] font-bold border-b pb-1 mb-1 flex items-center justify-between">
                 <span>{b.full_name}</span>
-                {b.problem_urgency && (
+                {(b.problem_level || b.problem_urgency) && (b.problem_level || b.problem_urgency) !== 'Functional' && (
                   <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold text-white ${
-                    b.problem_urgency.toLowerCase() === 'high' || b.problem_urgency.toLowerCase() === 'critical' ? 'bg-rose-500' :
-                    b.problem_urgency.toLowerCase() === 'medium' ? 'bg-amber-500' : 'bg-yellow-500'
+                    (b.problem_level || '').includes('Not functional') ? 'bg-rose-500' :
+                    (b.problem_level || '').includes('Abandoned') ? 'bg-slate-500' :
+                    (b.problem_level || '').includes('Partially') ? 'bg-amber-500' : 'bg-yellow-500'
                   }`}>
-                    {b.problem_urgency} Issue
+                    {(b.problem_level || b.problem_urgency).slice(0, 12)}...
                   </span>
                 )}
               </strong>
@@ -236,19 +240,19 @@ export default function AmharaMap({ beneficiaries, onSelectBeneficiary }) {
         <div className="flex flex-wrap items-center gap-6">
           <div className="flex items-center gap-2">
             <CheckCircle size={16} className="text-emerald-500" />
-            <span className="text-xs font-bold text-slate-700">Healthy / Functional (Emerald)</span>
+            <span className="text-xs font-bold text-slate-700">Functional (Green)</span>
           </div>
           <div className="flex items-center gap-2">
             <AlertTriangle size={16} className="text-yellow-500" />
-            <span className="text-xs font-bold text-slate-700">Low Urgency Problem (Yellow)</span>
+            <span className="text-xs font-bold text-slate-700">Partially Functional (Yellow)</span>
           </div>
           <div className="flex items-center gap-2">
             <AlertTriangle size={16} className="text-amber-500" />
-            <span className="text-xs font-bold text-slate-700">Medium Urgency Problem (Amber)</span>
+            <span className="text-xs font-bold text-slate-700">Abandoned / No Longer Exists (Orange)</span>
           </div>
           <div className="flex items-center gap-2">
             <ShieldAlert size={16} className="text-rose-500 stroke-[2.5] animate-pulse" />
-            <span className="text-xs font-bold text-slate-700">Critical / High Severity Problem (Rose)</span>
+            <span className="text-xs font-bold text-slate-700">Not Functional (Red)</span>
           </div>
         </div>
       </div>

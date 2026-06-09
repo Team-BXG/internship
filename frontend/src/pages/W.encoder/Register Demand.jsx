@@ -6,6 +6,7 @@ import {
   UploadCloud
 } from 'lucide-react';
 import { validateName, validatePhone, validateNationalId } from '../../utils/validation';
+import { sanitizeText, sanitizeNationalId } from '../../utils/formHelpers';
 
 const STEPS = [
   { id: 1, label: 'Personal Info', icon: User },
@@ -139,7 +140,10 @@ const RegisterDemand = ({ selectedScope }) => {
   };
 
   const updateFormData = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    let sanitized = value;
+    if (['fullName', 'kebele', 'village'].includes(field)) sanitized = sanitizeText(value, 30);
+    if (field === 'nationalId') sanitized = sanitizeNationalId(value);
+    setFormData(prev => ({ ...prev, [field]: sanitized }));
     setErrors(prev => ({ ...prev, [field]: undefined }));
   };
 

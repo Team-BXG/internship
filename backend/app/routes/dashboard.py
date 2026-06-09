@@ -7,5 +7,12 @@ from app.services import dashboard_service
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 @router.get("", response_model=schemas.DashboardDataResponse)
-def get_dashboard_data(zone: str = None, woreda: str = None, gender: str = None, db: Session = Depends(get_db)):
-    return dashboard_service.get_dashboard_data(db, zone, woreda, gender)
+def get_dashboard_data(
+    zone: str = None,
+    woreda: str = None,
+    gender: str = None,
+    equipment_type: str = None,
+    guarantee: str = None,
+    db: Session = Depends(get_db),
+):
+    return dashboard_service.get_dashboard_data(db, zone, woreda, gender, equipment_type, guarantee)

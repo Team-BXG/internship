@@ -37,10 +37,10 @@ const ProblemHandlings = ({ selectedScope }) => {
     }
 
     try {
-      const res = await fetch(`http://localhost:8000/api/problems/${activeProblem.id}/status`, {
+      const res = await fetch(`http://localhost:8000/api/problems/${activeProblem.id}/fix`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Fixed', fixed_date: new Date(fixedDate).toISOString(), submitted_by: 'Woreda Encoder' })
+        body: JSON.stringify({ fixed_date: fixedDate, submitted_by: 'Woreda Encoder' })
       });
       if (res.ok) {
         toast.success("Problem marked as Fixed!");
@@ -57,10 +57,10 @@ const ProblemHandlings = ({ selectedScope }) => {
   };
 
   const getStatusStyle = (status) => {
-    if (status === 'Seen') return 'text-blue-600 bg-blue-50 border-blue-200';
-    if (status === 'Pending Woreda') return 'text-red-600 bg-red-50 border-red-200';
+    if (status === 'Open') return 'text-amber-600 bg-amber-50 border-amber-200';
+    if (status === 'Approved') return 'text-blue-600 bg-blue-50 border-blue-200';
+    if (status === 'Seen') return 'text-purple-600 bg-purple-50 border-purple-200';
     if (status === 'Correction Needed') return 'text-rose-600 bg-rose-50 border-rose-200';
-    if (status === 'Under Repair') return 'text-orange-600 bg-orange-50 border-orange-200';
     if (status === 'Fixed') return 'text-emerald-600 bg-emerald-50 border-emerald-200';
     return 'text-slate-600 bg-slate-50 border-slate-200';
   };
@@ -160,12 +160,12 @@ const ProblemHandlings = ({ selectedScope }) => {
                     </span>
                   </td>
                   <td className="p-4 text-center">
-                    {p.status !== 'Fixed' && (
+                    {p.status === 'Seen' && (
                       <button
                         onClick={() => setActiveProblem(p)}
                         className="px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 font-bold rounded-lg transition-colors inline-flex items-center gap-2"
                       >
-                        <CheckCircle2 className="w-4 h-4" /> Finalize Fix
+                        <CheckCircle2 className="w-4 h-4" /> Final Fix
                       </button>
                     )}
                   </td>

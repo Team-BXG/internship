@@ -10,30 +10,14 @@ const ProblemApproval = ({ selectedZone }) => {
 
   useEffect(() => {
     fetchProblems();
-  }, []);
+  }, [selectedZone]);
 
   const fetchProblems = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/problems`);
+      const res = await fetch(`http://localhost:8000/api/problems?approved_only=true&zone=${encodeURIComponent(selectedZone)}`);
       const data = await res.json();
       if (Array.isArray(data)) {
         setProblems(data);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleStatusUpdate = async (problem, newStatus) => {
-    try {
-      const res = await fetch(`http://localhost:8000/api/problems/${problem.id}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
-      if (res.ok) {
-        setActiveProblem(null);
-        fetchProblems();
       }
     } catch (e) {
       console.error(e);
@@ -48,24 +32,25 @@ const ProblemApproval = ({ selectedZone }) => {
                       (p.zone && p.zone.toLowerCase().includes(selectedZone.toLowerCase())) || 
                       (p.zone_name && p.zone_name.toLowerCase().includes(selectedZone.toLowerCase())) ||
                       selectedZone.toLowerCase().includes(String(p.zone || '').toLowerCase());
-    const matchStatus = statusFilter === 'All Status' ? p.status === 'Approved' : p.status === statusFilter;
-    return matchSearch && matchZone && matchStatus && p.status === 'Approved';
+    const matchStatus = statusFilter === 'All Status' ? true : p.status === statusFilter;
+    return matchSearch && matchZone && matchStatus;
   });
 
   const uniqueStatuses = [...new Set(problems.map(p => p.status).filter(Boolean))];
 
   const stats = {
     total: filtered.length,
-    open: filtered.filter(p => p.status === 'Open' || p.status === 'Pending').length,
-    repair: filtered.filter(p => p.status === 'Under Repair').length,
-    resolved: filtered.filter(p => p.status === 'Resolved').length
+    approved: filtered.filter(p => p.status === 'Approved').length,
+    seen: filtered.filter(p => p.status === 'Seen').length,
+    fixed: filtered.filter(p => p.status === 'Fixed').length
   };
 
   const getStatusColor = (status) => {
-    if (status === 'Open' || status === 'Pending') return 'text-red-700 bg-red-50 border-red-200';
-    if (status === 'Under Repair') return 'text-amber-700 bg-amber-50 border-amber-200';
-    if (status === 'Acknowledged' || status === 'Approved') return 'text-blue-700 bg-blue-50 border-blue-200';
-    if (status === 'Resolved') return 'text-emerald-700 bg-emerald-50 border-emerald-200';
+    if (status === 'Open') return 'text-amber-700 bg-amber-50 border-amber-200';
+    if (status === 'Approved') return 'text-blue-700 bg-blue-50 border-blue-200';
+    if (status === 'Seen') return 'text-purple-700 bg-purple-50 border-purple-200';
+    if (status === 'Fixed') return 'text-emerald-700 bg-emerald-50 border-emerald-200';
+    if (status === 'Correction Needed') return 'text-red-700 bg-red-50 border-red-200';
     return 'text-slate-600 bg-slate-50 border-slate-200';
   };
 
@@ -74,8 +59,8 @@ const ProblemApproval = ({ selectedZone }) => {
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto">
       <div className="mb-8">
-        <h3 className="text-2xl font-bold text-slate-800">Equipment Issues</h3>
-        <p className="text-slate-500 mt-1">Review problem reports and maintenance statuses in {selectedZone}.</p>
+        <h3 className="text-2xl font-bold text-slate-800">Problem Review</h3>
+        <p className="text-slate-500 mt-1">View woreda-approved problem reports in {selectedZone}.</p>
       </div>
 
       <div className="grid grid-cols-4 gap-6 mb-8">
@@ -90,33 +75,33 @@ const ProblemApproval = ({ selectedZone }) => {
             </div>
           </div>
         </div>
-        <div className="bg-red-50 border border-red-100 p-6 rounded-2xl shadow-sm">
+        <div className="bg-blue-50 border border-blue-100 p-6 rounded-2xl shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-red-800 font-medium text-sm">Open Needs Action</p>
-              <h2 className="text-3xl font-bold text-red-600 mt-1">{stats.open}</h2>
+              <p className="text-blue-800 font-medium text-sm">Approved</p>
+              <h2 className="text-3xl font-bold text-blue-600 mt-1">{stats.approved}</h2>
             </div>
-            <div className="p-3 bg-red-100 rounded-xl">
-              <AlertOctagon className="w-6 h-6 text-red-600" />
+            <div className="p-3 bg-blue-100 rounded-xl">
+              <AlertOctagon className="w-6 h-6 text-blue-600" />
             </div>
           </div>
         </div>
-        <div className="bg-amber-50 border border-amber-100 p-6 rounded-2xl shadow-sm">
+        <div className="bg-purple-50 border border-purple-100 p-6 rounded-2xl shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-amber-800 font-medium text-sm">Under Repair</p>
-              <h2 className="text-3xl font-bold text-amber-600 mt-1">{stats.repair}</h2>
+              <p className="text-purple-800 font-medium text-sm">Seen</p>
+              <h2 className="text-3xl font-bold text-purple-600 mt-1">{stats.seen}</h2>
             </div>
-            <div className="p-3 bg-amber-100 rounded-xl">
-              <Wrench className="w-6 h-6 text-amber-600" />
+            <div className="p-3 bg-purple-100 rounded-xl">
+              <Wrench className="w-6 h-6 text-purple-600" />
             </div>
           </div>
         </div>
         <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-2xl shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-               <p className="text-emerald-800 font-medium text-sm">Resolved</p>
-               <h2 className="text-3xl font-bold text-emerald-600 mt-1">{stats.resolved}</h2>
+               <p className="text-emerald-800 font-medium text-sm">Fixed</p>
+               <h2 className="text-3xl font-bold text-emerald-600 mt-1">{stats.fixed}</h2>
             </div>
             <div className="p-3 bg-emerald-100 rounded-xl">
               <CheckCircle2 className="w-6 h-6 text-emerald-600" />

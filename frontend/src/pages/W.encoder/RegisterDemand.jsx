@@ -6,7 +6,14 @@ import {
   UploadCloud
 } from 'lucide-react';
 import { validateName, validatePhone, validateNationalId } from '../../utils/validation';
-import { sanitizeText, sanitizeNationalId } from '../../utils/formHelpers';
+import { sanitizeText, sanitizeNationalId, sanitizeNumber } from '../../utils/formHelpers';
+
+const fileToBase64 = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = error => reject(error);
+});
 
 const STEPS = [
   { id: 1, label: 'Personal Info', icon: User },
@@ -102,6 +109,12 @@ const RegisterDemand = ({ selectedScope }) => {
 
   const submitForm = async () => {
     try {
+      const dataToSave = { ...formData };
+      if (dataToSave.idPhoto instanceof File) {
+        dataToSave.idPhotoPreview = await fileToBase64(dataToSave.idPhoto);
+        dataToSave.idPhoto = dataToSave.idPhoto.name;
+      }
+
       const payload = {
         full_name: formData.fullName,
         national_id: formData.nationalId,
@@ -118,7 +131,7 @@ const RegisterDemand = ({ selectedScope }) => {
         solar_panel_type: formData.solarPanelType,
         watt_level: formData.wattLevel,
         status: 'Pending',
-        details_json: JSON.stringify(formData)
+        details_json: JSON.stringify(dataToSave)
       };
 
       const res = await fetch('http://localhost:8000/api/demands', {
@@ -132,16 +145,20 @@ const RegisterDemand = ({ selectedScope }) => {
         setFormData(INITIAL_FORM_STATE);
         setCurrentStep(1);
         clearDraft();
+      } else {
+        const errText = await res.text();
+        toast.error(`Server Error: ${errText || res.statusText}`);
       }
     } catch (e) {
       console.error(e);
-      toast.error("Error submitting demand registration");
+      toast.error("Network or internal error submitting demand registration");
     }
   };
 
   const updateFormData = (field, value) => {
     let sanitized = value;
-    if (['fullName', 'kebele', 'village'].includes(field)) sanitized = sanitizeText(value, 30);
+    if (['fullName', 'village'].includes(field)) sanitized = sanitizeText(value, 30);
+    if (field === 'kebele') sanitized = sanitizeNumber(value);
     if (field === 'nationalId') sanitized = sanitizeNationalId(value);
     setFormData(prev => ({ ...prev, [field]: sanitized }));
     setErrors(prev => ({ ...prev, [field]: undefined }));

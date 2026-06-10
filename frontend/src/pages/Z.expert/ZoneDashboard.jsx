@@ -65,25 +65,15 @@ export default function ZoneDashboard({ selectedZone }) {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto space-y-8">
-      {/* Header card with gradient background */}
-      <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-indigo-800 rounded-3xl p-8 text-white shadow-xl shadow-blue-500/10 relative overflow-hidden">
-        <div className="absolute right-0 top-0 w-64 h-64 bg-white/5 rounded-full -translate-y-20 translate-x-20 blur-2xl pointer-events-none" />
-        <div className="relative z-10">
-          <span className="bg-white/20 text-white font-bold text-xs uppercase tracking-wider px-3 py-1 rounded-full backdrop-blur-md">
-            Operational Overview
-          </span>
-          <h2 className="text-4xl font-extrabold mt-4 tracking-tight">Zone Expert Dashboard</h2>
-          <p className="text-blue-100 mt-2 font-medium text-lg">
-            Overseeing energy distribution and issues in the <span className="font-bold text-white underline decoration-emerald-400 decoration-2 underline-offset-4">{selectedZone}</span> area.
-          </p>
-        </div>
+      <div className="mb-8">
+        <h3 className="text-2xl font-bold text-slate-800">Zone Expert Dashboard</h3>
+        <p className="text-slate-500">Overseeing energy distribution and issues in the {selectedZone} area.</p>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
           { label: 'Beneficiaries', value: stats.beneficiaries, color: 'text-blue-600', bg: 'bg-blue-50/50 hover:bg-blue-50', icon: Users, iconBg: 'bg-blue-100 text-blue-600' },
-          { label: 'Total Demands', value: stats.demands, color: 'text-purple-600', bg: 'bg-purple-50/50 hover:bg-purple-50', icon: Package, iconBg: 'bg-purple-100 text-purple-600' },
           { label: 'Active Agents', value: stats.agents, color: 'text-emerald-600', bg: 'bg-emerald-50/50 hover:bg-emerald-50', icon: UserCheck, iconBg: 'bg-emerald-100 text-emerald-600' },
           { label: 'Reported Problems', value: stats.problems, color: 'text-rose-600', bg: 'bg-rose-50/50 hover:bg-rose-50', icon: AlertTriangle, iconBg: 'bg-rose-100 text-rose-600' }
         ].map((card, i) => (

@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.orm import relationship
 import datetime
 from app.database import Base
@@ -20,7 +21,7 @@ class Demand(Base):
     elderly_count = Column(String(50))
     solar_panel_type = Column(String(100))
     watt_level = Column(String(50))
-    details_json = Column(Text)
+    details_json = Column(LONGTEXT)
     status = Column(String(50), default='Pending')
     assigned_supplier_id = Column(Integer, ForeignKey("suppliers.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)

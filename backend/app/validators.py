@@ -74,13 +74,13 @@ def parse_details_json(details_json: str | None) -> dict:
 
 def validate_beneficiary_payload(data):
     data.full_name = validate_text(data.full_name, "Full name")
-    if data.national_id:
+    if data.national_id and data.national_id != '-':
         data.national_id = validate_national_id(data.national_id)
     if data.phone:
         data.phone = validate_phone(data.phone)
     if data.village:
         data.village = validate_text(data.village, "Village", required=False)
-    data.kebele = validate_text(data.kebele, "Kebele", max_len=30)
+    data.kebele = validate_non_negative_number(data.kebele, "Kebele", required=True)
     if data.status:
         validate_status(data.status, ["Pending", "Approved", "Correction Needed", "Assigned", "Beneficiary", "Rejected"])
     return data
@@ -88,13 +88,13 @@ def validate_beneficiary_payload(data):
 
 def validate_demand_payload(data):
     data.full_name = validate_text(data.full_name, "Full name")
-    if data.national_id:
+    if data.national_id and data.national_id != '-':
         data.national_id = validate_national_id(data.national_id)
     if data.phone:
         data.phone = validate_phone(data.phone)
     if data.village:
         data.village = validate_text(data.village, "Village", required=False)
-    data.kebele = validate_text(data.kebele, "Kebele", max_len=30)
+    data.kebele = validate_non_negative_number(data.kebele, "Kebele", required=True)
     if data.status:
         validate_status(data.status, ["Pending", "Approved", "Correction Needed", "Assigned", "Beneficiary", "Rejected"])
     return data
@@ -102,7 +102,7 @@ def validate_demand_payload(data):
 
 def validate_problem_payload(data):
     data.beneficiary_name = validate_text(data.beneficiary_name, "Beneficiary name")
-    data.kebele = validate_text(data.kebele, "Kebele", max_len=30)
+    data.kebele = validate_non_negative_number(data.kebele, "Kebele", required=True)
     if data.status:
         validate_status(data.status, ["Open", "Approved", "Seen", "Fixed", "Correction Needed"])
     allowed_levels = [

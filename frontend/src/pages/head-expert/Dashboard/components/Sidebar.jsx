@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Map, Wrench, FileText, UserCog, History, Settings, LogOut, ChevronLeft, Zap } from "lucide-react";
+import { LayoutDashboard, Users, Map, Wrench, FileText, UserCog, History, LogOut, ChevronLeft, Zap } from "lucide-react";
 import logo from '../../../../assets/logo.png';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,7 +12,6 @@ export default function Sidebar({ activeMenu, setActiveMenu, isCollapsed, setIsC
     { name: "Contractor Registration", icon: Wrench },
     { name: "Reports", icon: FileText },
     { name: "Problem Statistics", icon: History },
-    { name: "Settings", icon: Settings },
   ];
 
   const handleSignOut = () => {

@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.orm import relationship
 import datetime
 from app.database import Base
@@ -19,7 +20,7 @@ class Beneficiary(Base):
     equipment_type = Column(String(100))
     supplier = Column(String(255))
     status = Column(String(50), default='Pending')
-    details_json = Column(Text)
+    details_json = Column(LONGTEXT)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     woreda = relationship("Woreda")

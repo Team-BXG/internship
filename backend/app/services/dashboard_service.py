@@ -22,6 +22,7 @@ def get_dashboard_data(db: Session, zone: str = None, woreda: str = None, gender
         b_query = b_query.filter(models.Beneficiary.gender == gender)
     if equipment_type:
         b_query = b_query.filter(models.Beneficiary.equipment_type == equipment_type)
+        p_query = p_query.filter(models.Problem.equipment == equipment_type)
     if guarantee:
         b_query = b_query.filter(models.Beneficiary.details_json.like(f'%{guarantee}%'))
         
@@ -142,7 +143,7 @@ def get_dashboard_data(db: Session, zone: str = None, woreda: str = None, gender
         eq_query = eq_query.filter(models.Beneficiary.details_json.like(f'%{guarantee}%'))
         
     eq_results = eq_query.group_by(models.Beneficiary.equipment_type).all()
-    equipment_type = [
+    equipment_type_data = [
         {"name": row.name or "Unknown", "value": row.value}
         for row in eq_results if row.value > 0
     ]
@@ -192,13 +193,39 @@ def get_dashboard_data(db: Session, zone: str = None, woreda: str = None, gender
         if row[0]
     ]
         
+    # Service Type Distribution (using Beneficiary.survey_type)
+    srv_query = db.query(
+        models.Beneficiary.survey_type.label('name'),
+        func.count(models.Beneficiary.id).label('value')
+    ).select_from(models.Beneficiary).join(models.Woreda).join(models.Zone, models.Woreda.zone_id == models.Zone.id)\
+    .filter(models.Beneficiary.status == "Approved")
+    
+    if zone:
+        srv_query = srv_query.filter(models.Zone.name == zone)
+    if woreda:
+        srv_query = srv_query.filter(models.Woreda.name == woreda)
+    if gender:
+        srv_query = srv_query.filter(models.Beneficiary.gender == gender)
+    if equipment_type:
+        srv_query = srv_query.filter(models.Beneficiary.equipment_type == equipment_type)
+    if guarantee:
+        srv_query = srv_query.filter(models.Beneficiary.details_json.like(f'%{guarantee}%'))
+        
+    srv_results = srv_query.group_by(models.Beneficiary.survey_type).all()
+    
+    service_type_data = [
+        {"name": row.name or "Unknown", "value": row.value}
+        for row in srv_results if row.value > 0
+    ]
+
     return schemas.DashboardDataResponse(
         stats=schemas.DashboardStatsResponse(**stats),
         distribution_trend=[schemas.ChartDataPoint(**item) for item in distribution_trend],
-        equipment_type=[schemas.EquipmentTypeData(**item) for item in equipment_type],
+        equipment_type=[schemas.EquipmentTypeData(**item) for item in equipment_type_data],
         beneficiaries_by_zone=[schemas.BeneficiariesByZone(**item) for item in beneficiaries_by_zone],
         supplier_performance=[schemas.SupplierPerformance(**item) for item in supplier_performance],
         functional_status=[schemas.FunctionalStatusData(**item) for item in functional_status],
         recent_activity=[schemas.ActivityLogResponse.model_validate(log) for log in logs],
         equipment_options=equipment_options,
+        service_type=service_type_data,
     )

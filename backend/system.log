@@ -216,3 +216,8 @@
 =======
 2026-06-10 14:52:05,056 - sedms_app - INFO - Logtail Better Stack Integration Activated!
 >>>>>>> 61f3214 (fix: additional filter fixes)
+2026-06-10 19:49:22,883 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 19:49:25,505 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 20:10:50,192 - sedms_app - INFO - {"action": "Password Reset", "user": "SouthGondarZA", "role": "Zone Approver", "woreda": "N/A", "zone": "N/A", "details": "Reset password for employee AwiZoneZA", "status": "SUCCESS", "timestamp": "2026-06-10T17:10:50.192792"}
+2026-06-10 20:11:52,618 - sedms_app - INFO - {"action": "Password Changed", "user": "AwiZoneZA", "role": "Zone Approver", "woreda": "N/A", "zone": "N/A", "details": "AwiZoneZA changed their initial password", "status": "SUCCESS", "timestamp": "2026-06-10T17:11:52.617886"}
+2026-06-10 20:29:24,726 - sedms_app - INFO - Logtail Better Stack Integration Activated!

@@ -166,3 +166,35 @@ def refresh_token(req: RefreshRequest):
             detail=str(e),
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+class SupplierPasswordChangeRequest(BaseModel):
+    supplier_id: int
+    current_password: str
+    new_password: str
+
+@router.post("/supplier/change-password")
+def change_supplier_password(req: SupplierPasswordChangeRequest, db: Session = Depends(get_db)):
+    from app.models.supplier import Supplier
+    from app.security import verify_password
+    
+    supplier = db.query(Supplier).filter(Supplier.id == req.supplier_id).first()
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+        
+    is_valid_pwd = False
+    if supplier.password == req.current_password:
+        is_valid_pwd = True
+    else:
+        try:
+            if verify_password(req.current_password, supplier.password):
+                is_valid_pwd = True
+        except Exception:
+            pass
+            
+    if not is_valid_pwd:
+        raise HTTPException(status_code=400, detail="Incorrect current password")
+        
+    supplier.password = req.new_password
+    db.commit()
+    return {"message": "Password changed successfully"}
+

@@ -292,13 +292,7 @@ export default function SuperAdminDashboard() {
             <h2 className="text-2xl font-bold text-slate-800 capitalize">{activeMenu.replace('-', ' ')}</h2>
             <p className="text-sm text-slate-500">Manage your enterprise system configurations.</p>
           </div>
-          {activeMenu === 'employees' && (
-            <button 
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl transition-colors shadow-lg shadow-blue-500/30 font-semibold text-sm">
-              <Plus className="w-5 h-5" /> Add Employee
-            </button>
-          )}
+          {/* Add Employee button removed */}
         </header>
 
         {activeMenu === 'overview' && (

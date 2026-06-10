@@ -48,16 +48,16 @@ export default function DashboardCards({ stats, filterGender, setFilterGender, f
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         {cardData.map((stat, i) => (
-            <div key={i} className="group bg-white p-6 rounded-[24px] shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 hover:border-slate-200 transition-all duration-400 ease-out relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-slate-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-bl-[100px] pointer-events-none -z-0"></div>
-              <div className="relative z-10 flex justify-between items-start mb-4">
-                <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center ${stat.colors} group-hover:scale-110 transition-transform duration-300 ease-in-out`}>
-                  <stat.icon className="w-6 h-6 stroke-[2.5]" />
-                </div>
+          <div key={i} className="group bg-white p-6 rounded-[24px] shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 hover:border-slate-200 transition-all duration-400 ease-out relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-slate-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-bl-[100px] pointer-events-none -z-0"></div>
+            <div className="relative z-10 flex justify-between items-start mb-4">
+              <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center ${stat.colors} group-hover:scale-110 transition-transform duration-300 ease-in-out`}>
+                <stat.icon className="w-6 h-6 stroke-[2.5]" />
               </div>
-              <h2 className="relative z-10 text-[32px] font-black text-slate-800 tracking-tight leading-none mb-1">{stat.value?.toLocaleString() || '0'}</h2>
-              <p className="relative z-10 text-[12px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
             </div>
+            <h2 className="relative z-10 text-[32px] font-black text-slate-800 tracking-tight leading-none mb-1">{stat.value?.toLocaleString() || '0'}</h2>
+            <p className="relative z-10 text-[12px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
+          </div>
         ))}
       </div>
     </div>

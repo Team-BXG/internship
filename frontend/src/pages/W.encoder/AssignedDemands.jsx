@@ -3,7 +3,7 @@ import {
   User, CheckCircle2, AlertTriangle, RefreshCw, 
   Eye, ArrowRight, Clock, MapPin, Zap, Download
 } from 'lucide-react';
-import RegisterBeneficiary from './Register Beneficiary';
+import RegisterBeneficiary from './RegisterBeneficiary';
 
 const AssignedDemands = ({ selectedScope }) => {
   const [assignedDemands, setAssignedDemands] = useState([]);

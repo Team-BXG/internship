@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-import ApproveBeneficiary from './Approve Beneficiary';
-import ReviewDemands from './Review Demands';
-import ApproveProblem from './Approve Problem';
+import ApproveBeneficiary from './ApproveBeneficiary';
+import ReviewDemands from './ReviewDemands';
+import ApproveProblem from './ApproveProblem';
 
 const WoredaApproverDashboard = () => {
   const [activeMenu, setActiveMenu] = useState('Approve Beneficiaries');

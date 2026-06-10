@@ -6,9 +6,9 @@ import Header from './pages/head-expert/Dashboard/components/Header';
 import DashboardCards from './pages/head-expert/Dashboard/DashboardCards';
 import { DistributionTrendChart, EquipmentTypeChart, FunctionalStatusChart } from './pages/head-expert/Dashboard/Charts';
 import ActivityLog from './pages/head-expert/Dashboard/ActivityLog';
-import AreaAssignment from './pages/head-expert/Area assignment/AreaAssignment';
-import SupplierManagement from './pages/head-expert/Supplier management';
-import ContractorRegistration from './pages/head-expert/Contractor registration';
+import AreaAssignment from './pages/head-expert/AreaAssignment/AreaAssignment';
+import SupplierManagement from './pages/head-expert/SupplierManagement';
+import ContractorRegistration from './pages/head-expert/ContractorRegistration';
 import DemandStatistics from './pages/head-expert/DemandStatistics';
 import ProblemHandlings from './pages/head-expert/ProblemHandlings';
 import Reports from './pages/head-expert/Reports';
@@ -127,7 +127,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
         if (user && user.role) {
           document.title = user.role;
         }
-      } catch (e) {}
+      } catch (e) { }
     }
   }, [userStr]);
 
@@ -135,7 +135,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   try {
     const user = JSON.parse(userStr);
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-       return <Navigate to="/login" replace />;
+      return <Navigate to="/login" replace />;
     }
     return children;
   } catch (e) {

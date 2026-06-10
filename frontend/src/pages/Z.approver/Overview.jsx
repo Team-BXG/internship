@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Truck, Wrench, Users, Zap, MapPin, Clock, CheckCircle, AlertCircle } from "lucide-react";
-import { DistributionTrendChart, EquipmentTypeChart, FunctionalStatusChart } from '../head-expert/Dashboard/Charts';
+import { EquipmentTypeChart, FunctionalStatusChart, ServiceTypeChart } from '../head-expert/Dashboard/Charts';
 
 export default function Overview({ selectedZone }) {
   const [data, setData] = useState(null);
@@ -54,11 +54,8 @@ export default function Overview({ selectedZone }) {
 
   const stats = data.stats;
   const cardData = [
-    { label: "Total Suppliers", value: stats.total_suppliers, trend: stats.suppliers_trend, icon: Truck, colors: "text-blue-500 bg-blue-50" },
-    { label: "Registered Contractors", value: stats.registered_contractors, trend: stats.contractors_trend, icon: Wrench, colors: "text-purple-500 bg-purple-50" },
     { label: "Total Beneficiaries", value: stats.total_beneficiaries, trend: stats.beneficiaries_trend, icon: Users, colors: "text-cyan-500 bg-cyan-50" },
     { label: "Units Distributed", value: stats.units_distributed, trend: stats.units_trend, icon: Zap, colors: "text-indigo-500 bg-indigo-50" },
-    { label: "Active Zones", value: stats.active_zones, trend: 0, icon: MapPin, colors: "text-green-500 bg-green-50" },
     { label: "Pending Approvals", value: stats.pending_approvals, trend: stats.pending_trend, icon: Clock, colors: "text-orange-500 bg-orange-50" },
     { label: "Functional Systems", value: stats.functional_systems, trend: stats.functional_trend, icon: CheckCircle, colors: "text-green-500 bg-green-50" },
     { label: "Non-Functional Systems", value: stats.non_functional_systems, trend: stats.non_functional_trend, icon: AlertCircle, colors: "text-red-500 bg-red-50" },
@@ -99,7 +96,7 @@ export default function Overview({ selectedZone }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 mb-8">
         {cardData.map((stat, i) => {
           const isPositive = stat.trend > 0;
           return (
@@ -122,16 +119,16 @@ export default function Overview({ selectedZone }) {
         })}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
-        <div className="xl:col-span-2">
-          <DistributionTrendChart data={data.distribution_trend} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div>
+          <ServiceTypeChart data={data.service_type} />
         </div>
         <div>
           <EquipmentTypeChart data={data.equipment_type} />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         <FunctionalStatusChart data={data.functional_status} />
       </div>
     </div>

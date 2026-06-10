@@ -11,6 +11,13 @@ const MAIN_CAUSES = {
   'Hydro Power': ['Intake/Weier', 'Canal', 'Forbay', 'Penstock', 'Turbine', 'Generator', 'Dirving System', 'Control Board', 'Distribution System']
 };
 
+const fileToBase64 = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = error => reject(error);
+});
+
 const INITIAL_MOCK_PROBLEMS = [];
 
 const RegisterProblem = ({ selectedScope }) => {
@@ -33,7 +40,8 @@ const RegisterProblem = ({ selectedScope }) => {
     mainCause: '',
     problemDescription: '',
     photo: null,
-    supplier: ''
+    supplier: '',
+    kebele: ''
   };
 
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
@@ -50,7 +58,8 @@ const RegisterProblem = ({ selectedScope }) => {
         equipmentType: ben.equipment_type,
         supplier: ben.supplier || '',
         serialNumber: details.serialNumber || '',
-        installationDate: details.installationDate || ''
+        installationDate: details.installationDate || '',
+        kebele: ben.kebele || '0'
       }));
     }
   };
@@ -193,14 +202,19 @@ const RegisterProblem = ({ selectedScope }) => {
 
   const submitProblem = async () => {
     try {
-      const { photo, ...dataToSave } = formData;
+      const dataToSave = { ...formData };
+      if (dataToSave.photo instanceof File) {
+        dataToSave.photoPreview = await fileToBase64(dataToSave.photo);
+        dataToSave.photo = dataToSave.photo.name;
+      }
+
       const payload = {
         equipment: formData.equipmentType || 'Unknown',
         title: formData.problemLevel || 'Reported Issue',
         category: formData.mainCause || formData.problemDescription || 'Uncategorized',
         zone: selectedScope.zone,
         woreda: selectedScope.woreda,
-        kebele: '-',
+        kebele: formData.kebele || '0',
         urgency: formData.problemLevel?.includes('Not functional') ? 'High' : 'Medium',
         beneficiary_name: formData.beneficiaryName || 'Unknown',
         submitted_by: 'Woreda Encoder',

@@ -184,8 +184,31 @@
 2026-06-09 12:32:05,979 - sedms_app - INFO - {"action": "Supplier Created", "user": "SouthGondarZA", "role": "Zone Approver", "woreda": "N/A", "zone": "N/A", "details": "Created supplier hefikjen,c with license 232424", "status": "SUCCESS", "timestamp": "2026-06-09T09:32:05.979421"}
 2026-06-09 12:33:20,725 - sedms_app - INFO - {"action": "Supplier Created", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "Created supplier beza solutions with license 349872", "status": "SUCCESS", "timestamp": "2026-06-09T09:33:20.725883"}
 2026-06-09 14:56:49,062 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+<<<<<<< HEAD
 2026-06-09 16:20:25,873 - sedms_app - INFO - Logtail Better Stack Integration Activated!
 2026-06-09 16:20:29,591 - sedms_app - INFO - Logtail Better Stack Integration Activated!
 2026-06-09 16:30:10,990 - sedms_app - INFO - Logtail Better Stack Integration Activated!
 2026-06-09 16:30:51,731 - sedms_app - INFO - Logtail Better Stack Integration Activated!
 2026-06-09 17:27:20,198 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+=======
+2026-06-10 12:28:32,818 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 12:28:42,282 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 12:30:09,769 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 12:30:13,560 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 13:01:02,899 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 13:19:42,299 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 13:52:45,082 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 13:53:28,954 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 13:53:36,815 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 13:53:53,522 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 14:13:38,984 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 14:14:41,095 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 14:15:36,134 - sedms_app - INFO - {"action": "Supplier Created", "user": "headexpert", "role": "Head Expert", "woreda": "N/A", "zone": "N/A", "details": "Created supplier adm with license 2333345", "status": "SUCCESS", "timestamp": "2026-06-10T13:15:36.134016"}
+2026-06-10 14:31:38,454 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 14:31:47,409 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 14:36:26,327 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 14:38:51,285 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 14:39:18,597 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 14:40:34,713 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+2026-06-10 14:41:16,149 - sedms_app - INFO - Logtail Better Stack Integration Activated!
+>>>>>>> bae6aef ( refine Zone Expert/Approver cards, add exact Service Type pie chart, and wire up missing Head Expert filters)

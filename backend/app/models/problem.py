@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.orm import relationship
 import datetime
 from app.database import Base
@@ -17,7 +18,7 @@ class Problem(Base):
     submitted_by = Column(String(255))
     status = Column(String(50), default='Open')
     urgency = Column(String(50))
-    details_json = Column(Text)
+    details_json = Column(LONGTEXT)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     occurred_date = Column(DateTime, nullable=True)
     fixed_date = Column(DateTime, nullable=True)

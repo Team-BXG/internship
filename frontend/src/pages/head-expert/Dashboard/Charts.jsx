@@ -81,6 +81,54 @@ export function EquipmentTypeChart({ data }) {
   );
 }
 
+export function ServiceTypeChart({ data }) {
+  if (!data || data.length === 0) return null;
+  const COLORS = ['#f59e0b', '#3b82f6', '#10b981', '#8b5cf6'];
+  const total = data.reduce((acc, curr) => acc + curr.value, 0);
+  
+  return (
+     <div className="group bg-white p-6 rounded-[24px] shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 hover:border-slate-200 transition-all duration-400 ease-out h-full flex flex-col">
+        <h3 className="font-bold text-slate-800">Service Type Distribution</h3>
+        <p className="text-xs text-slate-400 font-medium mt-1 mb-6">Home, Off-grid, and Institutions</p>
+        
+        <div className="flex-1 min-h-[200px] w-full flex justify-center items-center">
+           <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                 <Pie
+                    data={data}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                 >
+                    {data.map((entry, index) => (
+                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="transparent" />
+                    ))}
+                 </Pie>
+                 <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} />
+              </PieChart>
+           </ResponsiveContainer>
+        </div>
+        
+        <div className="mt-4 flex flex-col gap-2 px-4">
+           {data.map((entry, index) => (
+              <div key={index} className="flex items-center justify-between text-xs font-semibold text-slate-600">
+                 <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                    {entry.name}
+                 </div>
+                 <span className="font-bold text-slate-800">
+                    {entry.value} <span className="text-slate-400 font-normal ml-1">({total > 0 ? ((entry.value / total) * 100).toFixed(1) : 0}%)</span>
+                 </span>
+              </div>
+           ))}
+        </div>
+     </div>
+  );
+}
+
 export function BeneficiariesBarChart({ data }) {
   if (!data) return null;
   return (

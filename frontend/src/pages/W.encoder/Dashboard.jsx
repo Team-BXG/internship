@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-import RegisterBeneficiary from './Register Beneficiary';
-import RegisterDemand from './Register Demand';
-import RegisterProblem from './Register Problem';
+import RegisterBeneficiary from './RegisterBeneficiary';
+import RegisterDemand from './RegisterDemand';
+import RegisterProblem from './RegisterProblem';
 import ChangeStatus from './ChangeStatus';
 import AssignedDemands from './AssignedDemands';
 import WoredaDashboard from './WoredaDashboard';

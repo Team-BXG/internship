@@ -6,9 +6,12 @@ export const sanitizeText = (value, maxLen = 30) =>
 export const sanitizeNumber = (value) =>
   String(value ?? '').replace(/\D/g, '');
 
-/** National ID: exactly up to 12 digits. */
-export const sanitizeNationalId = (value) =>
-  String(value ?? '').replace(/\D/g, '').slice(0, 12);
+/** National ID: exactly up to 12 digits or a single hyphen */
+export const sanitizeNationalId = (value) => {
+  const str = String(value ?? '');
+  if (str === '-') return '-';
+  return str.replace(/[^\d-]/g, '').replace(/(?!^)-/g, '').slice(0, 12);
+};
 
 /** Apply onChange handler for controlled text fields */
 export const onTextChange = (setter, field, maxLen = 30) => (e) =>

@@ -9,6 +9,13 @@ import {
 import { validateName, validatePhone, validateNationalId, validateTextField } from '../../utils/validation';
 import { sanitizeText, sanitizeNationalId, sanitizeNumber } from '../../utils/formHelpers';
 
+const fileToBase64 = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = error => reject(error);
+});
+
 const STEPS = [
   { id: 1, label: 'Survey Type', icon: ClipboardList },
   { id: 2, label: 'Location', icon: MapPin },
@@ -267,8 +274,14 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
           
           for (const form of allForms) {
             const cleanForm = { ...form };
-            if (cleanForm.idPhoto instanceof File) cleanForm.idPhoto = cleanForm.idPhoto.name;
-            if (cleanForm.proofPhoto instanceof File) cleanForm.proofPhoto = cleanForm.proofPhoto.name;
+            if (cleanForm.idPhoto instanceof File) {
+              cleanForm.idPhotoPreview = await fileToBase64(cleanForm.idPhoto);
+              cleanForm.idPhoto = cleanForm.idPhoto.name;
+            }
+            if (cleanForm.proofPhoto instanceof File) {
+              cleanForm.proofPhotoPreview = await fileToBase64(cleanForm.proofPhoto);
+              cleanForm.proofPhoto = cleanForm.proofPhoto.name;
+            }
 
             const payload = {
               full_name: form.fullName,
@@ -306,8 +319,14 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
       }
 
       const cleanFormData = { ...formData };
-      if (cleanFormData.idPhoto instanceof File) cleanFormData.idPhoto = cleanFormData.idPhoto.name;
-      if (cleanFormData.proofPhoto instanceof File) cleanFormData.proofPhoto = cleanFormData.proofPhoto.name;
+      if (cleanFormData.idPhoto instanceof File) {
+        cleanFormData.idPhotoPreview = await fileToBase64(cleanFormData.idPhoto);
+        cleanFormData.idPhoto = cleanFormData.idPhoto.name;
+      }
+      if (cleanFormData.proofPhoto instanceof File) {
+        cleanFormData.proofPhotoPreview = await fileToBase64(cleanFormData.proofPhoto);
+        cleanFormData.proofPhoto = cleanFormData.proofPhoto.name;
+      }
 
       // Normal single form submission
       const payload = {
@@ -496,7 +515,7 @@ const RegisterBeneficiary = ({ selectedScope, initialData, onCompleted }) => {
             placeholder="Kebele number or name"
             className="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={formData.kebele}
-            onChange={(e) => updateTextField('kebele', e.target.value)}
+            onChange={(e) => updateNumberField('kebele', e.target.value)}
           />
         </div>
         <div className="space-y-2">

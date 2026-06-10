@@ -20,6 +20,7 @@ export const validateEmail = (email) => {
 
 export const validateNationalId = (id) => {
   if (!id) return "National ID is required";
+  if (id === '-') return null;
   if (!/^\d{12}$/.test(id)) return "National ID must be exactly 12 digits";
   return null;
 };

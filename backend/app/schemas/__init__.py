@@ -215,6 +215,10 @@ class FunctionalStatusData(BaseModel):
     name: str
     value: int
 
+class ServiceTypeData(BaseModel):
+    name: str
+    value: int
+
 class DashboardDataResponse(BaseModel):
     stats: DashboardStatsResponse
     distribution_trend: List[ChartDataPoint]
@@ -224,3 +228,4 @@ class DashboardDataResponse(BaseModel):
     functional_status: List[FunctionalStatusData]
     recent_activity: List[ActivityLogResponse]
     equipment_options: List[str] = []
+    service_type: List[ServiceTypeData] = []
